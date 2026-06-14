@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+<w:body>
+    <w:bookmarkStart w:id="30" w:name="prd.md-pilar-digital-office" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">PRD.md — Pilar Digital Office</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="20" w:name="nama-produk" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">1. Nama Produk</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:rPr><w:b /><w:bCs /></w:rPr><w:t xml:space="preserve">Pilar Digital Office</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="20" />
+    <w:bookmarkStart w:id="21" w:name="deskripsi-singkat" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">2. Deskripsi Singkat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Pilar Digital Office adalah aplikasi web dashboard internal untuk membantu pengurus inti UKM Pilar Bangsa dalam mengelola administrasi organisasi, program kerja, agenda, surat-menyurat, presensi, arsip, dan keuangan secara digital, rapi, transparan, dan minim biaya.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Aplikasi ini memiliki 3 role utama:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1001" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1001" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1001" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Setiap role memiliki tampilan dashboard dan fitur yang berbeda sesuai kebutuhan jabatan.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="21" />
+    <w:bookmarkStart w:id="22" w:name="tujuan-produk" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">3. Tujuan Produk</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Produk ini dibuat untuk:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1002" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membantu UKM Pilar Bangsa memiliki sistem tata kelola organisasi yang modern.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1002" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Memudahkan Ketua dalam memantau kondisi organisasi secara menyeluruh.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1002" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Memudahkan Sekretaris dalam mengelola data anggota, surat, notulensi, presensi, dan arsip.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1002" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Memudahkan Bendahara dalam mencatat pemasukan, pengeluaran, iuran, dan laporan keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1002" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengurangi ketergantungan pada pencatatan manual atau file yang tercecer di WhatsApp.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1002" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Menjadi bukti nyata penerapan visi organisasi yang adaptif terhadap perkembangan teknologi.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="22" />
+    <w:bookmarkStart w:id="26" w:name="target-pengguna" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">4. Target Pengguna</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="23" w:name="ketua" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">4.1 Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Ketua menggunakan aplikasi untuk melihat ringkasan organisasi, memantau program kerja, melihat agenda, membaca laporan administrasi, membaca laporan keuangan, dan memberikan evaluasi kegiatan.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="23" />
+    <w:bookmarkStart w:id="24" w:name="sekretaris" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">4.2 Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Sekretaris menggunakan aplikasi untuk mengelola data anggota, surat masuk, surat keluar, notulensi rapat, presensi kegiatan, dan arsip dokumen organisasi.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="24" />
+    <w:bookmarkStart w:id="25" w:name="bendahara" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">4.3 Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Bendahara menggunakan aplikasi untuk mengelola kas organisasi, pemasukan, pengeluaran, iuran anggota, laporan keuangan kegiatan, dan bukti transaksi.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="25" />
+    <w:bookmarkEnd w:id="26" />
+    <w:bookmarkStart w:id="28" w:name="prinsip-desain" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">5. Prinsip Desain</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Desain aplikasi mengikuti style dashboard modern seperti education management dashboard dengan ciri-ciri:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sidebar kiri berwarna ungu tua.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Background halaman abu muda.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card berwarna putih dengan sudut membulat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Shadow halus pada card.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Header atas berisi welcome text, search bar, notifikasi, dan profil user.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Menggunakan grafik visual untuk data penting.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Navigasi jelas dan mudah dipahami.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1003" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tampilan bersih, modern, dan profesional.</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="27" w:name="palet-warna" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">5.1 Palet Warna</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Primary Purple:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#5B4B9A</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Secondary Purple:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#6C63B7</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Background:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#F4F5F7</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#FFFFFF</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Green Accent:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#38C172</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Yellow Accent:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#FFC107</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Pink/Red Accent:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#F87171</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Text Dark:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#1F2937</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1004" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Text Muted:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">#6B7280</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="27" />
+    <w:bookmarkEnd w:id="28" />
+    <w:bookmarkStart w:id="29" w:name="tech-stack" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">6. Tech Stack</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Aplikasi dibuat menggunakan:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Framework: Next.js</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Styling: Tailwind CSS</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Icon: Lucide React</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Chart: Recharts</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Database: Supabase</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Authentication: Supabase Auth</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hosting: Vercel</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Repository: GitHub</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1005" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Penyimpanan file besar: Google Drive link terlebih dahulu</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Catatan:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:t xml:space="preserve">Untuk tahap awal, file seperti proposal, LPJ, bukti transaksi, dan dokumen penting tidak perlu diupload langsung ke server. Cukup simpan link Google Drive agar tetap hemat biaya.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="29" />
+    <w:bookmarkEnd w:id="30" />
+    <w:bookmarkStart w:id="88" w:name="tahapan-pengembangan" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">7. Tahapan Pengembangan</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="37" w:name="tahap-1-ui-dashboard-statis" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 1 — UI Dashboard Statis</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="31" w:name="tujuan" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat tampilan awal aplikasi tanpa backend, tanpa login asli, dan tanpa database. Semua data masih menggunakan dummy data.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="31" />
+    <w:bookmarkStart w:id="32" w:name="fitur" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1006" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat layout utama aplikasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1006" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat sidebar navigasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1006" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat header atas.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1006" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat 3 halaman dashboard berdasarkan role:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1007" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1007" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1007" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1006" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat komponen reusable:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sidebar</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Header</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">SummaryCard</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">ChartCard</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">DataTable</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">AgendaList</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">ActivityList</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">FinanceCard</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1008" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">DocumentCard</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="32" />
+    <w:bookmarkStart w:id="33" w:name="dashboard-ketua" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Dashboard Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Isi dashboard Ketua:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card jumlah anggota aktif.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card program kerja berjalan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card agenda bulan ini.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card saldo kas.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Grafik progress program kerja.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kalender atau daftar agenda.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aktivitas terbaru organisasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ringkasan surat masuk dan surat keluar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ringkasan kondisi keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1009" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Evaluasi kegiatan terbaru.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="33" />
+    <w:bookmarkStart w:id="34" w:name="dashboard-sekretaris" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Dashboard Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Isi dashboard Sekretaris:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card total anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card surat masuk.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card surat keluar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card notulensi tersimpan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tabel data anggota terbaru.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tabel surat masuk dan surat keluar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Daftar notulensi rapat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Panel presensi kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1010" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Panel arsip dokumen.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="34" />
+    <w:bookmarkStart w:id="35" w:name="dashboard-bendahara" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Dashboard Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Isi dashboard Bendahara:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card saldo kas.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card total pemasukan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card total pengeluaran.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Card iuran belum lunas.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Grafik pemasukan dan pengeluaran bulanan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tabel transaksi terbaru.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Rekap iuran anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Laporan keuangan kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Panel bukti transaksi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1011" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ringkasan kas per kegiatan.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="35" />
+    <w:bookmarkStart w:id="36" w:name="kriteria-sukses-tahap-1" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 1</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1012" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi bisa dijalankan secara lokal.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1012" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Semua halaman dashboard bisa dibuka.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1012" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tampilan 3 dashboard berbeda sesuai role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1012" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Desain konsisten dengan style dashboard modern.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1012" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Belum perlu login dan database.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="36" />
+    <w:bookmarkEnd w:id="37" />
+    <w:bookmarkStart w:id="42" w:name="Xa3e06a43ccdeab88752b8d67a1af47cb8e5bec0" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 2 — Struktur Routing dan Simulasi Role</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="38" w:name="tujuan-1" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat struktur navigasi lebih rapi dan menyiapkan pondasi sebelum login asli dibuat.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="38" />
+    <w:bookmarkStart w:id="39" w:name="fitur-1" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1013" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat halaman landing sederhana.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1013" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat halaman pemilihan role sementara.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1013" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat routing:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1014" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1014" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/login</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1014" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1014" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1014" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1013" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sidebar menampilkan menu yang relevan sesuai role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1013" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Header menampilkan nama role aktif.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="39" />
+    <w:bookmarkStart w:id="40" w:name="aturan-role-sementara" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Aturan Role Sementara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Untuk tahap ini belum menggunakan auth asli.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Role bisa disimulasikan melalui route:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1015" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:t xml:space="preserve">untuk Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1015" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:t xml:space="preserve">untuk Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1015" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:t xml:space="preserve">untuk Bendahara</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="40" />
+    <w:bookmarkStart w:id="41" w:name="kriteria-sukses-tahap-2" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 2</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1016" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tiap route bisa dibuka tanpa error.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1016" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sidebar berubah sesuai role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1016" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Header menampilkan role yang benar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1016" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Struktur folder dan komponen sudah rapi.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="41" />
+    <w:bookmarkEnd w:id="42" />
+    <w:bookmarkStart w:id="47" w:name="tahap-3-login-dan-role-based-access" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 3 — Login dan Role-Based Access</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="43" w:name="tujuan-2" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menambahkan login asli menggunakan Supabase Auth dan membatasi akses berdasarkan role.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="43" />
+    <w:bookmarkStart w:id="44" w:name="fitur-2" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1017" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Login menggunakan email dan password.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1017" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Logout.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1017" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Redirect berdasarkan role:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1018" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua diarahkan ke</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1018" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sekretaris diarahkan ke</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1018" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Bendahara diarahkan ke</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1017" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Middleware atau guard agar user tidak bisa membuka dashboard role lain.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1017" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tabel profile user yang menyimpan role.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="44" />
+    <w:bookmarkStart w:id="45" w:name="struktur-role" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Struktur Role</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Role yang digunakan:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1019" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1019" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1019" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">bendahara</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="45" />
+    <w:bookmarkStart w:id="46" w:name="kriteria-sukses-tahap-3" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 3</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1020" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">User bisa login.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1020" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">User bisa logout.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1020" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">User diarahkan ke dashboard sesuai role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1020" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">User tidak bisa mengakses halaman role lain.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1020" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data role tersimpan di Supabase.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="46" />
+    <w:bookmarkEnd w:id="47" />
+    <w:bookmarkStart w:id="62" w:name="tahap-4-database-dasar" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 4 — Database Dasar</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="48" w:name="tujuan-3" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat struktur database utama di Supabase.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="48" />
+    <w:bookmarkStart w:id="60" w:name="tabel-database" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tabel Database</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="49" w:name="profiles" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">1. profiles</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan data user.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1021" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1021" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">full_name</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1021" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">email</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1021" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">role</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1021" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">avatar_url</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1021" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="49" />
+    <w:bookmarkStart w:id="50" w:name="members" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">2. members</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan data anggota UKM.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">name</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">nim</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">faculty</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">study_program</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">generation</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">phone</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">division</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">status</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1022" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="50" />
+    <w:bookmarkStart w:id="51" w:name="programs" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">3. programs</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan program kerja.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">title</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">description</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">division</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">person_in_charge</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">status</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">start_date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">end_date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1023" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="51" />
+    <w:bookmarkStart w:id="52" w:name="agendas" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">4. agendas</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan agenda organisasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">title</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">description</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">time</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">location</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">category</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1024" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="52" />
+    <w:bookmarkStart w:id="53" w:name="letters" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">5. letters</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan surat masuk dan surat keluar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">letter_number</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">letter_type</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">sender</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">recipient</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">subject</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">file_url</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">status</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1025" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="53" />
+    <w:bookmarkStart w:id="54" w:name="minutes" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">6. minutes</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan notulensi rapat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">title</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">meeting_date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">participants</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">discussion</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">decisions</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">follow_up</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">file_url</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1026" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="54" />
+    <w:bookmarkStart w:id="55" w:name="attendance" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">7. attendance</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan presensi kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1027" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1027" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">agenda_id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1027" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">member_id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1027" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">status</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1027" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">note</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1027" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="55" />
+    <w:bookmarkStart w:id="56" w:name="finance_transactions" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">8. finance_transactions</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan pemasukan dan pengeluaran.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">transaction_date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">type</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">category</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">amount</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">description</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">responsible_person</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">proof_url</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1028" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="56" />
+    <w:bookmarkStart w:id="57" w:name="dues" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">9. dues</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan data iuran anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">member_id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">month</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">year</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">amount</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">status</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">payment_date</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">proof_url</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1029" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="57" />
+    <w:bookmarkStart w:id="58" w:name="archives" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">10. archives</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan arsip dokumen.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">title</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">category</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">description</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">file_url</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">uploaded_by</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1030" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="58" />
+    <w:bookmarkStart w:id="59" w:name="evaluations" />
+    <w:p><w:pPr><w:pStyle w:val="Heading4" /></w:pPr><w:r><w:t xml:space="preserve">11. evaluations</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Menyimpan evaluasi kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Kolom:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">program_id</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">title</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">strengths</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">weaknesses</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">recommendations</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1031" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">created_at</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="59" />
+    <w:bookmarkEnd w:id="60" />
+    <w:bookmarkStart w:id="61" w:name="kriteria-sukses-tahap-4" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 4</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1032" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Semua tabel utama dibuat di Supabase.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1032" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Relasi dasar antar data sudah disiapkan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1032" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi bisa membaca data dari Supabase.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1032" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data dummy mulai diganti dengan data dari database.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="61" />
+    <w:bookmarkEnd w:id="62" />
+    <w:bookmarkStart w:id="66" w:name="tahap-5-crud-sekretaris" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 5 — CRUD Sekretaris</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="63" w:name="tujuan-4" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat fitur kelola administrasi untuk role Sekretaris.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="63" />
+    <w:bookmarkStart w:id="64" w:name="fitur-sekretaris" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1033" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola data anggota:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1034" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah anggota</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1034" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Lihat anggota</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1034" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Edit anggota</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1034" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hapus anggota</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1033" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola surat masuk dan surat keluar:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1035" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah surat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1035" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Lihat surat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1035" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Edit surat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1035" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hapus surat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1035" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Simpan link file surat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1033" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola notulensi:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1036" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah notulensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1036" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Lihat notulensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1036" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Edit notulensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1036" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hapus notulensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1033" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola presensi:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1037" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah presensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1037" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Lihat rekap presensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1033" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola arsip:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1038" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah arsip</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1038" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Simpan link dokumen Google Drive</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1038" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Edit arsip</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1038" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hapus arsip</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="64" />
+    <w:bookmarkStart w:id="65" w:name="kriteria-sukses-tahap-5" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 5</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1039" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sekretaris bisa mengelola data administrasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1039" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data tersimpan ke Supabase.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1039" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua bisa melihat ringkasan data yang dibuat Sekretaris.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1039" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Bendahara hanya bisa melihat data tertentu, tidak mengelola administrasi.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="65" />
+    <w:bookmarkEnd w:id="66" />
+    <w:bookmarkStart w:id="70" w:name="tahap-6-crud-bendahara" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 6 — CRUD Bendahara</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="67" w:name="tujuan-5" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat fitur kelola keuangan untuk role Bendahara.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="67" />
+    <w:bookmarkStart w:id="68" w:name="fitur-bendahara" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1040" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola transaksi:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1041" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah pemasukan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1041" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah pengeluaran</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1041" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Edit transaksi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1041" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hapus transaksi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1041" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Simpan link bukti transaksi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1040" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola iuran anggota:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1042" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambah status iuran</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1042" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Edit status iuran</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1042" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Lihat anggota yang belum lunas</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1040" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Kelola laporan keuangan kegiatan:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1043" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Catat pemasukan per kegiatan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1043" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Catat pengeluaran per kegiatan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1043" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hitung sisa dana</w:t></w:r></w:p>
+    <w:p><w:pPr><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1040" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ringkasan otomatis:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1044" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Total pemasukan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1044" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Total pengeluaran</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1044" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Saldo akhir</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="1" /><w:numId w:val="1044" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Iuran belum lunas</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="68" />
+    <w:bookmarkStart w:id="69" w:name="kriteria-sukses-tahap-6" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 6</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1045" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Bendahara bisa mencatat pemasukan dan pengeluaran.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1045" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Saldo kas otomatis berubah sesuai transaksi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1045" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Bendahara bisa melihat rekap iuran.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1045" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua bisa melihat ringkasan keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1045" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sekretaris hanya bisa melihat data keuangan terbatas.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="69" />
+    <w:bookmarkEnd w:id="70" />
+    <w:bookmarkStart w:id="74" w:name="tahap-7-dashboard-monitoring-ketua" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 7 — Dashboard Monitoring Ketua</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="71" w:name="tujuan-6" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat dashboard Ketua benar-benar berfungsi sebagai pusat monitoring organisasi.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="71" />
+    <w:bookmarkStart w:id="72" w:name="fitur-ketua" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat ringkasan anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat ringkasan program kerja.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat agenda terdekat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat ringkasan surat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat ringkasan presensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat ringkasan keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat evaluasi kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Memberikan catatan evaluasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1046" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat grafik organisasi.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="72" />
+    <w:bookmarkStart w:id="73" w:name="kriteria-sukses-tahap-7" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 7</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1047" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua bisa melihat data dari Sekretaris dan Bendahara.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1047" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua bisa memberikan evaluasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1047" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua tidak perlu menginput terlalu banyak data operasional.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1047" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Dashboard Ketua menjadi pusat pengambilan keputusan.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="73" />
+    <w:bookmarkEnd w:id="74" />
+    <w:bookmarkStart w:id="78" w:name="tahap-8-export-dan-laporan" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 8 — Export dan Laporan</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="75" w:name="tujuan-7" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Membuat fitur export laporan agar data bisa digunakan untuk kebutuhan organisasi.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="75" />
+    <w:bookmarkStart w:id="76" w:name="fitur-3" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1048" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export data anggota ke CSV.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1048" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export surat masuk dan surat keluar ke CSV.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1048" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export presensi ke CSV.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1048" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export transaksi ke CSV.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1048" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export laporan keuangan sederhana.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1048" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export laporan kegiatan sederhana.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="76" />
+    <w:bookmarkStart w:id="77" w:name="kriteria-sukses-tahap-8" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 8</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1049" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">User bisa mengunduh data dalam format CSV.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1049" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data bisa dibuka di Excel atau Google Sheets.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1049" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export berjalan sesuai role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1049" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data yang diexport sesuai filter yang dipilih.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="77" />
+    <w:bookmarkEnd w:id="78" />
+    <w:bookmarkStart w:id="82" w:name="tahap-9-polishing-ui-dan-responsiveness" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 9 — Polishing UI dan Responsiveness</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="79" w:name="tujuan-8" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Merapikan tampilan agar siap dipresentasikan dan digunakan.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="79" />
+    <w:bookmarkStart w:id="80" w:name="fitur-4" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Merapikan sidebar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Merapikan card.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Merapikan tabel.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Menambahkan empty state.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Menambahkan loading state.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Menambahkan error state.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat tampilan responsive untuk laptop dan tablet.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1050" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Membuat tampilan mobile sederhana.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="80" />
+    <w:bookmarkStart w:id="81" w:name="kriteria-sukses-tahap-9" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 9</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1051" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tampilan terlihat modern dan profesional.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1051" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tidak ada layout yang berantakan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1051" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi nyaman digunakan di laptop.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1051" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi tetap bisa dibuka di layar kecil.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="81" />
+    <w:bookmarkEnd w:id="82" />
+    <w:bookmarkStart w:id="87" w:name="tahap-10-deploy-ke-vercel" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Tahap 10 — Deploy ke Vercel</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="83" w:name="tujuan-9" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Tujuan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Mempublikasikan aplikasi agar bisa diakses secara online.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="83" />
+    <w:bookmarkStart w:id="84" w:name="fitur-5" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Fitur</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1052" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Push project ke GitHub.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1052" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Hubungkan GitHub dengan Vercel.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1052" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Atur environment variables.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1052" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Deploy aplikasi ke Vercel.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1052" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tes login dan dashboard online.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1052" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Perbaiki bug setelah deploy.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="84" />
+    <w:bookmarkStart w:id="85" w:name="environment-variables" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Environment Variables</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Variabel yang diperlukan:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1053" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">NEXT_PUBLIC_SUPABASE_URL</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1053" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">NEXT_PUBLIC_SUPABASE_ANON_KEY</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1053" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">SUPABASE_SERVICE_ROLE_KEY</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Catatan:</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">SUPABASE_SERVICE_ROLE_KEY</w:t></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r><w:r><w:t xml:space="preserve">tidak boleh ditampilkan di client-side.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="85" />
+    <w:bookmarkStart w:id="86" w:name="kriteria-sukses-tahap-10" />
+    <w:p><w:pPr><w:pStyle w:val="Heading3" /></w:pPr><w:r><w:t xml:space="preserve">Kriteria Sukses Tahap 10</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1054" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi berhasil deploy ke Vercel.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1054" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Login berjalan di versi online.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1054" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Dashboard bisa diakses sesuai role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1054" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data bisa tersimpan ke Supabase.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1054" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tidak ada error besar di production.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="86" />
+    <w:bookmarkEnd w:id="87" />
+    <w:bookmarkEnd w:id="88" />
+    <w:bookmarkStart w:id="92" w:name="hak-akses-role" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">8. Hak Akses Role</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="89" w:name="ketua-1" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Ketua bisa:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat semua ringkasan data.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat data anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat program kerja.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat surat dan notulensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat presensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat laporan keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Menambahkan evaluasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1055" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat arsip.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Ketua tidak perlu mengelola transaksi detail kecuali diperlukan.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="89" />
+    <w:bookmarkStart w:id="90" w:name="sekretaris-1" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Sekretaris bisa:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola data anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola surat masuk dan keluar.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola notulensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola presensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola arsip dokumen.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat agenda.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1056" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat ringkasan keuangan terbatas.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Sekretaris tidak bisa mengedit transaksi keuangan.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="90" />
+    <w:bookmarkStart w:id="91" w:name="bendahara-1" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Bendahara bisa:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola pemasukan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola pengeluaran.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola iuran.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola laporan keuangan kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mengelola bukti transaksi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat data anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1057" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Melihat agenda.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Bendahara tidak bisa mengedit surat, notulensi, atau arsip administrasi utama.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="91" />
+    <w:bookmarkEnd w:id="92" />
+    <w:bookmarkStart w:id="97" w:name="struktur-halaman" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">9. Struktur Halaman</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="93" w:name="halaman-umum" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Halaman Umum</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1058" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1058" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/login</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1058" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/unauthorized</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="93" />
+    <w:bookmarkStart w:id="94" w:name="halaman-ketua" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Halaman Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1059" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1059" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua/program</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1059" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua/agenda</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1059" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua/evaluasi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1059" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/ketua/laporan</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="94" />
+    <w:bookmarkStart w:id="95" w:name="halaman-sekretaris" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Halaman Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1060" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1060" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris/anggota</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1060" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris/surat</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1060" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris/notulensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1060" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris/presensi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1060" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/sekretaris/arsip</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="95" />
+    <w:bookmarkStart w:id="96" w:name="halaman-bendahara" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Halaman Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1061" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1061" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara/transaksi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1061" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara/iuran</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1061" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara/laporan</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1061" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">/dashboard/bendahara/bukti-transaksi</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="96" />
+    <w:bookmarkEnd w:id="97" />
+    <w:bookmarkStart w:id="98" w:name="komponen-utama" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">10. Komponen Utama</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Komponen yang harus dibuat:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">AppLayout</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">Sidebar</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">Header</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">SummaryCard</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">ChartCard</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">DataTable</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">AgendaList</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">ActivityList</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">FinanceSummary</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">DocumentList</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">RoleBadge</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">EmptyState</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">LoadingState</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">FormModal</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1062" /></w:numPr></w:pPr><w:r><w:rPr><w:rStyle w:val="VerbatimChar" /></w:rPr><w:t xml:space="preserve">ConfirmDialog</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="98" />
+    <w:bookmarkStart w:id="102" w:name="user-stories" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">11. User Stories</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="99" w:name="ketua-2" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Ketua</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Ketua, saya ingin melihat ringkasan organisasi agar saya bisa memantau kondisi UKM dengan cepat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Ketua, saya ingin melihat progress program kerja agar saya tahu kegiatan mana yang sudah selesai, berjalan, atau belum dimulai.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Ketua, saya ingin melihat laporan keuangan ringkas agar saya bisa memastikan kondisi kas organisasi tetap sehat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Ketua, saya ingin memberikan evaluasi kegiatan agar pengurus bisa memperbaiki kegiatan berikutnya.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="99" />
+    <w:bookmarkStart w:id="100" w:name="sekretaris-2" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Sekretaris</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Sekretaris, saya ingin mengelola data anggota agar database UKM lebih rapi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Sekretaris, saya ingin mencatat surat masuk dan surat keluar agar administrasi organisasi terdokumentasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Sekretaris, saya ingin menyimpan notulensi rapat agar hasil keputusan tidak hilang.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Sekretaris, saya ingin mengelola presensi agar keaktifan anggota bisa dipantau.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="100" />
+    <w:bookmarkStart w:id="101" w:name="bendahara-2" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Bendahara</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Bendahara, saya ingin mencatat pemasukan dan pengeluaran agar kas organisasi lebih transparan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Bendahara, saya ingin melihat saldo otomatis agar tidak perlu menghitung manual.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Bendahara, saya ingin mencatat iuran anggota agar anggota yang belum lunas mudah diketahui.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Sebagai Bendahara, saya ingin menyimpan bukti transaksi agar laporan keuangan lebih valid.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="101" />
+    <w:bookmarkEnd w:id="102" />
+    <w:bookmarkStart w:id="103" w:name="non-goals-tahap-awal" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">12. Non-Goals Tahap Awal</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Fitur berikut tidak dibuat di tahap awal:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Upload file besar langsung ke server.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Chat internal real-time.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Notifikasi WhatsApp otomatis.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Absensi QR berbasis lokasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tanda tangan digital.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Multi-role untuk semua anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Mobile app Android/iOS.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1063" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sistem approval berlapis yang kompleks.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Fitur tersebut dapat dikembangkan setelah versi MVP stabil.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="103" />
+    <w:bookmarkStart w:id="104" w:name="mvp" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">13. MVP</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Versi MVP harus memiliki:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tampilan dashboard 3 role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Login sederhana.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Role-based access.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Database anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Database surat.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Database notulensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Database presensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Database transaksi keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ringkasan dashboard Ketua.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1064" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Deploy ke Vercel.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="104" />
+    <w:bookmarkStart w:id="108" w:name="prioritas-pengembangan" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">14. Prioritas Pengembangan</w:t></w:r></w:p>
+    <w:bookmarkStart w:id="105" w:name="prioritas-tinggi" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Prioritas Tinggi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1065" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">UI dashboard 3 role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1065" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Login role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1065" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1065" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Surat dan notulensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1065" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Transaksi keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1065" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ringkasan dashboard Ketua.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="105" />
+    <w:bookmarkStart w:id="106" w:name="prioritas-sedang" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Prioritas Sedang</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1066" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Presensi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1066" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Arsip dokumen.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1066" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Iuran anggota.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1066" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Evaluasi kegiatan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1066" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Export CSV.</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="106" />
+    <w:bookmarkStart w:id="107" w:name="prioritas-rendah" />
+    <w:p><w:pPr><w:pStyle w:val="Heading2" /></w:pPr><w:r><w:t xml:space="preserve">Prioritas Rendah</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1067" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Upload file internal.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1067" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Notifikasi otomatis.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1067" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Dashboard mobile penuh.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1067" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Grafik lanjutan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1067" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sistem approval.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="107" />
+    <w:bookmarkEnd w:id="108" />
+    <w:bookmarkStart w:id="109" w:name="catatan-implementasi-untuk-codex" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">15. Catatan Implementasi untuk Codex</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Kerjakan aplikasi ini secara bertahap.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Jangan langsung membuat semua fitur sekaligus.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Urutan pengerjaan:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Buat UI dashboard statis terlebih dahulu.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Buat struktur route.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambahkan login dan role.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambahkan Supabase.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambahkan CRUD Sekretaris.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambahkan CRUD Bendahara.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambahkan monitoring Ketua.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tambahkan export.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Rapikan UI.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1068" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Deploy ke Vercel.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Gunakan data dummy di tahap awal agar tampilan selesai terlebih dahulu.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:t xml:space="preserve">Pastikan struktur kode rapi, reusable, dan mudah dikembangkan.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="109" />
+    <w:bookmarkStart w:id="110" w:name="definisi-selesai" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">16. Definisi Selesai</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Produk dianggap selesai untuk versi awal jika:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi bisa diakses online melalui Vercel.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Terdapat 3 dashboard berbeda untuk Ketua, Sekretaris, dan Bendahara.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Login role berjalan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Data utama tersimpan di Supabase.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Sekretaris bisa mengelola data administrasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Bendahara bisa mengelola data keuangan.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Ketua bisa melihat ringkasan organisasi.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Tampilan rapi, modern, dan konsisten.</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="Compact" /><w:numPr><w:ilvl w:val="0" /><w:numId w:val="1069" /></w:numPr></w:pPr><w:r><w:t xml:space="preserve">Aplikasi dapat digunakan sebagai contoh nyata digitalisasi UKM Pilar Bangsa.</w:t></w:r></w:p>
+    <w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t" /></w:pict></w:r></w:p>
+    <w:bookmarkEnd w:id="110" />
+    <w:bookmarkStart w:id="111" w:name="nama-versi" />
+    <w:p><w:pPr><w:pStyle w:val="Heading1" /></w:pPr><w:r><w:t xml:space="preserve">17. Nama Versi</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="FirstParagraph" /></w:pPr><w:r><w:t xml:space="preserve">Versi awal produk:</w:t></w:r></w:p>
+    <w:p><w:pPr><w:pStyle w:val="BodyText" /></w:pPr><w:r><w:rPr><w:b /><w:bCs /></w:rPr><w:t xml:space="preserve">Pilar Digital Office v1.0 — Dashboard Pengurus Inti</w:t></w:r></w:p>
+    <w:bookmarkEnd w:id="111" />
+    <w:sectPr>
+      <w:footnotePr>
+        
+                
+        <w:numRestart w:val="eachSect" />
+        
+              
+      </w:footnotePr>
+    </w:sectPr>
+  </w:body>
+</w:document>

@@ -1,0 +1,1229 @@
+﻿
+PRD.md â€” Pilar Digital Office
+
+1. Nama Produk
+
+Pilar Digital Office
+
+2. Deskripsi Singkat
+
+Pilar Digital Office adalah aplikasi web dashboard internal untuk membantu pengurus inti UKM Pilar Bangsa dalam mengelola administrasi organisasi, program kerja, agenda, surat-menyurat, presensi, arsip, dan keuangan secara digital, rapi, transparan, dan minim biaya.
+
+Aplikasi ini memiliki 3 role utama:
+
+Ketua
+
+Sekretaris
+
+Bendahara
+
+Setiap role memiliki tampilan dashboard dan fitur yang berbeda sesuai kebutuhan jabatan.
+
+3. Tujuan Produk
+
+Produk ini dibuat untuk:
+
+Membantu UKM Pilar Bangsa memiliki sistem tata kelola organisasi yang modern.
+
+Memudahkan Ketua dalam memantau kondisi organisasi secara menyeluruh.
+
+Memudahkan Sekretaris dalam mengelola data anggota, surat, notulensi, presensi, dan arsip.
+
+Memudahkan Bendahara dalam mencatat pemasukan, pengeluaran, iuran, dan laporan keuangan.
+
+Mengurangi ketergantungan pada pencatatan manual atau file yang tercecer di WhatsApp.
+
+Menjadi bukti nyata penerapan visi organisasi yang adaptif terhadap perkembangan teknologi.
+
+4. Target Pengguna
+
+4.1 Ketua
+
+Ketua menggunakan aplikasi untuk melihat ringkasan organisasi, memantau program kerja, melihat agenda, membaca laporan administrasi, membaca laporan keuangan, dan memberikan evaluasi kegiatan.
+
+4.2 Sekretaris
+
+Sekretaris menggunakan aplikasi untuk mengelola data anggota, surat masuk, surat keluar, notulensi rapat, presensi kegiatan, dan arsip dokumen organisasi.
+
+4.3 Bendahara
+
+Bendahara menggunakan aplikasi untuk mengelola kas organisasi, pemasukan, pengeluaran, iuran anggota, laporan keuangan kegiatan, dan bukti transaksi.
+
+5. Prinsip Desain
+
+Desain aplikasi mengikuti style dashboard modern seperti education management dashboard dengan ciri-ciri:
+
+Sidebar kiri berwarna ungu tua.
+
+Background halaman abu muda.
+
+Card berwarna putih dengan sudut membulat.
+
+Shadow halus pada card.
+
+Header atas berisi welcome text, search bar, notifikasi, dan profil user.
+
+Menggunakan grafik visual untuk data penting.
+
+Navigasi jelas dan mudah dipahami.
+
+Tampilan bersih, modern, dan profesional.
+
+5.1 Palet Warna
+
+Primary Purple:
+
+#5B4B9A
+
+Secondary Purple:
+
+#6C63B7
+
+Background:
+
+#F4F5F7
+
+Card:
+
+#FFFFFF
+
+Green Accent:
+
+#38C172
+
+Yellow Accent:
+
+#FFC107
+
+Pink/Red Accent:
+
+#F87171
+
+Text Dark:
+
+#1F2937
+
+Text Muted:
+
+#6B7280
+
+6. Tech Stack
+
+Aplikasi dibuat menggunakan:
+
+Framework: Next.js
+
+Styling: Tailwind CSS
+
+Icon: Lucide React
+
+Chart: Recharts
+
+Database: Supabase
+
+Authentication: Supabase Auth
+
+Hosting: Vercel
+
+Repository: GitHub
+
+Penyimpanan file besar: Google Drive link terlebih dahulu
+
+Catatan:
+
+Untuk tahap awal, file seperti proposal, LPJ, bukti transaksi, dan dokumen penting tidak perlu diupload langsung ke server. Cukup simpan link Google Drive agar tetap hemat biaya.
+
+7. Tahapan Pengembangan
+
+Tahap 1 â€” UI Dashboard Statis
+
+Tujuan
+
+Membuat tampilan awal aplikasi tanpa backend, tanpa login asli, dan tanpa database. Semua data masih menggunakan dummy data.
+
+Fitur
+
+Membuat layout utama aplikasi.
+
+Membuat sidebar navigasi.
+
+Membuat header atas.
+
+Membuat 3 halaman dashboard berdasarkan role:
+
+/dashboard/ketua
+
+/dashboard/sekretaris
+
+/dashboard/bendahara
+
+Membuat komponen reusable:
+
+Sidebar
+
+Header
+
+SummaryCard
+
+ChartCard
+
+DataTable
+
+AgendaList
+
+ActivityList
+
+FinanceCard
+
+DocumentCard
+
+Dashboard Ketua
+
+Isi dashboard Ketua:
+
+Card jumlah anggota aktif.
+
+Card program kerja berjalan.
+
+Card agenda bulan ini.
+
+Card saldo kas.
+
+Grafik progress program kerja.
+
+Kalender atau daftar agenda.
+
+Aktivitas terbaru organisasi.
+
+Ringkasan surat masuk dan surat keluar.
+
+Ringkasan kondisi keuangan.
+
+Evaluasi kegiatan terbaru.
+
+Dashboard Sekretaris
+
+Isi dashboard Sekretaris:
+
+Card total anggota.
+
+Card surat masuk.
+
+Card surat keluar.
+
+Card notulensi tersimpan.
+
+Tabel data anggota terbaru.
+
+Tabel surat masuk dan surat keluar.
+
+Daftar notulensi rapat.
+
+Panel presensi kegiatan.
+
+Panel arsip dokumen.
+
+Dashboard Bendahara
+
+Isi dashboard Bendahara:
+
+Card saldo kas.
+
+Card total pemasukan.
+
+Card total pengeluaran.
+
+Card iuran belum lunas.
+
+Grafik pemasukan dan pengeluaran bulanan.
+
+Tabel transaksi terbaru.
+
+Rekap iuran anggota.
+
+Laporan keuangan kegiatan.
+
+Panel bukti transaksi.
+
+Ringkasan kas per kegiatan.
+
+Kriteria Sukses Tahap 1
+
+Aplikasi bisa dijalankan secara lokal.
+
+Semua halaman dashboard bisa dibuka.
+
+Tampilan 3 dashboard berbeda sesuai role.
+
+Desain konsisten dengan style dashboard modern.
+
+Belum perlu login dan database.
+
+Tahap 2 â€” Struktur Routing dan Simulasi Role
+
+Tujuan
+
+Membuat struktur navigasi lebih rapi dan menyiapkan pondasi sebelum login asli dibuat.
+
+Fitur
+
+Membuat halaman landing sederhana.
+
+Membuat halaman pemilihan role sementara.
+
+Membuat routing:
+
+/
+
+/login
+
+/dashboard/ketua
+
+/dashboard/sekretaris
+
+/dashboard/bendahara
+
+Sidebar menampilkan menu yang relevan sesuai role.
+
+Header menampilkan nama role aktif.
+
+Aturan Role Sementara
+
+Untuk tahap ini belum menggunakan auth asli.
+
+Role bisa disimulasikan melalui route:
+
+/dashboard/ketua
+
+untuk Ketua
+
+/dashboard/sekretaris
+
+untuk Sekretaris
+
+/dashboard/bendahara
+
+untuk Bendahara
+
+Kriteria Sukses Tahap 2
+
+Tiap route bisa dibuka tanpa error.
+
+Sidebar berubah sesuai role.
+
+Header menampilkan role yang benar.
+
+Struktur folder dan komponen sudah rapi.
+
+Tahap 3 â€” Login dan Role-Based Access
+
+Tujuan
+
+Menambahkan login asli menggunakan Supabase Auth dan membatasi akses berdasarkan role.
+
+Fitur
+
+Login menggunakan email dan password.
+
+Logout.
+
+Redirect berdasarkan role:
+
+Ketua diarahkan ke
+
+/dashboard/ketua
+
+Sekretaris diarahkan ke
+
+/dashboard/sekretaris
+
+Bendahara diarahkan ke
+
+/dashboard/bendahara
+
+Middleware atau guard agar user tidak bisa membuka dashboard role lain.
+
+Tabel profile user yang menyimpan role.
+
+Struktur Role
+
+Role yang digunakan:
+
+ketua
+
+sekretaris
+
+bendahara
+
+Kriteria Sukses Tahap 3
+
+User bisa login.
+
+User bisa logout.
+
+User diarahkan ke dashboard sesuai role.
+
+User tidak bisa mengakses halaman role lain.
+
+Data role tersimpan di Supabase.
+
+Tahap 4 â€” Database Dasar
+
+Tujuan
+
+Membuat struktur database utama di Supabase.
+
+Tabel Database
+
+1. profiles
+
+Menyimpan data user.
+
+Kolom:
+
+id
+
+full_name
+
+email
+
+role
+
+avatar_url
+
+created_at
+
+2. members
+
+Menyimpan data anggota UKM.
+
+Kolom:
+
+id
+
+name
+
+nim
+
+faculty
+
+study_program
+
+generation
+
+phone
+
+division
+
+status
+
+created_at
+
+3. programs
+
+Menyimpan program kerja.
+
+Kolom:
+
+id
+
+title
+
+description
+
+division
+
+person_in_charge
+
+status
+
+start_date
+
+end_date
+
+created_at
+
+4. agendas
+
+Menyimpan agenda organisasi.
+
+Kolom:
+
+id
+
+title
+
+description
+
+date
+
+time
+
+location
+
+category
+
+created_at
+
+5. letters
+
+Menyimpan surat masuk dan surat keluar.
+
+Kolom:
+
+id
+
+letter_number
+
+letter_type
+
+date
+
+sender
+
+recipient
+
+subject
+
+file_url
+
+status
+
+created_at
+
+6. minutes
+
+Menyimpan notulensi rapat.
+
+Kolom:
+
+id
+
+title
+
+meeting_date
+
+participants
+
+discussion
+
+decisions
+
+follow_up
+
+file_url
+
+created_at
+
+7. attendance
+
+Menyimpan presensi kegiatan.
+
+Kolom:
+
+id
+
+agenda_id
+
+member_id
+
+status
+
+note
+
+created_at
+
+8. finance_transactions
+
+Menyimpan pemasukan dan pengeluaran.
+
+Kolom:
+
+id
+
+transaction_date
+
+type
+
+category
+
+amount
+
+description
+
+responsible_person
+
+proof_url
+
+created_at
+
+9. dues
+
+Menyimpan data iuran anggota.
+
+Kolom:
+
+id
+
+member_id
+
+month
+
+year
+
+amount
+
+status
+
+payment_date
+
+proof_url
+
+created_at
+
+10. archives
+
+Menyimpan arsip dokumen.
+
+Kolom:
+
+id
+
+title
+
+category
+
+description
+
+file_url
+
+uploaded_by
+
+created_at
+
+11. evaluations
+
+Menyimpan evaluasi kegiatan.
+
+Kolom:
+
+id
+
+program_id
+
+title
+
+strengths
+
+weaknesses
+
+recommendations
+
+created_at
+
+Kriteria Sukses Tahap 4
+
+Semua tabel utama dibuat di Supabase.
+
+Relasi dasar antar data sudah disiapkan.
+
+Aplikasi bisa membaca data dari Supabase.
+
+Data dummy mulai diganti dengan data dari database.
+
+Tahap 5 â€” CRUD Sekretaris
+
+Tujuan
+
+Membuat fitur kelola administrasi untuk role Sekretaris.
+
+Fitur Sekretaris
+
+Kelola data anggota:
+
+Tambah anggota
+
+Lihat anggota
+
+Edit anggota
+
+Hapus anggota
+
+Kelola surat masuk dan surat keluar:
+
+Tambah surat
+
+Lihat surat
+
+Edit surat
+
+Hapus surat
+
+Simpan link file surat
+
+Kelola notulensi:
+
+Tambah notulensi
+
+Lihat notulensi
+
+Edit notulensi
+
+Hapus notulensi
+
+Kelola presensi:
+
+Tambah presensi
+
+Lihat rekap presensi
+
+Kelola arsip:
+
+Tambah arsip
+
+Simpan link dokumen Google Drive
+
+Edit arsip
+
+Hapus arsip
+
+Kriteria Sukses Tahap 5
+
+Sekretaris bisa mengelola data administrasi.
+
+Data tersimpan ke Supabase.
+
+Ketua bisa melihat ringkasan data yang dibuat Sekretaris.
+
+Bendahara hanya bisa melihat data tertentu, tidak mengelola administrasi.
+
+Tahap 6 â€” CRUD Bendahara
+
+Tujuan
+
+Membuat fitur kelola keuangan untuk role Bendahara.
+
+Fitur Bendahara
+
+Kelola transaksi:
+
+Tambah pemasukan
+
+Tambah pengeluaran
+
+Edit transaksi
+
+Hapus transaksi
+
+Simpan link bukti transaksi
+
+Kelola iuran anggota:
+
+Tambah status iuran
+
+Edit status iuran
+
+Lihat anggota yang belum lunas
+
+Kelola laporan keuangan kegiatan:
+
+Catat pemasukan per kegiatan
+
+Catat pengeluaran per kegiatan
+
+Hitung sisa dana
+
+Ringkasan otomatis:
+
+Total pemasukan
+
+Total pengeluaran
+
+Saldo akhir
+
+Iuran belum lunas
+
+Kriteria Sukses Tahap 6
+
+Bendahara bisa mencatat pemasukan dan pengeluaran.
+
+Saldo kas otomatis berubah sesuai transaksi.
+
+Bendahara bisa melihat rekap iuran.
+
+Ketua bisa melihat ringkasan keuangan.
+
+Sekretaris hanya bisa melihat data keuangan terbatas.
+
+Tahap 7 â€” Dashboard Monitoring Ketua
+
+Tujuan
+
+Membuat dashboard Ketua benar-benar berfungsi sebagai pusat monitoring organisasi.
+
+Fitur Ketua
+
+Melihat ringkasan anggota.
+
+Melihat ringkasan program kerja.
+
+Melihat agenda terdekat.
+
+Melihat ringkasan surat.
+
+Melihat ringkasan presensi.
+
+Melihat ringkasan keuangan.
+
+Melihat evaluasi kegiatan.
+
+Memberikan catatan evaluasi.
+
+Melihat grafik organisasi.
+
+Kriteria Sukses Tahap 7
+
+Ketua bisa melihat data dari Sekretaris dan Bendahara.
+
+Ketua bisa memberikan evaluasi.
+
+Ketua tidak perlu menginput terlalu banyak data operasional.
+
+Dashboard Ketua menjadi pusat pengambilan keputusan.
+
+Tahap 8 â€” Export dan Laporan
+
+Tujuan
+
+Membuat fitur export laporan agar data bisa digunakan untuk kebutuhan organisasi.
+
+Fitur
+
+Export data anggota ke CSV.
+
+Export surat masuk dan surat keluar ke CSV.
+
+Export presensi ke CSV.
+
+Export transaksi ke CSV.
+
+Export laporan keuangan sederhana.
+
+Export laporan kegiatan sederhana.
+
+Kriteria Sukses Tahap 8
+
+User bisa mengunduh data dalam format CSV.
+
+Data bisa dibuka di Excel atau Google Sheets.
+
+Export berjalan sesuai role.
+
+Data yang diexport sesuai filter yang dipilih.
+
+Tahap 9 â€” Polishing UI dan Responsiveness
+
+Tujuan
+
+Merapikan tampilan agar siap dipresentasikan dan digunakan.
+
+Fitur
+
+Merapikan sidebar.
+
+Merapikan card.
+
+Merapikan tabel.
+
+Menambahkan empty state.
+
+Menambahkan loading state.
+
+Menambahkan error state.
+
+Membuat tampilan responsive untuk laptop dan tablet.
+
+Membuat tampilan mobile sederhana.
+
+Kriteria Sukses Tahap 9
+
+Tampilan terlihat modern dan profesional.
+
+Tidak ada layout yang berantakan.
+
+Aplikasi nyaman digunakan di laptop.
+
+Aplikasi tetap bisa dibuka di layar kecil.
+
+Tahap 10 â€” Deploy ke Vercel
+
+Tujuan
+
+Mempublikasikan aplikasi agar bisa diakses secara online.
+
+Fitur
+
+Push project ke GitHub.
+
+Hubungkan GitHub dengan Vercel.
+
+Atur environment variables.
+
+Deploy aplikasi ke Vercel.
+
+Tes login dan dashboard online.
+
+Perbaiki bug setelah deploy.
+
+Environment Variables
+
+Variabel yang diperlukan:
+
+NEXT_PUBLIC_SUPABASE_URL
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+SUPABASE_SERVICE_ROLE_KEY
+
+Catatan:
+
+SUPABASE_SERVICE_ROLE_KEY
+
+tidak boleh ditampilkan di client-side.
+
+Kriteria Sukses Tahap 10
+
+Aplikasi berhasil deploy ke Vercel.
+
+Login berjalan di versi online.
+
+Dashboard bisa diakses sesuai role.
+
+Data bisa tersimpan ke Supabase.
+
+Tidak ada error besar di production.
+
+8. Hak Akses Role
+
+Ketua
+
+Ketua bisa:
+
+Melihat semua ringkasan data.
+
+Melihat data anggota.
+
+Melihat program kerja.
+
+Melihat surat dan notulensi.
+
+Melihat presensi.
+
+Melihat laporan keuangan.
+
+Menambahkan evaluasi.
+
+Melihat arsip.
+
+Ketua tidak perlu mengelola transaksi detail kecuali diperlukan.
+
+Sekretaris
+
+Sekretaris bisa:
+
+Mengelola data anggota.
+
+Mengelola surat masuk dan keluar.
+
+Mengelola notulensi.
+
+Mengelola presensi.
+
+Mengelola arsip dokumen.
+
+Melihat agenda.
+
+Melihat ringkasan keuangan terbatas.
+
+Sekretaris tidak bisa mengedit transaksi keuangan.
+
+Bendahara
+
+Bendahara bisa:
+
+Mengelola pemasukan.
+
+Mengelola pengeluaran.
+
+Mengelola iuran.
+
+Mengelola laporan keuangan kegiatan.
+
+Mengelola bukti transaksi.
+
+Melihat data anggota.
+
+Melihat agenda.
+
+Bendahara tidak bisa mengedit surat, notulensi, atau arsip administrasi utama.
+
+9. Struktur Halaman
+
+Halaman Umum
+
+/
+
+/login
+
+/unauthorized
+
+Halaman Ketua
+
+/dashboard/ketua
+
+/dashboard/ketua/program
+
+/dashboard/ketua/agenda
+
+/dashboard/ketua/evaluasi
+
+/dashboard/ketua/laporan
+
+Halaman Sekretaris
+
+/dashboard/sekretaris
+
+/dashboard/sekretaris/anggota
+
+/dashboard/sekretaris/surat
+
+/dashboard/sekretaris/notulensi
+
+/dashboard/sekretaris/presensi
+
+/dashboard/sekretaris/arsip
+
+Halaman Bendahara
+
+/dashboard/bendahara
+
+/dashboard/bendahara/transaksi
+
+/dashboard/bendahara/iuran
+
+/dashboard/bendahara/laporan
+
+/dashboard/bendahara/bukti-transaksi
+
+10. Komponen Utama
+
+Komponen yang harus dibuat:
+
+AppLayout
+
+Sidebar
+
+Header
+
+SummaryCard
+
+ChartCard
+
+DataTable
+
+AgendaList
+
+ActivityList
+
+FinanceSummary
+
+DocumentList
+
+RoleBadge
+
+EmptyState
+
+LoadingState
+
+FormModal
+
+ConfirmDialog
+
+11. User Stories
+
+Ketua
+
+Sebagai Ketua, saya ingin melihat ringkasan organisasi agar saya bisa memantau kondisi UKM dengan cepat.
+
+Sebagai Ketua, saya ingin melihat progress program kerja agar saya tahu kegiatan mana yang sudah selesai, berjalan, atau belum dimulai.
+
+Sebagai Ketua, saya ingin melihat laporan keuangan ringkas agar saya bisa memastikan kondisi kas organisasi tetap sehat.
+
+Sebagai Ketua, saya ingin memberikan evaluasi kegiatan agar pengurus bisa memperbaiki kegiatan berikutnya.
+
+Sekretaris
+
+Sebagai Sekretaris, saya ingin mengelola data anggota agar database UKM lebih rapi.
+
+Sebagai Sekretaris, saya ingin mencatat surat masuk dan surat keluar agar administrasi organisasi terdokumentasi.
+
+Sebagai Sekretaris, saya ingin menyimpan notulensi rapat agar hasil keputusan tidak hilang.
+
+Sebagai Sekretaris, saya ingin mengelola presensi agar keaktifan anggota bisa dipantau.
+
+Bendahara
+
+Sebagai Bendahara, saya ingin mencatat pemasukan dan pengeluaran agar kas organisasi lebih transparan.
+
+Sebagai Bendahara, saya ingin melihat saldo otomatis agar tidak perlu menghitung manual.
+
+Sebagai Bendahara, saya ingin mencatat iuran anggota agar anggota yang belum lunas mudah diketahui.
+
+Sebagai Bendahara, saya ingin menyimpan bukti transaksi agar laporan keuangan lebih valid.
+
+12. Non-Goals Tahap Awal
+
+Fitur berikut tidak dibuat di tahap awal:
+
+Upload file besar langsung ke server.
+
+Chat internal real-time.
+
+Notifikasi WhatsApp otomatis.
+
+Absensi QR berbasis lokasi.
+
+Tanda tangan digital.
+
+Multi-role untuk semua anggota.
+
+Mobile app Android/iOS.
+
+Sistem approval berlapis yang kompleks.
+
+Fitur tersebut dapat dikembangkan setelah versi MVP stabil.
+
+13. MVP
+
+Versi MVP harus memiliki:
+
+Tampilan dashboard 3 role.
+
+Login sederhana.
+
+Role-based access.
+
+Database anggota.
+
+Database surat.
+
+Database notulensi.
+
+Database presensi.
+
+Database transaksi keuangan.
+
+Ringkasan dashboard Ketua.
+
+Deploy ke Vercel.
+
+14. Prioritas Pengembangan
+
+Prioritas Tinggi
+
+UI dashboard 3 role.
+
+Login role.
+
+Data anggota.
+
+Surat dan notulensi.
+
+Transaksi keuangan.
+
+Ringkasan dashboard Ketua.
+
+Prioritas Sedang
+
+Presensi.
+
+Arsip dokumen.
+
+Iuran anggota.
+
+Evaluasi kegiatan.
+
+Export CSV.
+
+Prioritas Rendah
+
+Upload file internal.
+
+Notifikasi otomatis.
+
+Dashboard mobile penuh.
+
+Grafik lanjutan.
+
+Sistem approval.
+
+15. Catatan Implementasi untuk Codex
+
+Kerjakan aplikasi ini secara bertahap.
+
+Jangan langsung membuat semua fitur sekaligus.
+
+Urutan pengerjaan:
+
+Buat UI dashboard statis terlebih dahulu.
+
+Buat struktur route.
+
+Tambahkan login dan role.
+
+Tambahkan Supabase.
+
+Tambahkan CRUD Sekretaris.
+
+Tambahkan CRUD Bendahara.
+
+Tambahkan monitoring Ketua.
+
+Tambahkan export.
+
+Rapikan UI.
+
+Deploy ke Vercel.
+
+Gunakan data dummy di tahap awal agar tampilan selesai terlebih dahulu.
+
+Pastikan struktur kode rapi, reusable, dan mudah dikembangkan.
+
+16. Definisi Selesai
+
+Produk dianggap selesai untuk versi awal jika:
+
+Aplikasi bisa diakses online melalui Vercel.
+
+Terdapat 3 dashboard berbeda untuk Ketua, Sekretaris, dan Bendahara.
+
+Login role berjalan.
+
+Data utama tersimpan di Supabase.
+
+Sekretaris bisa mengelola data administrasi.
+
+Bendahara bisa mengelola data keuangan.
+
+Ketua bisa melihat ringkasan organisasi.
+
+Tampilan rapi, modern, dan konsisten.
+
+Aplikasi dapat digunakan sebagai contoh nyata digitalisasi UKM Pilar Bangsa.
+
+17. Nama Versi
+
+Versi awal produk:
+
+Pilar Digital Office v1.0 â€” Dashboard Pengurus Inti
+
