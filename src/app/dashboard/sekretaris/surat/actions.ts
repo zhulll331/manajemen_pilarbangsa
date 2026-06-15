@@ -1,0 +1,90 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/utils/supabase/server'
+
+export async function tambahSurat(formData: FormData) {
+  const supabase = await createClient()
+
+  let file_url = formData.get('file_url') as string || null;
+  const file = formData.get('file') as File | null;
+
+  if (file && file.size > 0) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+    const filePath = `surat/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('dokumen')
+      .upload(filePath, file);
+
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('dokumen')
+      .getPublicUrl(filePath);
+      
+    file_url = publicUrl;
+  }
+  
+  const { error } = await supabase.from('letters').insert({
+    letter_number: formData.get('letter_number') as string,
+    letter_type: formData.get('letter_type') as string,
+    date: formData.get('date') as string || null,
+    sender: formData.get('sender') as string,
+    recipient: formData.get('recipient') as string,
+    subject: formData.get('subject') as string,
+    file_url: file_url,
+    status: formData.get('status') as string || 'Diterima',
+  })
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/sekretaris/surat')
+}
+
+export async function editSurat(formData: FormData) {
+  const supabase = await createClient()
+  const id = formData.get('id') as string
+
+  let file_url = formData.get('file_url') as string || null;
+  const file = formData.get('file') as File | null;
+
+  if (file && file.size > 0) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+    const filePath = `surat/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('dokumen')
+      .upload(filePath, file);
+
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('dokumen')
+      .getPublicUrl(filePath);
+      
+    file_url = publicUrl;
+  }
+
+  const { error } = await supabase.from('letters').update({
+    letter_number: formData.get('letter_number') as string,
+    letter_type: formData.get('letter_type') as string,
+    date: formData.get('date') as string || null,
+    sender: formData.get('sender') as string,
+    recipient: formData.get('recipient') as string,
+    subject: formData.get('subject') as string,
+    file_url: file_url,
+    status: formData.get('status') as string,
+  }).eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/sekretaris/surat')
+}
+
+export async function hapusSurat(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from('letters').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/sekretaris/surat')
+}
