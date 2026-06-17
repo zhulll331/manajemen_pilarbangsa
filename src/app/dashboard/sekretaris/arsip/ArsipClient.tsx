@@ -17,7 +17,7 @@ interface Archive {
   created_at: string;
 }
 
-const categories = ["Proposal", "LPJ", "SK", "RAB", "Dokumentasi", "Lainnya"];
+const categories = ["Proposal", "LPJ", "SK", "RAB", "Dokumentasi", "Laporan Kegiatan", "AD-ART", "Pedoman", "Rekap Kehadiran", "Lainnya"];
 
 export default function ArsipClient({ archives }: { archives: Archive[] }) {
   const [showModal, setShowModal] = useState(false);

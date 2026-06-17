@@ -1,16 +1,24 @@
 "use client";
 
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, Menu } from "lucide-react";
 
-export function Header({ role = "ketua", name = "Pengguna" }: { role?: string, name?: string }) {
+export function Header({ role = "ketua", name = "Pengguna", onMenuClick }: { role?: string, name?: string, onMenuClick?: () => void }) {
   // Capitalize first letter of role
   const roleName = role.charAt(0).toUpperCase() + role.slice(1);
 
   return (
-    <header className="h-20 bg-white border-b border-gray-100 px-8 flex items-center justify-between sticky top-0 z-10">
-      <div>
-        <h1 className="text-xl font-bold text-gray-800">Dashboard {roleName}</h1>
-        <p className="text-sm text-gray-500">Selamat datang kembali, {name}!</p>
+    <header className="h-16 md:h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 shrink-0">
+      <div className="flex items-center gap-3">
+        <button 
+          className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" 
+          onClick={onMenuClick}
+        >
+          <Menu size={24} />
+        </button>
+        <div>
+          <h1 className="text-lg md:text-xl font-bold text-gray-800">Dashboard {roleName}</h1>
+          <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Selamat datang kembali, {name}!</p>
+        </div>
       </div>
 
       <div className="flex items-center gap-6">

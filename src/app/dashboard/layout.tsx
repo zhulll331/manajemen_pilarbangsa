@@ -1,7 +1,6 @@
-import { Sidebar } from "@/components/Sidebar";
-import { Header } from "@/components/Header";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { DashboardLayoutClient } from "@/components/DashboardLayoutClient";
 
 export default async function DashboardLayout({
   children,
@@ -22,14 +21,11 @@ export default async function DashboardLayout({
     .single();
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-background)]">
-      <Sidebar role={profile?.role || 'ketua'} />
-      <div className="flex-1 flex flex-col">
-        <Header role={profile?.role || 'ketua'} name={profile?.full_name || user.email} />
-        <main className="flex-1 p-8 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardLayoutClient 
+      role={profile?.role || 'ketua'} 
+      name={profile?.full_name || user.email}
+    >
+      {children}
+    </DashboardLayoutClient>
   );
 }
