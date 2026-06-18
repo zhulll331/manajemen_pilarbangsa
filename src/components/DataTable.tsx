@@ -1,6 +1,7 @@
 "use client";
 
-import { Edit2, Trash2, FileText } from "lucide-react";
+import { useState } from "react";
+import { Edit2, Trash2, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface Column<T> {
   key: keyof T | string;
@@ -14,6 +15,8 @@ interface DataTableProps<T> {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   emptyMessage?: string;
+  pagination?: boolean;
+  pageSize?: number;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -22,7 +25,11 @@ export function DataTable<T extends { id: string }>({
   onEdit,
   onDelete,
   emptyMessage = "Belum ada data.",
+  pagination = false,
+  pageSize = 10,
 }: DataTableProps<T>) {
+  const [currentPage, setCurrentPage] = useState(1);
+
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
@@ -31,6 +38,10 @@ export function DataTable<T extends { id: string }>({
       </div>
     );
   }
+
+  const totalPages = Math.ceil(data.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentData = pagination ? data.slice(startIndex, startIndex + pageSize) : data;
 
   return (
     <div className="overflow-x-auto">
@@ -59,7 +70,7 @@ export function DataTable<T extends { id: string }>({
           </tr>
         </thead>
         <tbody>
-          {data.map((item, rowIndex) => (
+          {currentData.map((item, rowIndex) => (
             <tr
               key={item.id}
               className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
@@ -99,6 +110,36 @@ export function DataTable<T extends { id: string }>({
           ))}
         </tbody>
       </table>
+
+      {/* Pagination Controls */}
+      {pagination && totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
+          <span className="text-sm text-gray-500">
+            Menampilkan <span className="font-medium">{startIndex + 1}</span> hingga{" "}
+            <span className="font-medium">{Math.min(startIndex + pageSize, data.length)}</span> dari{" "}
+            <span className="font-medium">{data.length}</span> data
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-sm font-medium text-gray-700 px-2">
+              Halaman {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

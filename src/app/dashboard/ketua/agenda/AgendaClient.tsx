@@ -123,7 +123,7 @@ export default function AgendaClient({ agendas }: { agendas: any[] }) {
         </button>
       </div>
 
-      <DataTable 
+      <DataTable pagination pageSize={10} 
         data={filteredData}
         columns={columns}
         onEdit={openEdit}

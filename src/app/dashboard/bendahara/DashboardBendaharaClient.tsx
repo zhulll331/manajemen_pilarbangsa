@@ -4,7 +4,16 @@ import Link from "next/link";
 import { Wallet, TrendingUp, TrendingDown, Users } from "lucide-react";
 import { SummaryCard } from "@/components/SummaryCard";
 import { ChartCard } from "@/components/ChartCard";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import dynamic from "next/dynamic";
+
+const ResponsiveContainer = dynamic(() => import("recharts").then(mod => mod.ResponsiveContainer), { ssr: false });
+const LineChart = dynamic(() => import("recharts").then(mod => mod.LineChart), { ssr: false });
+const Line = dynamic(() => import("recharts").then(mod => mod.Line), { ssr: false });
+const XAxis = dynamic(() => import("recharts").then(mod => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import("recharts").then(mod => mod.YAxis), { ssr: false });
+const CartesianGrid = dynamic(() => import("recharts").then(mod => mod.CartesianGrid), { ssr: false });
+const Tooltip = dynamic(() => import("recharts").then(mod => mod.Tooltip), { ssr: false });
+const Legend = dynamic(() => import("recharts").then(mod => mod.Legend), { ssr: false });
 
 interface Transaction {
   id: string;
@@ -112,7 +121,7 @@ export default function DashboardBendaharaClient({
           </div>
           <Link 
             href="/dashboard/bendahara/transaksi"
-            className="w-full mt-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-purple-50 rounded-xl transition-colors border border-purple-100 text-center block"
+            className="w-full mt-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-blue-50 rounded-xl transition-colors border border-blue-100 text-center block"
           >
             Lihat Semua Transaksi
           </Link>

@@ -36,7 +36,7 @@ export default function ProfilClient({ profile }: { profile: ProfileData }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 rounded-2xl bg-purple-100 text-[var(--color-primary)]">
+        <div className="p-3 rounded-2xl bg-blue-100 text-[var(--color-primary)]">
           <User size={28} />
         </div>
         <div>

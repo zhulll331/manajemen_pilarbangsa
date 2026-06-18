@@ -11,7 +11,7 @@ interface SummaryCardProps {
 
 export function SummaryCard({ title, value, icon, trend, trendUp, color = "primary" }: SummaryCardProps) {
   const bgColors = {
-    primary: "bg-purple-100 text-[var(--color-primary)]",
+    primary: "bg-blue-100 text-[var(--color-primary)]",
     green: "bg-green-100 text-[var(--color-accent-green)]",
     yellow: "bg-yellow-100 text-yellow-600",
     red: "bg-red-100 text-red-500",

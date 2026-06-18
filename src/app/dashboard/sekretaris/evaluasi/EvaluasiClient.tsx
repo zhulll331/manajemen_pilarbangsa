@@ -216,14 +216,14 @@ export default function EvaluasiClient({ evaluations, programs }: { evaluations:
       <div className="flex justify-end">
         <button
           onClick={openAdd}
-          className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md shadow-indigo-200"
+          className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md shadow-blue-200"
         >
           <Plus size={20} />
           Buat Evaluasi
         </button>
       </div>
 
-      <DataTable 
+      <DataTable pagination pageSize={10} 
         data={evaluations}
         columns={columns}
         onEdit={openEdit}
@@ -241,22 +241,22 @@ export default function EvaluasiClient({ evaluations, programs }: { evaluations:
       >
         <div className="space-y-4">
           {!selectedData && (
-            <div className="border border-indigo-100 bg-indigo-50/50 rounded-xl overflow-hidden transition-all">
+            <div className="border border-blue-100 bg-blue-50/50 rounded-xl overflow-hidden transition-all">
               <button 
                 onClick={() => setShowAIPanel(!showAIPanel)}
-                className="w-full flex items-center justify-between p-4 hover:bg-indigo-50 transition-colors"
+                className="w-full flex items-center justify-between p-4 hover:bg-blue-50 transition-colors"
               >
-                <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                  <Sparkles size={18} className="text-indigo-500" />
+                <div className="flex items-center gap-2 text-blue-700 font-semibold">
+                  <Sparkles size={18} className="text-blue-500" />
                   ✨ Rekam / Tempel Notulensi (AI)
                 </div>
-                <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full">
+                <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-600 rounded-full">
                   Opsional
                 </span>
               </button>
 
               {showAIPanel && (
-                <div className="p-4 pt-0 border-t border-indigo-100">
+                <div className="p-4 pt-0 border-t border-blue-100">
                   {!hasGeminiKey ? (
                     <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mt-2">
                       <h4 className="font-bold text-yellow-800 mb-1">Kunci API Gemini Belum Dikonfigurasi</h4>
@@ -281,7 +281,7 @@ export default function EvaluasiClient({ evaluations, programs }: { evaluations:
                           value={notulenText}
                           onChange={(e) => setNotulenText(e.target.value)}
                           placeholder="Mulai mendikte dengan suara, atau tempelkan teks notulensi di sini..."
-                          className="w-full h-32 p-3 pb-12 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white"
+                          className="w-full h-32 p-3 pb-12 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-white"
                         />
                         <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
                           <button
@@ -301,7 +301,7 @@ export default function EvaluasiClient({ evaluations, programs }: { evaluations:
                             type="button"
                             onClick={handleAIProcess}
                             disabled={!notulenText.trim() || isAnalyzing || isRecording}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Sparkles size={14} />
                             {isAnalyzing ? "Menganalisis..." : "Proses AI"}

@@ -141,7 +141,7 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
 
       {/* Table */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <DataTable
+        <DataTable pagination pageSize={10}
           columns={columns}
           data={filteredArchives}
           onEdit={(a) => { setEditData(a); setShowModal(true); }}

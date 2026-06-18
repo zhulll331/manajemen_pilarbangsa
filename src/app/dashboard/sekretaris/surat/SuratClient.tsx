@@ -39,8 +39,8 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
       key: "letter_type",
       label: "Tipe",
       render: (l) => (
-        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-          l.letter_type === "Masuk" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"
+        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full w-fit ${
+          l.letter_type === "Masuk" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700"
         }`}>
           {l.letter_type === "Masuk" ? <Mail size={12} /> : <MailOpen size={12} />}
           {l.letter_type}
@@ -112,7 +112,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-100 text-[var(--color-primary)]">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)]">
             <FileText size={24} />
           </div>
           <div>
@@ -148,7 +148,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
 
       {/* Table */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <DataTable
+        <DataTable pagination pageSize={10}
           columns={columns}
           data={filteredLetters}
           onEdit={(l) => { setEditData(l); setShowModal(true); }}

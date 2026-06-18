@@ -252,14 +252,14 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
           </button>
           <button
             onClick={openAdd}
-            className="bg-white border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-indigo-50 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors flex-1 sm:flex-none justify-center"
+            className="bg-white border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-blue-50 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors flex-1 sm:flex-none justify-center"
           >
             <Plus size={20} />
             Catat 1 per 1
           </button>
           <button
             onClick={openMassal}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors flex-1 sm:flex-none justify-center shadow-md shadow-indigo-200"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors flex-1 sm:flex-none justify-center shadow-md shadow-blue-200"
           >
             <Users size={20} />
             Catat Massal
@@ -267,7 +267,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
         </div>
       </div>
 
-      <DataTable 
+      <DataTable pagination pageSize={10} 
         data={filteredData}
         columns={columns}
         onEdit={openEdit}
@@ -409,10 +409,10 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
             </div>
           )}
 
-          <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl space-y-4">
+          <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">Bulan</label>
+                <label className="text-xs font-semibold text-blue-800 uppercase tracking-wider">Bulan</label>
                 <select 
                   value={massalData.month}
                   onChange={(e) => setMassalData({...massalData, month: Number(e.target.value)})}
@@ -424,7 +424,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">Tahun</label>
+                <label className="text-xs font-semibold text-blue-800 uppercase tracking-wider">Tahun</label>
                 <input 
                   type="number" 
                   value={massalData.year}
@@ -433,7 +433,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">Nominal Pukul Rata</label>
+                <label className="text-xs font-semibold text-blue-800 uppercase tracking-wider">Nominal Pukul Rata</label>
                 <input 
                   type="number" 
                   value={massalData.amount}
@@ -442,7 +442,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">Tanggal Bayar</label>
+                <label className="text-xs font-semibold text-blue-800 uppercase tracking-wider">Tanggal Bayar</label>
                 <input 
                   type="date" 
                   value={massalData.payment_date}
@@ -462,7 +462,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
                   if (selectedMembers.length === members.length) setSelectedMembers([]);
                   else setSelectedMembers(members.map(m => m.id));
                 }}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
               >
                 {selectedMembers.length === members.length ? "Hapus Semua Pilihan" : "Pilih Semua Anggota"}
               </button>
@@ -495,7 +495,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
               )}
             </div>
             <p className="text-xs text-gray-500 text-right">
-              Telah dipilih: <span className="font-bold text-indigo-600">{selectedMembers.length}</span> anggota
+              Telah dipilih: <span className="font-bold text-blue-600">{selectedMembers.length}</span> anggota
             </p>
           </div>
 
@@ -510,7 +510,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
             <button
               type="submit"
               disabled={isLoading || selectedMembers.length === 0}
-              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-colors disabled:opacity-50"
             >
               {isLoading ? "Menyimpan..." : "Simpan Data Massal"}
             </button>

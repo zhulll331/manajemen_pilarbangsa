@@ -36,7 +36,7 @@ const typeColors: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
-  Surat: "bg-purple-50 text-purple-700",
+  Surat: "bg-blue-50 text-blue-700",
   SK: "bg-amber-50 text-amber-700",
   Proposal: "bg-pink-50 text-pink-700",
   LPJ: "bg-teal-50 text-teal-700",
@@ -160,14 +160,14 @@ export default function ArsipLamaClient() {
 
       {/* Sub-category filter for Surat */}
       {activeCategory === "Surat" && (
-        <div className="flex gap-2 flex-wrap pl-4 border-l-4 border-purple-200">
+        <div className="flex gap-2 flex-wrap pl-4 border-l-4 border-blue-200">
           {suratSubCategories.map((sub) => (
             <button
               key={sub}
               onClick={() => setSuratSub(sub)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 suratSub === sub
-                  ? "bg-purple-100 text-purple-700 shadow-sm"
+                  ? "bg-blue-100 text-blue-700 shadow-sm"
                   : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
               }`}
             >
@@ -288,7 +288,7 @@ function FileRow({ file }: { file: ArsipFile }) {
           href={file.path}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-[var(--color-primary)] hover:bg-purple-50 transition-colors border border-purple-100"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-[var(--color-primary)] hover:bg-blue-50 transition-colors border border-blue-100"
           title="Buka di tab baru"
         >
           <ExternalLink size={14} />

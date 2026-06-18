@@ -90,7 +90,7 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-100 text-[var(--color-primary)]">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)]">
             <Users size={24} />
           </div>
           <div>
@@ -117,7 +117,7 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
 
       {/* Table */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <DataTable
+        <DataTable pagination pageSize={10}
           columns={columns}
           data={members}
           onEdit={(m) => { setEditData(m); setShowModal(true); }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, ClipboardList, Calendar, Users, MessageSquare, CheckCircle, ArrowRight, Link as LinkIcon, Sparkles, Mic, Square } from "lucide-react";
+import { Plus, ClipboardList, Calendar, Users, MessageSquare, CheckCircle, ArrowRight, Link as LinkIcon, Sparkles, Mic, Square, ChevronLeft, ChevronRight } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { tambahNotulensi, editNotulensi, hapusNotulensi, parseNotulensiRapat, isGeminiConfigured } from "./actions";
@@ -25,6 +25,8 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
   const [deleteTarget, setDeleteTarget] = useState<Minute | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // AI & Form State
   const [hasGeminiKey, setHasGeminiKey] = useState(false);
@@ -191,12 +193,16 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
     }
   };
 
+  const totalPages = Math.ceil(minutes.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentMinutes = minutes.slice(startIndex, startIndex + pageSize);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-100 text-[var(--color-primary)]">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)]">
             <ClipboardList size={24} />
           </div>
           <div>
@@ -221,7 +227,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {minutes.map((m) => (
+          {currentMinutes.map((m) => (
             <div
               key={m.id}
               className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-[var(--color-secondary)] hover:shadow-md transition-all cursor-pointer group"
@@ -265,6 +271,35 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-xl mt-4">
+          <span className="text-sm text-gray-500">
+            Menampilkan <span className="font-medium">{startIndex + 1}</span> hingga{" "}
+            <span className="font-medium">{Math.min(startIndex + pageSize, minutes.length)}</span> dari{" "}
+            <span className="font-medium">{minutes.length}</span> data
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-sm font-medium text-gray-700 px-2">
+              Halaman {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -317,22 +352,22 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
       >
         <div className="space-y-4">
           {!editData && (
-            <div className="border border-indigo-100 bg-indigo-50/50 rounded-xl overflow-hidden transition-all">
+            <div className="border border-blue-100 bg-blue-50/50 rounded-xl overflow-hidden transition-all">
               <button 
                 onClick={() => setShowAIPanel(!showAIPanel)}
-                className="w-full flex items-center justify-between p-4 hover:bg-indigo-50 transition-colors"
+                className="w-full flex items-center justify-between p-4 hover:bg-blue-50 transition-colors"
               >
-                <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                  <Sparkles size={18} className="text-indigo-500" />
+                <div className="flex items-center gap-2 text-blue-700 font-semibold">
+                  <Sparkles size={18} className="text-blue-500" />
                   ✨ Rekam / Tempel Dikte Rapat (AI)
                 </div>
-                <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full">
+                <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-600 rounded-full">
                   Opsional
                 </span>
               </button>
 
               {showAIPanel && (
-                <div className="p-4 pt-0 border-t border-indigo-100">
+                <div className="p-4 pt-0 border-t border-blue-100">
                   {!hasGeminiKey ? (
                     <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mt-2">
                       <h4 className="font-bold text-yellow-800 mb-1">Kunci API Gemini Belum Dikonfigurasi</h4>
@@ -350,7 +385,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
                           value={notulenText}
                           onChange={(e) => setNotulenText(e.target.value)}
                           placeholder="Mulai mendikte dengan suara, atau tempelkan draf rapat di sini..."
-                          className="w-full h-32 p-3 pb-12 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white"
+                          className="w-full h-32 p-3 pb-12 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-white"
                         />
                         <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
                           <button
@@ -370,7 +405,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
                             type="button"
                             onClick={handleAIProcess}
                             disabled={!notulenText.trim() || isAnalyzing || isRecording}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Sparkles size={14} />
                             {isAnalyzing ? "Menganalisis..." : "Proses AI"}
