@@ -17,8 +17,7 @@ export async function tambahEvaluasi(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/evaluasi')
-  revalidatePath('/dashboard/sekretaris')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editEvaluasi(id: string, formData: FormData) {
@@ -37,8 +36,7 @@ export async function editEvaluasi(id: string, formData: FormData) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/evaluasi')
-  revalidatePath('/dashboard/sekretaris')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusEvaluasi(id: string) {
@@ -47,8 +45,7 @@ export async function hapusEvaluasi(id: string) {
   const { error } = await supabase.from('evaluations').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/evaluasi')
-  revalidatePath('/dashboard/sekretaris')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function isGeminiConfigured() {

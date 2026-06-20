@@ -17,8 +17,7 @@ export async function tambahTransaksi(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/transaksi')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editTransaksi(id: string, formData: FormData) {
@@ -37,8 +36,7 @@ export async function editTransaksi(id: string, formData: FormData) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/transaksi')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusTransaksi(id: string) {
@@ -47,8 +45,7 @@ export async function hapusTransaksi(id: string) {
   const { error } = await supabase.from('finance_transactions').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/transaksi')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function parseTransaksiHarian(transaksiText: string) {

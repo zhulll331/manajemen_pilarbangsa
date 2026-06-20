@@ -39,7 +39,7 @@ export async function tambahSurat(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/surat')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editSurat(formData: FormData) {
@@ -79,12 +79,12 @@ export async function editSurat(formData: FormData) {
   }).eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/surat')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusSurat(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('letters').delete().eq('id', id)
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/surat')
+  revalidatePath('/dashboard', 'layout')
 }

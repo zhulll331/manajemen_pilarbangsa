@@ -31,6 +31,22 @@ export default async function DashboardBendahara() {
     });
   }
 
+  // Fetch all paid dues (Iuran Lunas)
+  const { data: paidDues } = await supabase
+    .from("dues")
+    .select("amount, payment_date, created_at")
+    .eq("status", "Lunas");
+
+  if (paidDues) {
+    paidDues.forEach((d) => {
+      totalPemasukan += d.amount;
+      const date = new Date(d.payment_date || d.created_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { pemasukan: 0, pengeluaran: 0 };
+      monthlyMap[monthKey].pemasukan += d.amount;
+    });
+  }
+
   const saldoKas = totalPemasukan - totalPengeluaran;
 
   // Sort monthly data chronologically

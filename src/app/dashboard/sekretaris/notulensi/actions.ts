@@ -17,7 +17,7 @@ export async function tambahNotulensi(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/notulensi')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editNotulensi(formData: FormData) {
@@ -35,14 +35,14 @@ export async function editNotulensi(formData: FormData) {
   }).eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/notulensi')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusNotulensi(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('minutes').delete().eq('id', id)
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/notulensi')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function isGeminiConfigured() {

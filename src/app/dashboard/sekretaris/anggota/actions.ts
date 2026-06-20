@@ -18,7 +18,7 @@ export async function tambahAnggota(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/anggota')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editAnggota(id: string, formData: FormData) {
@@ -38,7 +38,7 @@ export async function editAnggota(id: string, formData: FormData) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/anggota')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusAnggota(id: string) {
@@ -47,7 +47,7 @@ export async function hapusAnggota(id: string) {
   const { error } = await supabase.from('members').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/anggota')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function importAnggotaBatch(data: any[]) {
@@ -72,5 +72,5 @@ export async function importAnggotaBatch(data: any[]) {
   const { error } = await supabase.from('members').insert(formattedData)
   
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/anggota')
+  revalidatePath('/dashboard', 'layout')
 }

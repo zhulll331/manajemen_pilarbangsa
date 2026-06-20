@@ -32,5 +32,5 @@ export async function simpanPresensiMassal(agenda_id: string, presensiData: { me
     if (insertError) throw new Error("Gagal menyimpan presensi baru: " + insertError.message)
   }
 
-  revalidatePath('/dashboard/sekretaris/presensi')
+  revalidatePath('/dashboard', 'layout')
 }

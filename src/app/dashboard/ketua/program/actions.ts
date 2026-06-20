@@ -20,8 +20,7 @@ export async function tambahProgram(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/program')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editProgram(id: string, formData: FormData) {
@@ -43,8 +42,7 @@ export async function editProgram(id: string, formData: FormData) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/program')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusProgram(id: string) {
@@ -53,8 +51,20 @@ export async function hapusProgram(id: string) {
   const { error } = await supabase.from('programs').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/program')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
+}
+
+function parseExcelDate(dateValue: any): string | null {
+  if (!dateValue) return null;
+  if (typeof dateValue === 'string' && isNaN(Number(dateValue))) return dateValue;
+  
+  const serial = Number(dateValue);
+  if (!isNaN(serial) && serial > 25000) {
+    const utcDays = serial - 25569;
+    const date = new Date(utcDays * 86400 * 1000);
+    return date.toISOString().split('T')[0];
+  }
+  return String(dateValue);
 }
 
 export async function importProgramBatch(data: any[]) {
@@ -66,8 +76,8 @@ export async function importProgramBatch(data: any[]) {
     division: item.Divisi || item.division || null,
     person_in_charge: item.PenanggungJawab || item.PIC || item.person_in_charge || null,
     status: item.Status || item.status || 'Berjalan',
-    start_date: item.TanggalMulai || item.start_date || null,
-    end_date: item.TanggalSelesai || item.end_date || null
+    start_date: parseExcelDate(item.TanggalMulai || item.start_date),
+    end_date: parseExcelDate(item.TanggalSelesai || item.end_date)
   })).filter(item => item.title);
 
   if (formattedData.length === 0) {
@@ -77,8 +87,7 @@ export async function importProgramBatch(data: any[]) {
   const { error } = await supabase.from('programs').insert(formattedData)
   
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/program')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function parseProgramKerja(ideText: string) {

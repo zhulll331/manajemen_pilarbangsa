@@ -19,8 +19,7 @@ export async function tambahAgenda(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/agenda')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editAgenda(id: string, formData: FormData) {
@@ -41,8 +40,7 @@ export async function editAgenda(id: string, formData: FormData) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/agenda')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusAgenda(id: string) {
@@ -51,6 +49,5 @@ export async function hapusAgenda(id: string) {
   const { error } = await supabase.from('agendas').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/ketua/agenda')
-  revalidatePath('/dashboard/ketua')
+  revalidatePath('/dashboard', 'layout')
 }

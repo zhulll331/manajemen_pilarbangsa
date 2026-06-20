@@ -36,7 +36,7 @@ export async function tambahArsip(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/arsip')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editArsip(formData: FormData) {
@@ -73,12 +73,12 @@ export async function editArsip(formData: FormData) {
   }).eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/arsip')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusArsip(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('archives').delete().eq('id', id)
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/sekretaris/arsip')
+  revalidatePath('/dashboard', 'layout')
 }

@@ -183,6 +183,26 @@ export default function ProgramClient({ programs }: { programs: any[] }) {
     }
   };
 
+  const handleStatusChange = async (programId: string, newStatus: string, currentData: any) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", currentData.title || "");
+      formData.append("description", currentData.description || "");
+      formData.append("division", currentData.division || "");
+      formData.append("person_in_charge", currentData.person_in_charge || "");
+      formData.append("start_date", currentData.start_date || "");
+      formData.append("end_date", currentData.end_date || "");
+      formData.append("status", newStatus);
+
+      await editProgram(programId, formData);
+    } catch (error: any) {
+      alert("Gagal mengubah status: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const columns = [
     { key: "title", label: "Program Kerja" },
     { key: "division", label: "Divisi" },
@@ -191,18 +211,23 @@ export default function ProgramClient({ programs }: { programs: any[] }) {
       key: "status", 
       label: "Status", 
       render: (row: any) => (
-        <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-max ${
-          row.status === 'Selesai' ? 'bg-green-100 text-green-700' : 
-          row.status === 'Berjalan' ? 'bg-blue-100 text-blue-700' : 
-          row.status === 'Belum Dimulai' ? 'bg-gray-100 text-gray-700' :
-          'bg-orange-100 text-orange-700'
-        }`}>
-          {row.status === 'Selesai' && <CheckCircle size={12}/>}
-          {row.status === 'Berjalan' && <Clock size={12}/>}
-          {row.status === 'Belum Dimulai' && <Clock size={12}/>}
-          {row.status === 'Tertunda' && <AlertCircle size={12}/>}
-          {row.status}
-        </span>
+        <select 
+          value={row.status}
+          onChange={(e) => handleStatusChange(row.id, e.target.value, row)}
+          onClick={(e) => e.stopPropagation()}
+          disabled={isLoading}
+          className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-max font-medium outline-none cursor-pointer appearance-none border-none pr-6 bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2212%22%20height%3D%2212%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22currentColor%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] transition-all disabled:opacity-50 ${
+            row.status === 'Selesai' ? 'bg-green-100 text-green-700 focus:ring-2 focus:ring-green-500' : 
+            row.status === 'Berjalan' ? 'bg-blue-100 text-blue-700 focus:ring-2 focus:ring-blue-500' : 
+            row.status === 'Belum Dimulai' ? 'bg-gray-100 text-gray-700 focus:ring-2 focus:ring-gray-500' :
+            'bg-orange-100 text-orange-700 focus:ring-2 focus:ring-orange-500'
+          }`}
+        >
+          <option value="Belum Dimulai">Belum Dimulai</option>
+          <option value="Berjalan">Berjalan</option>
+          <option value="Tertunda">Tertunda</option>
+          <option value="Selesai">Selesai</option>
+        </select>
       ) 
     },
     { 

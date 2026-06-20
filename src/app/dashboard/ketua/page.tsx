@@ -10,8 +10,12 @@ export default async function DashboardKetua() {
 
   // Agenda bulan ini
   const now = new Date();
-  const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-31`;
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0);
+  const startOfMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-01`;
+  const endOfMonth = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, "0")}-${String(endDate.getDate()).padStart(2, "0")}`;
   const { count: agendaBulanIni } = await supabase
     .from("agendas")
     .select("*", { count: "exact", head: true })
@@ -25,6 +29,13 @@ export default async function DashboardKetua() {
   if (transactions) {
     transactions.forEach((t: any) => {
       saldoKas += t.type === "Pemasukan" ? t.amount : -t.amount;
+    });
+  }
+
+  const { data: paidDues } = await supabase.from("dues").select("amount").eq("status", "Lunas");
+  if (paidDues) {
+    paidDues.forEach((d: any) => {
+      saldoKas += d.amount;
     });
   }
 

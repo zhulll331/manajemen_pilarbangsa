@@ -20,8 +20,7 @@ export async function tambahIuran(formData: FormData) {
   })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/iuran')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function editIuran(id: string, formData: FormData) {
@@ -43,8 +42,7 @@ export async function editIuran(id: string, formData: FormData) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/iuran')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusIuran(id: string) {
@@ -53,8 +51,7 @@ export async function hapusIuran(id: string) {
   const { error } = await supabase.from('dues').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/iuran')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
 
 export async function tambahIuranMassal(data: any[]) {
@@ -63,6 +60,5 @@ export async function tambahIuranMassal(data: any[]) {
   const { error } = await supabase.from('dues').insert(data)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/bendahara/iuran')
-  revalidatePath('/dashboard/bendahara')
+  revalidatePath('/dashboard', 'layout')
 }
