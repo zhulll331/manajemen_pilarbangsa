@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (pSearchRes.data.files && pSearchRes.data.files.length > 0) {
-        targetParentFolderId = pSearchRes.data.files[0].id;
+        targetParentFolderId = pSearchRes.data.files[0].id ?? targetParentFolderId;
       } else {
         // Buat folder induk baru di dalam folder utama (Dosen)
         const pCreateRes = await drive.files.create({
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
           fields: 'id, name',
         });
         if (pCreateRes.data.id) {
-          targetParentFolderId = pCreateRes.data.id;
+          targetParentFolderId = pCreateRes.data.id ?? targetParentFolderId;
         }
       }
     }
