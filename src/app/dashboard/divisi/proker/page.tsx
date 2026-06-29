@@ -188,8 +188,8 @@ export default function KelolaProkerPage() {
           if (lapMatch && lapMatch[1]) lap = lapMatch[1].trim();
 
           const cleanDesc = desc
-            .replace(/(\r?\n)*---+(\r?\n)*\[COVER_URL\]:.*$/s, '')
-            .replace(/(\r?\n)*---+(\r?\n)*\[SK_URL\]:.*$/s, '');
+            .replace(/(\r?\n)*---+(\r?\n)*\[COVER_URL\]:[\s\S]*$/, '')
+            .replace(/(\r?\n)*---+(\r?\n)*\[SK_URL\]:[\s\S]*$/, '');
 
           return {
             ...p,
@@ -380,8 +380,8 @@ export default function KelolaProkerPage() {
       const directCoverUrl = convertGoogleDriveUrl(currentCoverUrl)
 
       const cleanDesc = description
-        .replace(/(\r?\n)*---+(\r?\n)*\[COVER_URL\]:.*$/s, '')
-        .replace(/(\r?\n)*---+(\r?\n)*\[SK_URL\]:.*$/s, '');
+        .replace(/(\r?\n)*---+(\r?\n)*\[COVER_URL\]:[\s\S]*$/, '')
+        .replace(/(\r?\n)*---+(\r?\n)*\[SK_URL\]:[\s\S]*$/, '');
 
       const metaTags = `\n\n---\n[COVER_URL]: ${directCoverUrl || ''}\n[GALLERY_URL]: ${currentFolderId || ''}\n[SK_URL]: ${finalSkUrl || ''}\n[LAPORAN_URL]: ${finalLaporanUrl || ''}`;
       const combinedDescription = cleanDesc + metaTags;
