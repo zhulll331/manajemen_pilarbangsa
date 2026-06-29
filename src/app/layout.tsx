@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SplashScreen } from "@/components/SplashScreen";
-import Script from "next/script";
+import { ErudaLoader } from "@/components/ErudaLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +29,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <Script src="https://cdn.jsdelivr.net/npm/eruda" strategy="beforeInteractive" />
-        <Script id="eruda-init" strategy="beforeInteractive">
-          {`if (typeof eruda !== "undefined") eruda.init();`}
-        </Script>
-      </head>
       <body className="min-h-full flex flex-col">
         <SplashScreen />
+        <ErudaLoader />
         {children}
       </body>
     </html>
