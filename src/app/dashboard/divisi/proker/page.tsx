@@ -9,6 +9,7 @@ interface ProgramItem {
   title: string
   description?: string
   division?: string
+  division_name?: string
   status: string
   start_date?: string
   end_date?: string
