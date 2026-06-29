@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SplashScreen } from "@/components/SplashScreen";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,17 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <SplashScreen />
         {children}
+        <Script
+          src="https://cdn.jsdelivr.net/npm/eruda"
+          strategy="afterInteractive"
+          onLoad={() => {
+            // @ts-ignore
+            if (typeof window !== 'undefined' && window.eruda) {
+              // @ts-ignore
+              window.eruda.init();
+            }
+          }}
+        />
       </body>
     </html>
   );
