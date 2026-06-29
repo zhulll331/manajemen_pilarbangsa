@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS public.programs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 ALTER TABLE public.programs ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Programs viewable by authenticated" ON public.programs FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Programs viewable by everyone" ON public.programs FOR SELECT USING (true);
 CREATE POLICY "Programs insertable by authenticated" ON public.programs FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "Programs updatable by authenticated" ON public.programs FOR UPDATE TO authenticated USING (true);
 CREATE POLICY "Programs deletable by authenticated" ON public.programs FOR DELETE TO authenticated USING (true);
@@ -177,6 +177,32 @@ CREATE POLICY "Evaluations viewable by authenticated" ON public.evaluations FOR 
 CREATE POLICY "Evaluations insertable by authenticated" ON public.evaluations FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "Evaluations updatable by authenticated" ON public.evaluations FOR UPDATE TO authenticated USING (true);
 CREATE POLICY "Evaluations deletable by authenticated" ON public.evaluations FOR DELETE TO authenticated USING (true);
+
+-- ============ 11. BANNERS (Hero Slider Beranda) ============
+CREATE TABLE IF NOT EXISTS public.banners (
+  id INTEGER PRIMARY KEY,
+  title TEXT,
+  subtitle TEXT,
+  description TEXT,
+  image_url TEXT,
+  badge TEXT,
+  accent_color TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+ALTER TABLE public.banners ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Banners viewable by everyone" ON public.banners FOR SELECT USING (true);
+CREATE POLICY "Banners insertable by authenticated" ON public.banners FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Banners updatable by authenticated" ON public.banners FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Banners deletable by authenticated" ON public.banners FOR DELETE TO authenticated USING (true);
+
+INSERT INTO public.banners (id, title, subtitle, description, image_url, badge, accent_color) VALUES
+(1, 'Pilar Bangsa Digital Office', 'Wadah Transformasi & Kolaborasi Mahasiswa Universitas', 'Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel berbasis sistem digital terpadu sesuai Misi ke-2 Kepengurusan 2026/2027.', 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80', 'Transformasi Digital', '#E31837'),
+(2, 'Tri Dharma Perguruan Tinggi', 'Pilar Pembelajaran, Penelitian, dan Pengabdian', 'Bersama membangun bangsa melalui riset inovatif dan pengabdian masyarakat yang berkelanjutan dan tepat sasaran.', 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80', 'Inovasi & Riset', '#008000'),
+(3, 'Berlandaskan Trisakti Sukarno', 'Berdaulat, Berdikari, dan Berkepribadian', 'Membentuk karakter kepemimpinan mahasiswa yang berakar pada budaya bangsa dan berdaya saing global.', 'https://images.unsplash.com/photo-1517486808906-697b691ed59b?auto=format&fit=crop&w=1200&q=80', 'Kepemimpinan', '#FFD700')
+ON CONFLICT (id) DO UPDATE SET 
+  title = EXCLUDED.title, 
+  subtitle = EXCLUDED.subtitle, 
+  description = EXCLUDED.description;
 
 
 -- =============================================

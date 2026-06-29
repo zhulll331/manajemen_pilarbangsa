@@ -6,26 +6,7 @@ import { createClient } from '@/utils/supabase/server'
 export async function tambahSurat(formData: FormData) {
   const supabase = await createClient()
 
-  let file_url = formData.get('file_url') as string || null;
-  const file = formData.get('file') as File | null;
-
-  if (file && file.size > 0) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
-    const filePath = `surat/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('dokumen')
-      .upload(filePath, file);
-
-    if (uploadError) throw new Error(uploadError.message);
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('dokumen')
-      .getPublicUrl(filePath);
-      
-    file_url = publicUrl;
-  }
+  const file_url = formData.get('file_url') as string || null;
   
   const { error } = await supabase.from('letters').insert({
     letter_number: formData.get('letter_number') as string,
@@ -46,26 +27,7 @@ export async function editSurat(formData: FormData) {
   const supabase = await createClient()
   const id = formData.get('id') as string
 
-  let file_url = formData.get('file_url') as string || null;
-  const file = formData.get('file') as File | null;
-
-  if (file && file.size > 0) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
-    const filePath = `surat/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('dokumen')
-      .upload(filePath, file);
-
-    if (uploadError) throw new Error(uploadError.message);
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('dokumen')
-      .getPublicUrl(filePath);
-      
-    file_url = publicUrl;
-  }
+  const file_url = formData.get('file_url') as string || null;
 
   const { error } = await supabase.from('letters').update({
     letter_number: formData.get('letter_number') as string,

@@ -1,4 +1,4 @@
-import { login } from './actions'
+import { login } from '../actions'
 import Image from 'next/image'
 
 export default async function LoginPage(props: { searchParams: Promise<{ error?: string }> }) {
@@ -9,13 +9,23 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-[var(--color-primary)] p-8 text-center flex flex-col items-center justify-center">
-          <div className="bg-white p-3 rounded-full mb-4 shadow-md w-24 h-24 flex items-center justify-center relative overflow-hidden">
-            <Image 
-              src="/logo_pilar.svg" 
-              alt="Logo Pilar Bangsa" 
-              fill
-              className="object-contain p-2"
-            />
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="bg-white p-3 rounded-full shadow-md w-20 h-20 flex items-center justify-center relative overflow-hidden">
+              <Image 
+                src="/logo_pilar.svg" 
+                alt="Logo Pilar Bangsa" 
+                fill
+                className="object-contain p-2"
+              />
+            </div>
+            <div className="bg-white p-3 rounded-full shadow-md w-20 h-20 flex items-center justify-center relative overflow-hidden">
+              <Image 
+                src="/logo-untag-fix.svg" 
+                alt="Logo Universitas" 
+                fill
+                className="object-contain p-2"
+              />
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Pilar Digital Office</h1>
           <p className="text-white/80">Silakan login untuk mengakses sistem</p>

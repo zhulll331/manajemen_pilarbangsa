@@ -28,6 +28,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   const [deleteTarget, setDeleteTarget] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<"Semua" | "Masuk" | "Keluar">("Semua");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const filteredLetters = filter === "Semua"
     ? letters
@@ -78,6 +79,37 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     try {
+      const letterType = formData.get("letter_type") as string || "Masuk";
+      const folderName = `Surat ${letterType}`;
+      
+      let folderId = "";
+      if (selectedFile) {
+        // Buat atau dapatkan folder di Google Drive dalam folder Sekretaris
+        const res = await fetch('/api/drive/create-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderName, parentFolderName: 'Sekretaris' })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        if (data.folderId) folderId = data.folderId;
+
+        const fileData = new FormData();
+        fileData.append('file', selectedFile);
+        if (folderId) fileData.append('folderId', folderId);
+        const upRes = await fetch('/api/drive/upload', {
+          method: 'POST',
+          body: fileData
+        });
+        const upData = await upRes.json();
+        if (upData.error) {
+          throw new Error("Gagal mengunggah file ke Google Drive: " + upData.error);
+        }
+        if (upData.url) {
+          formData.set('file_url', upData.url);
+        }
+      }
+
       if (editData) {
         formData.append("id", editData.id);
         await editSurat(formData);
@@ -86,6 +118,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
       }
       setShowModal(false);
       setEditData(null);
+      setSelectedFile(null);
     } catch (e) {
       alert("Gagal menyimpan: " + (e as Error).message);
     } finally {
@@ -97,6 +130,14 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
     if (!deleteTarget) return;
     setLoading(true);
     try {
+      if (deleteTarget.file_url && deleteTarget.file_url.includes('drive.google.com')) {
+        await fetch('/api/drive/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileUrl: deleteTarget.file_url })
+        }).catch(err => console.error('Gagal hapus file drive:', err));
+      }
+
       await hapusSurat(deleteTarget.id);
       setShowDelete(false);
       setDeleteTarget(null);
@@ -121,7 +162,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
           </div>
         </div>
         <button
-          onClick={() => { setEditData(null); setShowModal(true); }}
+          onClick={() => { setEditData(null); setSelectedFile(null); setShowModal(true); }}
           className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm"
         >
           <Plus size={18} />
@@ -151,7 +192,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
         <DataTable pagination pageSize={10}
           columns={columns}
           data={filteredLetters}
-          onEdit={(l) => { setEditData(l); setShowModal(true); }}
+          onEdit={(l) => { setEditData(l); setSelectedFile(null); setShowModal(true); }}
           onDelete={(l) => { setDeleteTarget(l); setShowDelete(true); }}
           emptyMessage="Belum ada data surat."
         />
@@ -160,7 +201,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
       {/* Modal Form */}
       <DataModal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditData(null); }}
+        onClose={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }}
         title={editData ? "Edit Surat" : "Tambah Surat Baru"}
       >
         <form action={handleSubmit} className="space-y-4">
@@ -201,17 +242,22 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
             <input name="subject" defaultValue={editData?.subject} required
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Upload File (opsional)</label>
-              <input type="file" name="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white" />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Upload File Surat (Google Drive)</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-500 transition-colors bg-blue-50/20">
+              <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="w-full text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:transition-colors cursor-pointer" />
+              {selectedFile && (
+                <p className="mt-2 text-xs font-bold text-green-600">File terpilih: {selectedFile.name}</p>
+              )}
+              <p className="mt-1 text-[11px] text-gray-400">Surat akan otomatis masuk ke folder Google Drive &quot;Sekretaris &gt; Surat Masuk/Keluar&quot;.</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Atau Link Eksternal</label>
-              <input name="file_url" defaultValue={editData?.file_url || ""} placeholder="https://drive.google.com/..."
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
-            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Atau Link Eksternal</label>
+            <input name="file_url" defaultValue={editData?.file_url || ""} placeholder="https://drive.google.com/..."
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
           </div>
           {editData?.file_url && (
             <div className="text-sm text-gray-500">
@@ -226,13 +272,13 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
             </select>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => { setShowModal(false); setEditData(null); }}
+            <button type="button" onClick={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }}
               className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
               Batal
             </button>
             <button type="submit" disabled={loading}
               className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-50">
-              {loading ? "Menyimpan..." : editData ? "Simpan Perubahan" : "Tambah Surat"}
+              {loading ? "Menyimpan & Upload Drive..." : editData ? "Simpan Perubahan" : "Tambah Surat"}
             </button>
           </div>
         </form>

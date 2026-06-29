@@ -41,8 +41,30 @@ export default function AgendaClient({ agendas }: { agendas: any[] }) {
     setIsLoading(true);
     setErrorMsg("");
 
-    const formData = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
+    const formData = new FormData(formEl);
+    const title = formData.get('title') as string;
+    const date = formData.get('date') as string;
+
     try {
+      let folderId = selectedData?.folder_id || "";
+      if (!folderId) {
+        const res = await fetch('/api/drive/create-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderName: `Agenda - ${date} - ${title}` })
+        });
+        const data = await res.json();
+        if (data.folderId) folderId = data.folderId;
+      } else {
+        await fetch('/api/drive/rename-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderId, newName: `Agenda - ${date} - ${title}` })
+        });
+      }
+      formData.append('folder_id', folderId);
+
       if (selectedData) {
         await editAgenda(selectedData.id, formData);
       } else {
@@ -93,6 +115,15 @@ export default function AgendaClient({ agendas }: { agendas: any[] }) {
       )
     },
     { key: "description", label: "Deskripsi" },
+    { 
+      key: "folder_id", 
+      label: "Folder Drive", 
+      render: (row: any) => row.folder_id ? (
+        <a href={`https://drive.google.com/drive/folders/${row.folder_id}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs font-bold">
+          📁 Buka Folder
+        </a>
+      ) : <span className="text-gray-400 text-xs">-</span>
+    },
   ];
 
   return (
@@ -227,7 +258,7 @@ export default function AgendaClient({ agendas }: { agendas: any[] }) {
               disabled={isLoading}
               className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
             >
-              {isLoading ? "Menyimpan..." : "Simpan"}
+              {isLoading ? "Menyimpan & Sinkronisasi Drive..." : "Simpan"}
             </button>
           </div>
         </form>

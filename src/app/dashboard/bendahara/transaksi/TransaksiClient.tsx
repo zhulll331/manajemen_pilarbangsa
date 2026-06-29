@@ -8,9 +8,6 @@ import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable } from "@/components/DataTable";
 import { tambahTransaksi, editTransaksi, hapusTransaksi, parseTransaksiHarian } from "./actions";
 
-// Assume we check Gemini config status based on a server action or we just assume it's true since we just added it.
-// Wait, we didn't add isGeminiConfigured to Transaksi's actions.ts. We will assume it's configured for simplicity in this component or just let the error throw if not.
-
 export default function TransaksiClient({ transactions }: { transactions: any[] }) {
   const [filter, setFilter] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,6 +15,7 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
   const [selectedData, setSelectedData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // AI & Voice State
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -33,7 +31,8 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
     amount: "",
     description: "",
     responsible_person: "",
-    proof_url: ""
+    proof_url: "",
+    folder_id: ""
   });
 
   const filteredData = filter === "Semua" 
@@ -51,8 +50,10 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       amount: "",
       description: "",
       responsible_person: "",
-      proof_url: ""
+      proof_url: "",
+      folder_id: ""
     });
+    setSelectedFile(null);
     setTransaksiText("");
     setShowAIPanel(false);
     setErrorMsg("");
@@ -68,8 +69,10 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       amount: data.amount?.toString() || "",
       description: data.description || "",
       responsible_person: data.responsible_person || "",
-      proof_url: data.proof_url || ""
+      proof_url: data.proof_url || "",
+      folder_id: data.folder_id || ""
     });
+    setSelectedFile(null);
     setTransaksiText("");
     setShowAIPanel(false);
     setErrorMsg("");
@@ -152,16 +155,47 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
     setIsLoading(true);
     setErrorMsg("");
 
-    const formData = new FormData();
-    formData.append("transaction_date", formDataState.transaction_date);
-    formData.append("type", formDataState.type);
-    formData.append("category", formDataState.category);
-    formData.append("amount", formDataState.amount);
-    formData.append("description", formDataState.description);
-    formData.append("responsible_person", formDataState.responsible_person);
-    formData.append("proof_url", formDataState.proof_url);
+    const folderName = `Bukti Kas ${formDataState.type}`;
+    let folderId = formDataState.folder_id || "";
 
     try {
+      if (!folderId || (selectedData && selectedData.type !== formDataState.type)) {
+        const res = await fetch('/api/drive/create-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderName, parentFolderName: 'Bendahara' })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        if (data.folderId) folderId = data.folderId;
+      }
+
+      let proofUrl = formDataState.proof_url;
+      if (selectedFile) {
+        const fileData = new FormData();
+        fileData.append('file', selectedFile);
+        if (folderId) fileData.append('folderId', folderId);
+        const upRes = await fetch('/api/drive/upload', {
+          method: 'POST',
+          body: fileData
+        });
+        const upData = await upRes.json();
+        if (upData.error) {
+          throw new Error("Gagal mengunggah file ke Google Drive: " + upData.error);
+        }
+        if (upData.url) proofUrl = upData.url;
+      }
+
+      const formData = new FormData();
+      formData.append("transaction_date", formDataState.transaction_date);
+      formData.append("type", formDataState.type);
+      formData.append("category", formDataState.category);
+      formData.append("amount", formDataState.amount);
+      formData.append("description", formDataState.description);
+      formData.append("responsible_person", formDataState.responsible_person);
+      formData.append("proof_url", proofUrl);
+      formData.append("folder_id", folderId);
+
       if (selectedData) {
         await editTransaksi(selectedData.id, formData);
       } else {
@@ -169,7 +203,7 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       }
       setIsModalOpen(false);
     } catch (error: any) {
-      setErrorMsg(error.message || "Terjadi kesalahan");
+      setErrorMsg(error.message || "Terjadi kesalahan saat menyimpan data");
     } finally {
       setIsLoading(false);
     }
@@ -179,6 +213,15 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
     if (!selectedData) return;
     setIsLoading(true);
     try {
+      // Hapus file bukti dari Google Drive jika ada proof_url
+      if (selectedData.proof_url && selectedData.proof_url.includes('drive.google.com')) {
+        await fetch('/api/drive/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileUrl: selectedData.proof_url })
+        }).catch(err => console.error('Gagal hapus file drive:', err));
+      }
+
       await hapusTransaksi(selectedData.id);
       setIsDeleteOpen(false);
     } catch (error) {
@@ -321,7 +364,7 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
                 className="w-full flex items-center justify-between p-4 hover:bg-blue-50 transition-colors"
               >
                 <div className="flex items-center gap-2 text-blue-700 font-semibold">
-                  <Sparkles size={18} className="text-blue-500" />
+                  <Sparkles size={18} className="text-blue-50" />
                   ✨ Dikte Kilat via Suara (AI)
                 </div>
                 <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-600 rounded-full">
@@ -375,7 +418,7 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMsg && (
-              <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+              <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl font-medium">
                 {errorMsg}
               </div>
             )}
@@ -464,6 +507,22 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Upload Bukti Transaksi (Google Drive)</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-50-hover transition-colors bg-blue-50/20">
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:transition-colors cursor-pointer"
+                />
+                {selectedFile && (
+                  <p className="mt-2 text-xs font-bold text-green-600">File terpilih: {selectedFile.name}</p>
+                )}
+                <p className="mt-1 text-[11px] text-gray-400">Bukti akan masuk ke folder Google Drive &quot;Bendahara &gt; Bukti Kas {formDataState.type}&quot; secara otomatis.</p>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-3 mt-6">
               <button
                 type="button"
@@ -477,7 +536,7 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
                 disabled={isLoading}
                 className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
               >
-                {isLoading ? "Menyimpan..." : "Simpan"}
+                {isLoading ? "Menyimpan & Upload Drive..." : "Simpan"}
               </button>
             </div>
           </form>

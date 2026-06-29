@@ -15,9 +15,10 @@ interface Archive {
   file_url: string | null;
   uploaded_by: string;
   created_at: string;
+  folder_id?: string;
 }
 
-const categories = ["Proposal", "LPJ", "SK", "RAB", "Dokumentasi", "Laporan Kegiatan", "AD-ART", "Pedoman", "Rekap Kehadiran", "Lainnya"];
+const defaultCategories = ["Proposal", "LPJ", "SK", "RAB", "Dokumentasi", "Laporan Kegiatan", "AD-ART", "Pedoman", "Rekap Kehadiran", "Lainnya"];
 
 export default function ArsipClient({ archives }: { archives: Archive[] }) {
   const [showModal, setShowModal] = useState(false);
@@ -26,6 +27,13 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
   const [deleteTarget, setDeleteTarget] = useState<Archive | null>(null);
   const [loading, setLoading] = useState(false);
   const [filterCategory, setFilterCategory] = useState("Semua");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
+
+  // Kumpulkan kategori unik dari data arsip yang ada agar kategori baru tersimpan di filter dan pilihan form
+  const allCategories = Array.from(new Set([...defaultCategories, ...archives.map(a => a.category)]));
 
   const filteredArchives = filterCategory === "Semua"
     ? archives
@@ -68,9 +76,73 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
     },
   ];
 
+  const handleOpenAdd = () => {
+    setEditData(null);
+    setSelectedFile(null);
+    setErrorMsg("");
+    setSelectedCategory("");
+    setCustomCategory("");
+    setShowModal(true);
+  };
+
+  const handleOpenEdit = (a: Archive) => {
+    setEditData(a);
+    setSelectedFile(null);
+    setErrorMsg("");
+    if (allCategories.includes(a.category)) {
+      setSelectedCategory(a.category);
+      setCustomCategory("");
+    } else {
+      setSelectedCategory("Tambah Kategori Lain");
+      setCustomCategory(a.category);
+    }
+    setShowModal(true);
+  };
+
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
+    setErrorMsg("");
+
+    let finalCategory = selectedCategory;
+    if (finalCategory === "Tambah Kategori Lain") {
+      finalCategory = customCategory.trim() || "Lainnya";
+    }
+    formData.set("category", finalCategory);
+
+    const folderName = `Arsip - ${finalCategory}`;
+
     try {
+      let folderId = editData?.folder_id || "";
+      
+      // Mengirimkan parentFolderName: 'Sekretaris' agar bersarang di dalam folder Sekretaris
+      const res = await fetch('/api/drive/create-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folderName, parentFolderName: 'Sekretaris' })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (data.folderId) folderId = data.folderId;
+
+      formData.append('folder_id', folderId);
+
+      if (selectedFile) {
+        const fileData = new FormData();
+        fileData.append('file', selectedFile);
+        if (folderId) fileData.append('folderId', folderId);
+        const upRes = await fetch('/api/drive/upload', {
+          method: 'POST',
+          body: fileData
+        });
+        const upData = await upRes.json();
+        if (upData.error) {
+          throw new Error("Gagal mengunggah file ke Google Drive: " + upData.error);
+        }
+        if (upData.url) {
+          formData.set('file_url', upData.url);
+        }
+      }
+
       if (editData) {
         formData.append("id", editData.id);
         await editArsip(formData);
@@ -79,8 +151,9 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
       }
       setShowModal(false);
       setEditData(null);
-    } catch (e) {
-      alert("Gagal menyimpan: " + (e as Error).message);
+      setSelectedFile(null);
+    } catch (e: any) {
+      setErrorMsg(e.message || "Terjadi kesalahan saat menyimpan data");
     } finally {
       setLoading(false);
     }
@@ -90,11 +163,20 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
     if (!deleteTarget) return;
     setLoading(true);
     try {
+      // Hapus file dari Google Drive jika ada file_url
+      if (deleteTarget.file_url && deleteTarget.file_url.includes('drive.google.com')) {
+        await fetch('/api/drive/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileUrl: deleteTarget.file_url })
+        }).catch(err => console.error('Gagal hapus file drive:', err));
+      }
+
       await hapusArsip(deleteTarget.id);
       setShowDelete(false);
       setDeleteTarget(null);
-    } catch (e) {
-      alert("Gagal menghapus: " + (e as Error).message);
+    } catch (e: any) {
+      alert("Gagal menghapus: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -114,7 +196,7 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
           </div>
         </div>
         <button
-          onClick={() => { setEditData(null); setShowModal(true); }}
+          onClick={handleOpenAdd}
           className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm"
         >
           <Plus size={18} />
@@ -124,7 +206,7 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
 
       {/* Category Filter */}
       <div className="flex gap-2 flex-wrap">
-        {["Semua", ...categories].map(cat => (
+        {["Semua", ...allCategories].map(cat => (
           <button
             key={cat}
             onClick={() => setFilterCategory(cat)}
@@ -144,7 +226,7 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
         <DataTable pagination pageSize={10}
           columns={columns}
           data={filteredArchives}
-          onEdit={(a) => { setEditData(a); setShowModal(true); }}
+          onEdit={handleOpenEdit}
           onDelete={(a) => { setDeleteTarget(a); setShowDelete(true); }}
           emptyMessage="Belum ada arsip dokumen."
         />
@@ -153,46 +235,77 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
       {/* Modal Form */}
       <DataModal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditData(null); }}
+        onClose={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }}
         title={editData ? "Edit Arsip" : "Tambah Arsip Baru"}
       >
         <form action={handleSubmit} className="space-y-4">
+          {errorMsg && (
+            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl font-medium">
+              {errorMsg}
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Judul Dokumen</label>
             <input name="title" defaultValue={editData?.title} required
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-              <select name="category" defaultValue={editData?.category || ""}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white">
+              <select 
+                value={selectedCategory} 
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white"
+              >
                 <option value="">Pilih Kategori</option>
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                <option value="Tambah Kategori Lain" className="font-bold text-blue-600">+ Tambah Kategori Lain</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Pengunggah</label>
-              <input name="uploaded_by" defaultValue={editData?.uploaded_by}
+              <input name="uploaded_by" defaultValue={editData?.uploaded_by} required
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
             </div>
           </div>
+
+          {selectedCategory === "Tambah Kategori Lain" && (
+            <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2 animate-fadeIn">
+              <label className="block text-sm font-bold text-blue-900">Nama Kategori Baru *</label>
+              <input 
+                value={customCategory} 
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="Misal: Sertifikat, MoU, Surat Tugas..."
+                required={selectedCategory === "Tambah Kategori Lain"}
+                className="w-full px-4 py-2.5 border border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white" 
+              />
+              <p className="text-[11px] text-blue-600">Sistem akan otomatis membuatkan folder &quot;Arsip - [Nama Kategori Baru]&quot; di dalam folder Sekretaris.</p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
             <textarea name="description" defaultValue={editData?.description} rows={3}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition resize-none" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Upload File (opsional)</label>
-              <input type="file" name="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white" />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Upload File Arsip (Google Drive)</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-500 transition-colors bg-blue-50/20">
+              <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="w-full text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:transition-colors cursor-pointer" />
+              {selectedFile && (
+                <p className="mt-2 text-xs font-bold text-green-600">File terpilih: {selectedFile.name}</p>
+              )}
+              <p className="mt-1 text-[11px] text-gray-400">File akan otomatis masuk ke folder Google Drive &quot;Sekretaris &gt; Arsip - {selectedCategory || 'Kategori'}&quot;.</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Atau Link Eksternal</label>
-              <input name="file_url" defaultValue={editData?.file_url || ""} placeholder="https://drive.google.com/..."
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
-            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Atau Link Eksternal</label>
+            <input name="file_url" defaultValue={editData?.file_url || ""} placeholder="https://drive.google.com/..."
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
           </div>
           {editData?.file_url && (
             <div className="text-sm text-gray-500">
@@ -200,13 +313,13 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
             </div>
           )}
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => { setShowModal(false); setEditData(null); }}
+            <button type="button" onClick={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }}
               className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
               Batal
             </button>
             <button type="submit" disabled={loading}
               className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-50">
-              {loading ? "Menyimpan..." : editData ? "Simpan Perubahan" : "Tambah Arsip"}
+              {loading ? "Menyimpan & Upload Drive..." : editData ? "Simpan Perubahan" : "Tambah Arsip"}
             </button>
           </div>
         </form>

@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
-    redirect("/");
+    redirect("/login");
   }
 
   const { data: profile } = await supabase
@@ -20,9 +20,31 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single();
 
+  let userRole = profile?.role;
+  const email = user.email?.toLowerCase() || '';
+
+  if (
+    userRole === 'divisi' ||
+    userRole === 'admin_divisi' ||
+    userRole === 'humas' ||
+    userRole === 'riset' ||
+    userRole === 'penalaran' ||
+    userRole === 'pengabdian' ||
+    email.includes('humas') ||
+    email.includes('riset') ||
+    email.includes('penalaran') ||
+    email.includes('pengabdian') ||
+    email.includes('divisi') ||
+    email.includes('wakilketua')
+  ) {
+    userRole = 'divisi';
+  } else if (!userRole) {
+    userRole = 'ketua';
+  }
+
   return (
     <DashboardLayoutClient 
-      role={profile?.role || 'ketua'} 
+      role={userRole} 
       name={profile?.full_name || user.email}
     >
       {children}

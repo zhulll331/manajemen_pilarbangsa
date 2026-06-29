@@ -38,7 +38,7 @@ export async function proxy(request: NextRequest) {
     // Jika belum login
     if (!user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/'
+      url.pathname = '/login'
       return NextResponse.redirect(url)
     }
 
@@ -49,7 +49,27 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const userRole = profile?.role
+    let userRole = profile?.role
+    const email = user.email?.toLowerCase() || ''
+
+    if (
+      userRole === 'divisi' ||
+      userRole === 'admin_divisi' ||
+      userRole === 'humas' ||
+      userRole === 'riset' ||
+      userRole === 'penalaran' ||
+      userRole === 'pengabdian' ||
+      email.includes('humas') ||
+      email.includes('riset') ||
+      email.includes('penalaran') ||
+      email.includes('pengabdian') ||
+      email.includes('divisi') ||
+      email.includes('wakilketua')
+    ) {
+      userRole = 'divisi'
+    } else if (!userRole) {
+      userRole = 'ketua'
+    }
 
     // Cek apakah userRole sesuai dengan pathname
     if (userRole === 'ketua' && !pathname.startsWith('/dashboard/ketua')) {
@@ -67,15 +87,41 @@ export async function proxy(request: NextRequest) {
       url.pathname = '/dashboard/bendahara'
       return NextResponse.redirect(url)
     }
-  } else if (pathname === '/' && user) {
-    // Jika sudah login tapi buka halaman login, redirect ke dashboardnya
+    if (userRole === 'divisi' && !pathname.startsWith('/dashboard/divisi')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard/divisi'
+      return NextResponse.redirect(url)
+    }
+  } else if (pathname === '/login' && user && request.method !== 'POST') {
+    // Jika sudah login tapi buka halaman login (via GET), redirect ke dashboardnya
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
       
-    const userRole = profile?.role || 'ketua'
+    let userRole = profile?.role
+    const email = user.email?.toLowerCase() || ''
+
+    if (
+      userRole === 'divisi' ||
+      userRole === 'admin_divisi' ||
+      userRole === 'humas' ||
+      userRole === 'riset' ||
+      userRole === 'penalaran' ||
+      userRole === 'pengabdian' ||
+      email.includes('humas') ||
+      email.includes('riset') ||
+      email.includes('penalaran') ||
+      email.includes('pengabdian') ||
+      email.includes('divisi') ||
+      email.includes('wakilketua')
+    ) {
+      userRole = 'divisi'
+    } else if (!userRole) {
+      userRole = 'ketua'
+    }
+
     const url = request.nextUrl.clone()
     url.pathname = `/dashboard/${userRole}`
     return NextResponse.redirect(url)

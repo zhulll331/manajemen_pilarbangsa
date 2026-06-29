@@ -49,12 +49,24 @@ export function Sidebar({
           { href: "/dashboard/bendahara/iuran", label: "Iuran Anggota", icon: <Users size={20} /> },
           { href: "/dashboard/bendahara/laporan", label: "Laporan Keuangan", icon: <FileText size={20} /> },
         ];
+      case "divisi":
+      case "admin_divisi":
+      case "humas":
+      case "riset":
+      case "penalaran":
+      case "pengabdian":
+        return [
+          { href: "/dashboard/divisi", label: "Ringkasan Divisi", icon: <LayoutDashboard size={20} /> },
+          { href: "/dashboard/divisi/proker", label: "Kelola Proker (CRUD)", icon: <ClipboardList size={20} /> },
+        ];
       case "ketua":
       default:
         return [
           { href: "/dashboard/ketua", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
           { href: "/dashboard/ketua/program", label: "Program Kerja", icon: <ClipboardList size={20} /> },
           { href: "/dashboard/ketua/agenda", label: "Agenda Organisasi", icon: <Calendar size={20} /> },
+          { href: "/dashboard/ketua/evaluasi", label: "Evaluasi", icon: <FileText size={20} /> },
+          { href: "/dashboard/ketua/banner", label: "Pengaturan Banner", icon: <FolderOpen size={20} /> },
         ];
     }
   };
@@ -71,13 +83,15 @@ export function Sidebar({
         />
       )}
 
-      {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[var(--color-primary)] text-white flex flex-col transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
-        <div className="p-6 flex items-center justify-center border-b border-white/10 relative shrink-0">
-          <div className="w-24 h-24 bg-white rounded-full p-2 flex items-center justify-center shadow-lg">
+        <div className="p-6 flex items-center justify-center gap-3 border-b border-white/10 relative shrink-0">
+          <div className="w-20 h-20 bg-white rounded-full p-2 flex items-center justify-center shadow-lg">
             <img src="/logo_pilar.svg" alt="Logo Pilar Bangsa" className="w-full h-full object-contain" />
+          </div>
+          <div className="w-20 h-20 bg-white rounded-full p-2 flex items-center justify-center shadow-lg">
+            <img src="/logo-untag-fix.svg" alt="Logo Universitas" className="w-full h-full object-contain" />
           </div>
           <button 
             className="md:hidden absolute right-4 text-white/80 hover:text-white p-2"

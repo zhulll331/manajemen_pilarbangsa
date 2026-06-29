@@ -5,8 +5,20 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function tambahTransaksi(formData: FormData) {
   const supabase = await createClient()
-  
-  const { error } = await supabase.from('finance_transactions').insert({
+  const folder_id = formData.get('folder_id') as string || null;
+
+  const payloadAll = {
+    transaction_date: formData.get('transaction_date'),
+    type: formData.get('type'),
+    category: formData.get('category'),
+    amount: Number(formData.get('amount')),
+    description: formData.get('description'),
+    responsible_person: formData.get('responsible_person'),
+    proof_url: formData.get('proof_url'),
+    folder_id
+  };
+
+  const payloadFallback = {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
@@ -14,7 +26,13 @@ export async function tambahTransaksi(formData: FormData) {
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url')
-  })
+  };
+
+  let { error } = await supabase.from('finance_transactions').insert(payloadAll)
+  if (error && error.message.includes('folder_id')) {
+    const { error: fallbackError } = await supabase.from('finance_transactions').insert(payloadFallback)
+    error = fallbackError
+  }
 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
@@ -22,18 +40,34 @@ export async function tambahTransaksi(formData: FormData) {
 
 export async function editTransaksi(id: string, formData: FormData) {
   const supabase = await createClient()
-  
-  const { error } = await supabase.from('finance_transactions')
-    .update({
-      transaction_date: formData.get('transaction_date'),
-      type: formData.get('type'),
-      category: formData.get('category'),
-      amount: Number(formData.get('amount')),
-      description: formData.get('description'),
-      responsible_person: formData.get('responsible_person'),
-      proof_url: formData.get('proof_url')
-    })
-    .eq('id', id)
+  const folder_id = formData.get('folder_id') as string || null;
+
+  const payloadAll = {
+    transaction_date: formData.get('transaction_date'),
+    type: formData.get('type'),
+    category: formData.get('category'),
+    amount: Number(formData.get('amount')),
+    description: formData.get('description'),
+    responsible_person: formData.get('responsible_person'),
+    proof_url: formData.get('proof_url'),
+    folder_id
+  };
+
+  const payloadFallback = {
+    transaction_date: formData.get('transaction_date'),
+    type: formData.get('type'),
+    category: formData.get('category'),
+    amount: Number(formData.get('amount')),
+    description: formData.get('description'),
+    responsible_person: formData.get('responsible_person'),
+    proof_url: formData.get('proof_url')
+  };
+
+  let { error } = await supabase.from('finance_transactions').update(payloadAll).eq('id', id)
+  if (error && error.message.includes('folder_id')) {
+    const { error: fallbackError } = await supabase.from('finance_transactions').update(payloadFallback).eq('id', id)
+    error = fallbackError
+  }
 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
