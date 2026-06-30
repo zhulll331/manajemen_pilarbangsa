@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import { HeroSlider } from '@/components/HeroSlider'
 import { TimelineRoadmap } from '@/components/TimelineRoadmap'
 import { Award, BookOpen, Compass, Shield, Users, Target, Milestone, Anchor, Heart, Sparkles } from 'lucide-react'
@@ -23,6 +24,20 @@ export default function BerandaPage() {
         
         <div className="max-w-5xl mx-auto text-center space-y-12">
           <div className="space-y-6">
+            
+            {/* Logo UKM Pilar Bangsa Tambahan */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-black rounded-3xl p-4 shadow-xl hover:scale-110 transition-transform duration-300">
+                <Image 
+                  src="/logo_pilar.svg" 
+                  alt="Logo UKM Pilar Bangsa" 
+                  width={80} 
+                  height={80} 
+                  className="object-contain invert w-full h-full"
+                />
+              </div>
+            </div>
+
             <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-black text-white text-xs md:text-sm font-bold tracking-wider uppercase shadow-md">
               <Milestone className="w-4 h-4 text-[#FFD700]" />
               <span>Sejarah Berdiri & Transformasi Digital</span>

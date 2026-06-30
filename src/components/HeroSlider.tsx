@@ -132,17 +132,17 @@ export function HeroSlider() {
               </div>
 
               {/* Title */}
-              <h2 className="text-3xl md:text-6xl font-extrabold tracking-tight leading-tight drop-shadow-md">
+              <h2 className="text-2xl sm:text-4xl md:text-6xl font-extrabold tracking-tight leading-tight drop-shadow-md">
                 {slide.title}
               </h2>
 
               {/* Subtitle */}
-              <p className="text-lg md:text-2xl font-medium text-gray-200 drop-shadow">
+              <p className="text-base sm:text-xl md:text-2xl font-medium text-gray-200 drop-shadow">
                 {slide.subtitle}
               </p>
 
               {/* Description */}
-              <p className="text-base md:text-lg text-gray-300 max-w-2xl mx-auto line-clamp-3">
+              <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-2xl mx-auto line-clamp-3">
                 {slide.description}
               </p>
 

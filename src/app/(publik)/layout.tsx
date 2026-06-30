@@ -18,32 +18,32 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo & Brand */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="flex items-center space-x-2">
-              <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center p-2 shadow-md group-hover:scale-105 transition-transform duration-300">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-xl sm:rounded-2xl flex items-center justify-center p-1.5 sm:p-2 shadow-md group-hover:scale-105 transition-transform duration-300">
                 <Image 
                   src="/logo_pilar.svg" 
                   alt="Logo Pilar Bangsa" 
-                  width={36} 
-                  height={36} 
-                  className="object-contain invert"
+                  width={32} 
+                  height={32} 
+                  className="object-contain invert w-full h-full"
                 />
               </div>
-              <div className="w-12 h-12 bg-white border border-gray-200 rounded-2xl flex items-center justify-center p-2 shadow-md group-hover:scale-105 transition-transform duration-300">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-gray-200 rounded-xl sm:rounded-2xl flex items-center justify-center p-1.5 sm:p-2 shadow-md group-hover:scale-105 transition-transform duration-300">
                 <Image 
                   src="/logo-untag-fix.svg" 
                   alt="Logo Universitas" 
-                  width={36} 
-                  height={36} 
-                  className="object-contain"
+                  width={32} 
+                  height={32} 
+                  className="object-contain w-full h-full"
                 />
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-extrabold tracking-tight text-gray-900 group-hover:text-[#E31837] transition-colors duration-300">
+              <span className="text-base sm:text-xl font-extrabold tracking-tight text-gray-900 group-hover:text-[#E31837] transition-colors duration-300">
                 Pilar Bangsa
               </span>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">
+              <span className="hidden sm:block text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-widest">
                 Digital Office
               </span>
             </div>
@@ -75,10 +75,10 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center">
             <Link 
               href="/login" 
-              className="flex items-center space-x-2 bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+              className="flex items-center space-x-1.5 sm:space-x-2 bg-black hover:bg-gray-800 text-white font-bold px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
             >
               <LogIn className="w-4 h-4" />
-              <span>Login Pengurus</span>
+              <span className="hidden sm:inline">Login Pengurus</span>
             </Link>
           </div>
         </div>
