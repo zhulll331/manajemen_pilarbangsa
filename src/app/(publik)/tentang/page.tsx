@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import { Shield, BookOpen, Compass, Heart, Award, Users, Milestone, Anchor, CheckCircle2, Search, TrendingUp, Sparkles, Flag, Target } from 'lucide-react'
 
 export default function TentangPage() {
@@ -187,6 +188,16 @@ export default function TentangPage() {
       {/* Filosofi Logo Section */}
       <section className="bg-white border border-gray-100 rounded-3xl p-8 sm:p-14 shadow-xl space-y-16">
         <div className="text-center max-w-4xl mx-auto space-y-4">
+          <div className="flex justify-center mb-8">
+            <Image 
+              src="/logo-ukm.png" 
+              alt="Logo UKM Pilar Bangsa" 
+              width={160} 
+              height={160} 
+              className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-xl"
+              priority
+            />
+          </div>
           <div className="inline-block px-6 py-2 rounded-full text-xs font-extrabold tracking-widest uppercase bg-[#E31837] text-white shadow-md shadow-red-500/20">
             Filosofi Logo
           </div>

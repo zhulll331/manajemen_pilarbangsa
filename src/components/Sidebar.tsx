@@ -87,11 +87,11 @@ export function Sidebar({
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
         <div className="p-6 flex items-center justify-center gap-3 border-b border-white/10 relative shrink-0">
-          <div className="w-20 h-20 bg-white rounded-full p-2 flex items-center justify-center shadow-lg">
-            <img src="/logo_pilar.svg" alt="Logo Pilar Bangsa" className="w-full h-full object-contain" />
+          <div className="w-20 h-20 flex items-center justify-center">
+            <img src="/logo-ukm.png" alt="Logo Pilar Bangsa" className="w-full h-full object-contain drop-shadow-md" />
           </div>
-          <div className="w-20 h-20 bg-white rounded-full p-2 flex items-center justify-center shadow-lg">
-            <img src="/logo-untag-fix.svg" alt="Logo Universitas" className="w-full h-full object-contain" />
+          <div className="w-20 h-20 flex items-center justify-center">
+            <img src="/logo-untag-fix.svg" alt="Logo Universitas" className="w-full h-full object-contain drop-shadow-md" />
           </div>
           <button 
             className="md:hidden absolute right-4 text-white/80 hover:text-white p-2"
