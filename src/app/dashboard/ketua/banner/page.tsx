@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Image, Save, RefreshCw, CheckCircle2, Upload, AlertCircle } from 'lucide-react'
+import { uploadFileToDrive } from '@/utils/driveClientUpload'
 
 const defaultSlides = [
   {
@@ -114,23 +115,14 @@ export default function BannerManagementPage() {
       const fileToUpload = selectedFiles[id]
 
       if (fileToUpload) {
-        const formData = new FormData()
-        formData.append('file', fileToUpload)
-        formData.append('path', `Ketua > Banner Beranda > Slide ${id}`)
+        // Upload langsung dari browser ke Google Drive (melewati Vercel)
+        const { url: uploadedUrl } = await uploadFileToDrive(fileToUpload);
 
-        const res = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (!res.ok) {
+        if (!uploadedUrl) {
           throw new Error('Gagal mengunggah gambar ke Google Drive')
         }
 
-        const data = await res.json()
-        if (data.url) {
-          finalImageUrl = data.url
-        }
+        finalImageUrl = uploadedUrl
       }
 
       // Update Supabase

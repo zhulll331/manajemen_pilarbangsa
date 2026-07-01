@@ -6,6 +6,7 @@ import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
 import { tambahArsip, editArsip, hapusArsip } from "./actions";
+import { uploadFileToDrive } from "@/utils/driveClientUpload";
 
 interface Archive {
   id: string;
@@ -127,19 +128,11 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
       formData.append('folder_id', folderId);
 
       if (selectedFile) {
-        const fileData = new FormData();
-        fileData.append('file', selectedFile);
-        if (folderId) fileData.append('folderId', folderId);
-        const upRes = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: fileData
-        });
-        const upData = await upRes.json();
-        if (upData.error) {
-          throw new Error("Gagal mengunggah file ke Google Drive: " + upData.error);
-        }
-        if (upData.url) {
-          formData.set('file_url', upData.url);
+        // Upload langsung dari browser ke Google Drive (melewati Vercel)
+        // → tidak ada batas ukuran/timeout dari Vercel
+        const { url: fileUrl } = await uploadFileToDrive(selectedFile, folderId || undefined);
+        if (fileUrl) {
+          formData.set('file_url', fileUrl);
         }
       }
 

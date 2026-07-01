@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus, ArrowDownCircle, ArrowUpCircle, ExternalLink, Download, Sparkles, Mic, Square } from "lucide-react";
 import * as XLSX from "xlsx";
+import { uploadFileToDrive } from "@/utils/driveClientUpload";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable } from "@/components/DataTable";
@@ -172,18 +173,9 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
 
       let proofUrl = formDataState.proof_url;
       if (selectedFile) {
-        const fileData = new FormData();
-        fileData.append('file', selectedFile);
-        if (folderId) fileData.append('folderId', folderId);
-        const upRes = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: fileData
-        });
-        const upData = await upRes.json();
-        if (upData.error) {
-          throw new Error("Gagal mengunggah file ke Google Drive: " + upData.error);
-        }
-        if (upData.url) proofUrl = upData.url;
+        // Upload langsung dari browser ke Google Drive (melewati Vercel)
+        const { url: fileUrl } = await uploadFileToDrive(selectedFile, folderId || undefined);
+        if (fileUrl) proofUrl = fileUrl;
       }
 
       const formData = new FormData();

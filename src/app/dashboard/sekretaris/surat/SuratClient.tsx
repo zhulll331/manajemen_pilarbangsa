@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { uploadFileToDrive } from "@/utils/driveClientUpload";
 import { Plus, FileText, Mail, MailOpen } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
@@ -94,19 +95,10 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
         if (data.error) throw new Error(data.error);
         if (data.folderId) folderId = data.folderId;
 
-        const fileData = new FormData();
-        fileData.append('file', selectedFile);
-        if (folderId) fileData.append('folderId', folderId);
-        const upRes = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: fileData
-        });
-        const upData = await upRes.json();
-        if (upData.error) {
-          throw new Error("Gagal mengunggah file ke Google Drive: " + upData.error);
-        }
-        if (upData.url) {
-          formData.set('file_url', upData.url);
+        // Upload langsung dari browser ke Google Drive (melewati Vercel)
+        const { url: fileUrl } = await uploadFileToDrive(selectedFile, folderId || undefined);
+        if (fileUrl) {
+          formData.set('file_url', fileUrl);
         }
       }
 

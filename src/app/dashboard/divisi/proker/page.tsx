@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Plus, CheckCircle2, Clock, PlayCircle, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, AlertCircle, FileCheck, FileText, Upload, Image as ImageIcon } from 'lucide-react'
+import { uploadFileToDrive } from '@/utils/driveClientUpload'
 
 interface ProgramItem {
   id: string
@@ -321,61 +322,35 @@ export default function KelolaProkerPage() {
       const fMatch = currentFolderId.match(/folders\/([a-zA-Z0-9_-]+)/) || [null, currentFolderId]
       const prokerFolderId = fMatch[1] || currentFolderId
 
-      // 2. Upload Foto Pratinjau Utama (yang sudah diubah ke landscape jika potrait)
+      // 2. Upload Foto Pratinjau Utama
       if (selectedFile) {
-        const fileData = new FormData()
-        fileData.append('file', selectedFile)
-        if (prokerFolderId && !prokerFolderId.includes('http')) {
-          fileData.append('folderId', prokerFolderId)
-        }
-        const upRes = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: fileData
-        })
-        const upData = await upRes.json()
-        if (upData.error) throw new Error('Gagal mengunggah Foto: ' + upData.error)
-        if (upData.url) {
-          currentCoverUrl = upData.url
-          setCoverUrl(upData.url)
-        }
+        // Upload langsung dari browser ke Google Drive (melewati Vercel)
+        const { url: coverUrl2 } = await uploadFileToDrive(
+          selectedFile,
+          prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined
+        )
+        currentCoverUrl = coverUrl2
+        setCoverUrl(coverUrl2)
       }
 
       // 3. Upload File SK Sebelum Kegiatan
       if (selectedSkFile) {
-        const fileData = new FormData()
-        fileData.append('file', selectedSkFile)
-        if (prokerFolderId && !prokerFolderId.includes('http')) {
-          fileData.append('folderId', prokerFolderId)
-        }
-        const upRes = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: fileData
-        })
-        const upData = await upRes.json()
-        if (upData.error) throw new Error('Gagal mengunggah SK: ' + upData.error)
-        if (upData.url) {
-          finalSkUrl = upData.url
-          setSkUrl(upData.url)
-        }
+        const { url: skUrl2 } = await uploadFileToDrive(
+          selectedSkFile,
+          prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined
+        )
+        finalSkUrl = skUrl2
+        setSkUrl(skUrl2)
       }
 
       // 4. Upload File Laporan Setelah Kegiatan
       if (selectedLaporanFile) {
-        const fileData = new FormData()
-        fileData.append('file', selectedLaporanFile)
-        if (prokerFolderId && !prokerFolderId.includes('http')) {
-          fileData.append('folderId', prokerFolderId)
-        }
-        const upRes = await fetch('/api/drive/upload', {
-          method: 'POST',
-          body: fileData
-        })
-        const upData = await upRes.json()
-        if (upData.error) throw new Error('Gagal mengunggah Laporan: ' + upData.error)
-        if (upData.url) {
-          finalLaporanUrl = upData.url
-          setLaporanUrl(upData.url)
-        }
+        const { url: lapUrl2 } = await uploadFileToDrive(
+          selectedLaporanFile,
+          prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined
+        )
+        finalLaporanUrl = lapUrl2
+        setLaporanUrl(lapUrl2)
       }
 
       const directCoverUrl = convertGoogleDriveUrl(currentCoverUrl)

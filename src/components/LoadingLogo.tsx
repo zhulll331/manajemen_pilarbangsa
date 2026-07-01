@@ -1,6 +1,5 @@
 import Image from "next/image";
 import React from "react";
-import logoUkm from "@/app/logo-ukm.png";
 
 export function LoadingLogo({ fullScreen = true }: { fullScreen?: boolean }) {
   const content = (
@@ -10,7 +9,7 @@ export function LoadingLogo({ fullScreen = true }: { fullScreen?: boolean }) {
         <div className="absolute inset-0 rounded-3xl bg-blue-400/10 animate-ping opacity-25"></div>
         <div className="relative w-full h-full animate-[bounce_2s_infinite]">
           <Image
-            src={logoUkm}
+            src="/logo-ukm.png"
             alt="Pilar Bangsa Logo"
             fill
             sizes="(max-width: 768px) 96px, 112px"
