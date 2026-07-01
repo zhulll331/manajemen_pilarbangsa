@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDriveClient } from '@/utils/drive';
+import { google } from 'googleapis';
 
 /**
  * Membuat sesi upload resumable Google Drive langsung dari browser.
@@ -14,12 +14,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'fileName is required' }, { status: 400 });
     }
 
-    const drive = getDriveClient();
+    // Buat OAuth2 client langsung dari env vars
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.DRIVE_CLIENT_ID,
+      process.env.DRIVE_CLIENT_SECRET,
+      'https://developers.google.com/oauthplayground'
+    );
+    oauth2Client.setCredentials({
+      refresh_token: process.env.DRIVE_REFRESH_TOKEN,
+    });
 
-    // Ambil access token dari OAuth2 client
-    const authClient = drive.auth as any;
-    const tokenData = await authClient.getAccessToken();
-    const accessToken = tokenData.token || tokenData.res?.data?.access_token;
+    // Ambil access token yang valid
+    const tokenData = await oauth2Client.getAccessToken();
+    const accessToken = tokenData.token;
 
     if (!accessToken) {
       return NextResponse.json({ error: 'Gagal mendapatkan access token Google' }, { status: 500 });
