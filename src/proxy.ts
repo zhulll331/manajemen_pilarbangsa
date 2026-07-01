@@ -29,7 +29,12 @@ export async function proxy(request: NextRequest) {
 
   const {
     data: { user },
+    error: authError
   } = await supabase.auth.getUser()
+
+  if (authError) {
+    console.error('🔴 AUTH ERROR IN PROXY:', authError);
+  }
 
   const { pathname } = request.nextUrl
 
@@ -37,6 +42,8 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     // Jika belum login
     if (!user) {
+      console.log('🔴 PROXY REDIRECT TO LOGIN. Pathname:', pathname);
+      console.log('🔴 Request cookies:', request.cookies.getAll());
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
@@ -69,6 +76,11 @@ export async function proxy(request: NextRequest) {
       userRole = 'divisi'
     } else if (!userRole) {
       userRole = 'ketua'
+    }
+
+    // Biarkan akses ke /dashboard/profil untuk semua role
+    if (pathname === '/dashboard/profil') {
+      return supabaseResponse
     }
 
     // Cek apakah userRole sesuai dengan pathname
