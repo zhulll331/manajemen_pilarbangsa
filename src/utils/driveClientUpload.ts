@@ -2,16 +2,10 @@ import { compressImageIfNeeded } from './compressImage';
 
 /**
  * Upload file langsung dari browser ke Google Drive (melewati Vercel).
- * 
- * Alur:
- * 1. Browser meminta sesi upload dari server kita (ringan, hanya JSON)
- * 2. Browser mengupload file langsung ke Google Drive menggunakan URL sesi
- * 3. Browser meminta server kita untuk menjadikan file publik
- * 
- * Keuntungan:
- * - Tidak terkena batas 4.5MB atau timeout 10 detik dari Vercel
- * - File besar (PDF, Docx, video) bisa diupload tanpa masalah
- * - Gambar tetap dikompres terlebih dahulu untuk efisiensi
+ *
+ * Strategi:
+ * 1. Coba upload langsung ke Google Drive via resumable session (tidak ada batas Vercel)
+ * 2. Jika gagal (misal CORS atau error lain), fallback ke proxy server /api/drive/upload
  */
 export async function uploadFileToDrive(
   file: File,
@@ -22,13 +16,32 @@ export async function uploadFileToDrive(
   // Kompres gambar sebelum upload (PDF/Docx tidak berubah)
   const fileToUpload = await compressImageIfNeeded(file);
 
-  // Langkah 1: Dapatkan URL sesi upload dari server kita (sangat ringan)
+  // Coba direct upload ke Google Drive terlebih dahulu
+  try {
+    return await uploadViaResumable(fileToUpload, folderId, onProgress);
+  } catch (directErr) {
+    console.warn('[driveUpload] Direct upload gagal, fallback ke server proxy:', directErr);
+    // Fallback ke server proxy (untuk file kecil atau jika CORS gagal)
+    return await uploadViaServerProxy(fileToUpload, folderId);
+  }
+}
+
+/**
+ * Upload langsung dari browser ke Google Drive menggunakan resumable session.
+ */
+async function uploadViaResumable(
+  file: File,
+  folderId?: string,
+  onProgress?: (percent: number) => void
+): Promise<{ url: string; downloadUrl: string; fileId: string; name: string }> {
+
+  // Langkah 1: Dapatkan URL sesi upload dari server kita
   const sessionRes = await fetch('/api/drive/create-upload-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      fileName: fileToUpload.name,
-      mimeType: fileToUpload.type || 'application/octet-stream',
+      fileName: file.name,
+      mimeType: file.type || 'application/octet-stream',
       folderId,
     }),
   });
@@ -39,41 +52,36 @@ export async function uploadFileToDrive(
   }
 
   const { uploadUrl } = await sessionRes.json();
+  if (!uploadUrl) throw new Error('URL sesi upload tidak valid');
 
-  if (!uploadUrl) {
-    throw new Error('URL sesi upload tidak valid');
-  }
+  // Langkah 2: Upload file langsung ke Google Drive
+  // Content-Range wajib ada agar Google Drive tahu upload selesai dalam satu chunk
+  const contentRange = `bytes 0-${file.size - 1}/${file.size}`;
 
-  // Langkah 2: Upload file langsung ke Google Drive dari browser
-  // (Tidak melewati server Vercel, jadi tidak ada batas ukuran/timeout)
   let uploadRes: Response;
-
   if (onProgress) {
-    // Upload dengan laporan progres menggunakan XMLHttpRequest
-    uploadRes = await uploadWithProgress(fileToUpload, uploadUrl, onProgress);
+    uploadRes = await uploadWithProgress(file, uploadUrl, contentRange, onProgress);
   } else {
     uploadRes = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': fileToUpload.type || 'application/octet-stream',
-        'Content-Length': String(fileToUpload.size),
+        'Content-Type': file.type || 'application/octet-stream',
+        'Content-Range': contentRange,
       },
-      body: fileToUpload,
+      body: file,
     });
   }
 
-  if (!uploadRes.ok) {
-    throw new Error(`Upload ke Google Drive gagal (status ${uploadRes.status})`);
+  // Google Drive mengembalikan 200 atau 201 saat upload selesai
+  if (!uploadRes.ok && uploadRes.status !== 201) {
+    throw new Error(`Upload Google Drive gagal (status ${uploadRes.status})`);
   }
 
   const uploadData = await uploadRes.json();
   const fileId: string = uploadData.id;
+  if (!fileId) throw new Error('Google Drive tidak mengembalikan ID file');
 
-  if (!fileId) {
-    throw new Error('Google Drive tidak mengembalikan ID file');
-  }
-
-  // Langkah 3: Jadikan file publik melalui server kita
+  // Langkah 3: Jadikan file publik
   const publicRes = await fetch('/api/drive/make-public', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -86,16 +94,48 @@ export async function uploadFileToDrive(
     url: publicData.url || `https://drive.google.com/uc?export=view&id=${fileId}`,
     downloadUrl: publicData.downloadUrl || `https://drive.google.com/uc?export=download&id=${fileId}`,
     fileId,
-    name: fileToUpload.name,
+    name: file.name,
   };
 }
 
 /**
- * Upload file menggunakan XMLHttpRequest agar bisa memantau progres.
+ * Fallback: Upload melalui server proxy Vercel (untuk file kecil).
+ */
+async function uploadViaServerProxy(
+  file: File,
+  folderId?: string
+): Promise<{ url: string; downloadUrl: string; fileId: string; name: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (folderId) formData.append('folderId', folderId);
+
+  const res = await fetch('/api/drive/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error(`Upload server proxy gagal (status ${res.status})`);
+  }
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+
+  return {
+    url: data.url || '',
+    downloadUrl: data.url || '',
+    fileId: data.fileId || '',
+    name: file.name,
+  };
+}
+
+/**
+ * Upload file dengan pemantauan progres menggunakan XMLHttpRequest.
  */
 function uploadWithProgress(
   file: File,
   uploadUrl: string,
+  contentRange: string,
   onProgress: (percent: number) => void
 ): Promise<Response> {
   return new Promise((resolve, reject) => {
@@ -103,18 +143,15 @@ function uploadWithProgress(
 
     xhr.upload.addEventListener('progress', (event) => {
       if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        onProgress(percent);
+        onProgress(Math.round((event.loaded / event.total) * 100));
       }
     });
 
     xhr.addEventListener('load', () => {
-      // Bungkus XHR response ke dalam Response API agar kompatibel
-      const response = new Response(xhr.responseText, {
+      resolve(new Response(xhr.responseText, {
         status: xhr.status,
         statusText: xhr.statusText,
-      });
-      resolve(response);
+      }));
     });
 
     xhr.addEventListener('error', () => reject(new Error('Koneksi terputus saat upload')));
@@ -122,6 +159,7 @@ function uploadWithProgress(
 
     xhr.open('PUT', uploadUrl);
     xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.setRequestHeader('Content-Range', contentRange);
     xhr.send(file);
   });
 }
