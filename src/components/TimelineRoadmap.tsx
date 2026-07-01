@@ -303,11 +303,11 @@ export function TimelineRoadmap() {
         <div className="relative pt-8">
           
           {/* Timeline Horizontal Scrollable */}
-          <div className="block overflow-x-auto pb-12 pt-4 px-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <div className="flex space-x-12 w-max min-w-full items-center justify-start py-8 px-6 relative">
+          <div className="block overflow-x-auto pb-8 pt-2 px-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div className="flex space-x-6 md:space-x-8 w-max min-w-full items-center justify-start py-4 px-4 relative">
               
               {/* Garis Memanjang Utama */}
-              <div className="absolute inset-x-0 top-[310px] h-1.5 bg-gradient-to-r from-gray-200 via-black to-gray-200 z-0" />
+              <div className="absolute inset-x-0 top-[210px] h-1.5 bg-gradient-to-r from-gray-200 via-black to-gray-200 z-0" />
 
               {filteredEvents.map((event, index) => {
                 const isEven = index % 2 === 0
@@ -315,50 +315,50 @@ export function TimelineRoadmap() {
                 const badgeClass = getDivisionBadgeClass(event.division)
 
                 return (
-                  <div key={event.id} className="flex-shrink-0 w-80 h-[620px] flex flex-col justify-between relative z-10">
+                  <div key={event.id} className="flex-shrink-0 w-[260px] md:w-72 h-[420px] flex flex-col justify-between relative z-10">
                     
                     {/* SLIDE ATAS: Jika Node Genap (0, 2, 4), isi card di sini */}
-                    <div className="h-[280px] flex flex-col justify-end">
+                    <div className="h-[190px] flex flex-col justify-end">
                       {isEven && (
-                        <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col space-y-4 relative group transform hover:-translate-y-1">
-                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-black"></div>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col space-y-3 relative group transform hover:-translate-y-1">
+                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-black"></div>
                           
                           <div className="flex items-center justify-between">
-                            <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${badgeClass}`}>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}`}>
                               {event.division}
                             </span>
-                            <span className="text-xs font-black text-gray-400">#{index + 1}</span>
+                            <span className="text-[10px] font-black text-gray-400">#{index + 1}</span>
                           </div>
 
-                          <h3 className="font-extrabold text-lg text-gray-900 group-hover:text-[#E31837] transition-colors line-clamp-2">
+                          <h3 className="font-extrabold text-sm md:text-base text-gray-900 group-hover:text-[#E31837] transition-colors line-clamp-2 leading-snug">
                             {event.title}
                           </h3>
 
-                          <div className="flex items-center space-x-4 text-xs text-gray-500 font-bold border-y border-gray-100 py-2">
+                          <div className="flex items-center space-x-3 text-[10px] md:text-xs text-gray-500 font-bold border-y border-gray-100 py-1.5">
                             <div className="flex items-center space-x-1">
-                              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                              <Calendar className="w-3 h-3 text-gray-400" />
                               <span>{formatDateIndo(event.date)}</span>
                             </div>
                             <div className="flex items-center space-x-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>{event.time} WIB</span>
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span>{event.time}</span>
                             </div>
                           </div>
 
-                          <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
+                          <p className="text-[10px] md:text-xs text-gray-600 line-clamp-2 leading-relaxed">
                             {event.description}
                           </p>
 
                           {/* Integrasi Kalender */}
-                          <div className="pt-2">
+                          <div className="pt-1">
                             <a
                               href={calUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-full flex items-center justify-center space-x-1.5 bg-gray-50 hover:bg-black text-gray-700 hover:text-white border border-gray-200 hover:border-black font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm group/btn"
+                              className="w-full flex items-center justify-center space-x-1.5 bg-gray-50 hover:bg-black text-gray-700 hover:text-white border border-gray-200 hover:border-black font-bold py-1.5 px-3 rounded-lg text-[10px] md:text-xs transition-all shadow-sm group/btn"
                             >
-                              <CalendarPlus className="w-3.5 h-3.5 text-gray-400 group-hover/btn:text-[#FFD700] transition-colors" />
-                              <span>Simpan ke Kalender</span>
+                              <CalendarPlus className="w-3 h-3 text-gray-400 group-hover/btn:text-[#FFD700] transition-colors" />
+                              <span>Simpan</span>
                             </a>
                           </div>
                         </div>
@@ -366,54 +366,54 @@ export function TimelineRoadmap() {
                     </div>
 
                     {/* TITIK TENGAH (Node) */}
-                    <div className="h-[60px] flex items-center justify-center relative">
-                      <div className="w-10 h-10 rounded-full bg-black border-[5px] border-white shadow-md flex items-center justify-center z-20 group-hover:scale-110 transition-transform duration-300">
-                        <div className="w-3 h-3 rounded-full bg-[#FFD700]"></div>
+                    <div className="h-[40px] flex items-center justify-center relative">
+                      <div className="w-8 h-8 rounded-full bg-black border-[4px] border-white shadow-md flex items-center justify-center z-20 group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-2 h-2 rounded-full bg-[#FFD700]"></div>
                       </div>
                     </div>
 
                     {/* SLIDE BAWAH: Jika Node Ganjil (1, 3, 5), isi card di sini */}
-                    <div className="h-[280px] flex flex-col justify-start">
+                    <div className="h-[190px] flex flex-col justify-start">
                       {!isEven && (
-                        <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col space-y-4 relative group transform hover:translate-y-1 mt-4">
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-black"></div>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col space-y-3 relative group transform hover:translate-y-1 mt-2">
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[10px] border-b-black"></div>
                           
                           <div className="flex items-center justify-between">
-                            <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${badgeClass}`}>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}`}>
                               {event.division}
                             </span>
-                            <span className="text-xs font-black text-gray-400">#{index + 1}</span>
+                            <span className="text-[10px] font-black text-gray-400">#{index + 1}</span>
                           </div>
 
-                          <h3 className="font-extrabold text-lg text-gray-900 group-hover:text-[#E31837] transition-colors line-clamp-2">
+                          <h3 className="font-extrabold text-sm md:text-base text-gray-900 group-hover:text-[#E31837] transition-colors line-clamp-2 leading-snug">
                             {event.title}
                           </h3>
 
-                          <div className="flex items-center space-x-4 text-xs text-gray-500 font-bold border-y border-gray-100 py-2">
+                          <div className="flex items-center space-x-3 text-[10px] md:text-xs text-gray-500 font-bold border-y border-gray-100 py-1.5">
                             <div className="flex items-center space-x-1">
-                              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                              <Calendar className="w-3 h-3 text-gray-400" />
                               <span>{formatDateIndo(event.date)}</span>
                             </div>
                             <div className="flex items-center space-x-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>{event.time} WIB</span>
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span>{event.time}</span>
                             </div>
                           </div>
 
-                          <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
+                          <p className="text-[10px] md:text-xs text-gray-600 line-clamp-2 leading-relaxed">
                             {event.description}
                           </p>
 
                           {/* Integrasi Kalender */}
-                          <div className="pt-2">
+                          <div className="pt-1">
                             <a
                               href={calUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-full flex items-center justify-center space-x-1.5 bg-gray-50 hover:bg-black text-gray-700 hover:text-white border border-gray-200 hover:border-black font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm group/btn"
+                              className="w-full flex items-center justify-center space-x-1.5 bg-gray-50 hover:bg-black text-gray-700 hover:text-white border border-gray-200 hover:border-black font-bold py-1.5 px-3 rounded-lg text-[10px] md:text-xs transition-all shadow-sm group/btn"
                             >
-                              <CalendarPlus className="w-3.5 h-3.5 text-gray-400 group-hover/btn:text-[#FFD700] transition-colors" />
-                              <span>Simpan ke Kalender</span>
+                              <CalendarPlus className="w-3 h-3 text-gray-400 group-hover/btn:text-[#FFD700] transition-colors" />
+                              <span>Simpan</span>
                             </a>
                           </div>
                         </div>

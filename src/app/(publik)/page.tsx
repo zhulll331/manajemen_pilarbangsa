@@ -27,13 +27,13 @@ export default function BerandaPage() {
             
             {/* Logo UKM Pilar Bangsa Tambahan */}
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-black rounded-3xl p-4 shadow-xl hover:scale-110 transition-transform duration-300">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 hover:scale-110 transition-transform duration-300">
                 <Image 
-                  src="/logo_pilar.svg" 
+                  src="/logo-ukm.png" 
                   alt="Logo UKM Pilar Bangsa" 
-                  width={80} 
-                  height={80} 
-                  className="object-contain invert w-full h-full"
+                  width={128} 
+                  height={128} 
+                  className="object-contain w-full h-full drop-shadow-md"
                 />
               </div>
             </div>
