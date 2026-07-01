@@ -505,14 +505,14 @@ export default function KelolaProkerPage() {
 
       {/* Formulir Input & Edit */}
       <section className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-10 shadow-xl space-y-8">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-          <h3 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 gap-4">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center space-x-2 leading-tight">
             <span>{isEditing ? 'Edit Program Kerja & Dokumen' : 'Input Program Kerja & Dokumen Baru'}</span>
           </h3>
           {isEditing && (
             <button
               onClick={resetForm}
-              className="inline-flex items-center space-x-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors"
+              className="inline-flex items-center justify-center space-x-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors w-full sm:w-auto shrink-0"
             >
               <X className="w-4 h-4" />
               <span>Batal Edit</span>
@@ -689,9 +689,9 @@ export default function KelolaProkerPage() {
 
           {/* Bagian 3: Media & Dokumentasi Galeri */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-              <h4 className="text-lg font-bold text-gray-800 border-l-4 border-black pl-3">3. Galeri Foto & Dokumentasi Publik</h4>
-              <span className="text-xs font-extrabold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200 flex items-center space-x-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 pb-3 gap-3">
+              <h4 className="text-lg font-bold text-gray-800 border-l-4 border-black pl-3 leading-tight">3. Galeri Foto & Dokumentasi Publik</h4>
+              <span className="text-xs font-extrabold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200 flex items-center space-x-1 shrink-0 self-start sm:self-auto">
                 <ImageIcon className="w-3.5 h-3.5" />
                 <span>Auto Potrait to Landscape 16:9</span>
               </span>

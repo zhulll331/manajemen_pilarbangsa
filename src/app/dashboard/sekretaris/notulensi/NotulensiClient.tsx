@@ -200,19 +200,19 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)] shrink-0 mt-1 sm:mt-0">
             <ClipboardList size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Notulensi Rapat</h1>
-            <p className="text-sm text-gray-500">Kelola catatan hasil rapat organisasi</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Notulensi Rapat</h1>
+            <p className="text-sm text-gray-500 line-clamp-2 sm:line-clamp-none">Kelola catatan hasil rapat organisasi</p>
           </div>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm w-full sm:w-auto"
         >
           <Plus size={18} />
           Tambah Notulensi

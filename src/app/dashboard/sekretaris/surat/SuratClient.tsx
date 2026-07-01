@@ -143,19 +143,19 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-[var(--color-primary)] shrink-0 mt-1 sm:mt-0">
             <FileText size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Persuratan</h1>
-            <p className="text-sm text-gray-500">Kelola surat masuk dan surat keluar</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Persuratan</h1>
+            <p className="text-sm text-gray-500 line-clamp-2 sm:line-clamp-none">Kelola surat masuk dan surat keluar</p>
           </div>
         </div>
         <button
           onClick={() => { setEditData(null); setSelectedFile(null); setShowModal(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm w-full sm:w-auto"
         >
           <Plus size={18} />
           Tambah Surat
