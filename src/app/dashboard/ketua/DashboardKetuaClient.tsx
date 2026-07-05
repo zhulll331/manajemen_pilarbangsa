@@ -46,9 +46,9 @@ export default function DashboardKetuaClient({
         <Link href="/dashboard/ketua/program" className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Program Berjalan" value={programBerjalan.toString()} icon={<ClipboardList size={24} />} color="green" />
         </Link>
-        <Link href="/dashboard/ketua/agenda" className="block hover:scale-[1.02] transition-transform">
+        <div className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Agenda Bulan Ini" value={agendaBulanIni.toString()} icon={<Calendar size={24} />} color="yellow" />
-        </Link>
+        </div>
         <Link href="/dashboard/bendahara/laporan" className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Saldo Kas" value={formatCurrency(saldoKas)} icon={<Wallet size={24} />} color="green" />
         </Link>

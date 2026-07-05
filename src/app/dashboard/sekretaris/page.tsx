@@ -31,11 +31,12 @@ export default async function DashboardSekretaris() {
     .order("meeting_date", { ascending: false })
     .limit(4);
 
-  // Recent archives
+  // Recent archives (letters excluding standard mail)
   const { data: recentArchives } = await supabase
-    .from("archives")
-    .select("title, category, uploaded_by, created_at")
-    .order("created_at", { ascending: false })
+    .from("letters")
+    .select("subject, letter_type, sender, date")
+    .not("letter_type", "in", '("Masuk", "Keluar", "Surat Masuk", "Surat Keluar")')
+    .order("date", { ascending: false })
     .limit(4);
 
   return (

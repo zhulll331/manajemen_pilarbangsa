@@ -25,11 +25,11 @@ interface Minute {
   participants: string;
 }
 
-interface Archive {
-  title: string;
-  category: string;
-  uploaded_by: string;
-  created_at: string;
+interface ArchiveLetter {
+  subject: string;
+  letter_type: string;
+  sender: string;
+  date: string;
 }
 
 interface DashboardSekretarisClientProps {
@@ -40,7 +40,7 @@ interface DashboardSekretarisClientProps {
   recentMembers: Member[];
   recentLetters: Letter[];
   recentMinutes: Minute[];
-  recentArchives: Archive[];
+  recentArchives: ArchiveLetter[];
 }
 
 export default function DashboardSekretarisClient({
@@ -161,20 +161,20 @@ export default function DashboardSekretarisClient({
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-gray-800">Arsip & Dokumen Terakhir</h3>
-            <Link href="/dashboard/sekretaris/arsip" className="text-sm text-[var(--color-primary)] hover:underline font-medium">Lihat Semua</Link>
+            <Link href="/dashboard/sekretaris/surat" className="text-sm text-[var(--color-primary)] hover:underline font-medium">Lihat Semua</Link>
           </div>
           <div className="space-y-4">
-            {recentArchives.length === 0 && <p className="text-sm text-gray-400">Belum ada arsip.</p>}
+            {recentArchives.length === 0 && <p className="text-sm text-gray-400">Belum ada dokumen.</p>}
             {recentArchives.map((arc, i) => (
               <div key={i} className="flex items-center p-4 border border-gray-100 rounded-xl hover:border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
                   <FolderOpen size={20} />
                 </div>
                 <div className="ml-4 flex-1">
-                  <p className="text-sm font-semibold text-gray-800">{arc.title}</p>
+                  <p className="text-sm font-semibold text-gray-800">{arc.subject}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] font-medium mr-2">{arc.category}</span>
-                    oleh {arc.uploaded_by}
+                    <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] font-medium mr-2">{arc.letter_type}</span>
+                    {arc.date} {arc.sender ? `• oleh ${arc.sender}` : ''}
                   </p>
                 </div>
               </div>
