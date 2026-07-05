@@ -21,7 +21,7 @@ CREATE POLICY "Authenticated users can update settings"
   
 CREATE POLICY "Authenticated users can insert settings" 
   ON public.website_settings FOR INSERT 
-  USING (auth.role() = 'authenticated');
+  WITH CHECK (auth.role() = 'authenticated');
 
 -- Masukkan Visi Misi Default
 INSERT INTO public.website_settings (setting_key, setting_value)
@@ -89,4 +89,5 @@ CREATE POLICY "Public profiles are viewable by everyone."
 
 CREATE POLICY "Authenticated users can manage news_links" 
   ON public.news_links FOR ALL 
-  USING (auth.role() = 'authenticated');
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');

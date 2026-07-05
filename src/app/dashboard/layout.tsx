@@ -23,14 +23,14 @@ export default async function DashboardLayout({
   let userRole = profile?.role;
   const email = user.email?.toLowerCase() || '';
 
-  if (
+  if (email.includes('humas') || userRole === 'humas') {
+    userRole = 'humas';
+  } else if (
     userRole === 'divisi' ||
     userRole === 'admin_divisi' ||
-    userRole === 'humas' ||
     userRole === 'riset' ||
     userRole === 'penalaran' ||
     userRole === 'pengabdian' ||
-    email.includes('humas') ||
     email.includes('riset') ||
     email.includes('penalaran') ||
     email.includes('pengabdian') ||
