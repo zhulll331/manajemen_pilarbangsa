@@ -35,7 +35,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                   alt="Logo Universitas" 
                   width={48} 
                   height={48} 
-                  className="object-contain w-full h-full drop-shadow-sm"
+                  className="object-contain w-full h-full drop-shadow-sm scale-[1.25]"
                 />
               </div>
             </div>
