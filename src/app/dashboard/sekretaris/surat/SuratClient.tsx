@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { uploadFileToDrive } from "@/utils/driveClientUpload";
-import { Plus, FileText, Mail, MailOpen } from "lucide-react";
+import { Plus, FileText, Mail, MailOpen, Loader2 } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
@@ -83,8 +83,11 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
     },
   ];
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return; // Prevent double submit
     setLoading(true);
+    const formData = new FormData(e.currentTarget);
     try {
       const letterType = formData.get("letter_type") as string || "Masuk";
       const folderName = `Surat ${letterType}`;
@@ -202,10 +205,18 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
 
       <DataModal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditData(null); }}
+        onClose={() => { if (!loading) { setShowModal(false); setEditData(null); } }}
         title={editData ? "Edit Data" : "Tambah Data"}
       >
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 relative">
+          {loading && (
+            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center backdrop-blur-[1px] rounded-xl">
+              <div className="flex flex-col items-center text-blue-600 gap-2">
+                <Loader2 size={32} className="animate-spin" />
+                <span className="text-sm font-semibold">Memproses Dokumen...</span>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Kategori / Tipe Dokumen</label>
@@ -289,13 +300,18 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
             </select>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+            <button type="button" onClick={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }} disabled={loading}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
               Batal
             </button>
             <button type="submit" disabled={loading}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-50">
-              {loading ? "Menyimpan & Upload Drive..." : editData ? "Simpan Perubahan" : "Tambah Surat"}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Menyimpan & Upload...</span>
+                </>
+              ) : editData ? "Simpan Perubahan" : "Tambah Dokumen"}
             </button>
           </div>
         </form>

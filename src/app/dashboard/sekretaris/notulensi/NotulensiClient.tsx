@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, ClipboardList, Calendar, Users, MessageSquare, CheckCircle, ArrowRight, Link as LinkIcon, Sparkles, Mic, Square, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ClipboardList, Calendar, Users, MessageSquare, CheckCircle, ArrowRight, Link as LinkIcon, Sparkles, Mic, Square, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { tambahNotulensi, editNotulensi, hapusNotulensi, parseNotulensiRapat, isGeminiConfigured } from "./actions";
@@ -152,6 +152,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return; // Prevent double submit
     setLoading(true);
     setErrorMsg("");
 
@@ -495,8 +496,13 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
                 Batal
               </button>
               <button type="submit" disabled={loading}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-50">
-                {loading ? "Menyimpan..." : editData ? "Simpan Perubahan" : "Tambah Notulensi"}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : editData ? "Simpan Perubahan" : "Tambah Notulensi"}
               </button>
             </div>
           </form>
