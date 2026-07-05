@@ -47,6 +47,7 @@ export default function PresensiClient({
   const [aiText, setAiText] = useState("");
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [hasGemini, setHasGemini] = useState(false);
+  const [unmatchedNames, setUnmatchedNames] = useState<string[]>([]);
 
   useEffect(() => {
     isGeminiConfigured().then(setHasGemini).catch(() => {});
@@ -89,10 +90,12 @@ export default function PresensiClient({
       return;
     }
     setIsProcessingAI(true);
+    setUnmatchedNames([]);
     try {
       const result = await parsePresensiAI(aiText, members.map(m => ({ id: m.id, name: m.name })));
       
-      const parsedMap = new Map(result.map((r: any) => [r.member_id, r.status]));
+      const matchedData = result.matched || [];
+      const parsedMap = new Map(matchedData.map((r: any) => [r.member_id, r.status]));
       
       setAttendanceMap(prev => {
         const newMap = { ...prev };
@@ -108,7 +111,13 @@ export default function PresensiClient({
       });
       setShowAI(false);
       setAiText("");
-      setSaveMessage({ text: "Berhasil mencocokkan data! Silakan periksa kembali dan klik Simpan.", type: "success" });
+      
+      if (result.unmatched_names && result.unmatched_names.length > 0) {
+        setUnmatchedNames(result.unmatched_names);
+        setSaveMessage({ text: "Berhasil mencocokkan sebagian data. Ada nama yang tidak terdaftar di database anggota!", type: "warning" });
+      } else {
+        setSaveMessage({ text: "Berhasil mencocokkan data! Silakan periksa kembali dan klik Simpan.", type: "success" });
+      }
     } catch (e: any) {
       alert(e.message || "Gagal memproses dengan AI.");
     } finally {
@@ -331,6 +340,20 @@ export default function PresensiClient({
               </button>
             </div>
           )}
+        </div>
+      )}
+
+
+
+      {unmatchedNames.length > 0 && (
+        <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-xl shadow-sm">
+          <h3 className="font-bold text-orange-800 mb-1">Peringatan: Anggota Tidak Terdaftar</h3>
+          <p className="text-sm text-orange-700 mb-2">
+            AI menemukan nama-nama berikut di catatan presensi Anda, tetapi <strong>tidak ada</strong> di database anggota resmi. Mereka diabaikan.
+          </p>
+          <ul className="list-disc list-inside text-sm text-orange-800 font-medium">
+            {unmatchedNames.map((name, i) => <li key={i}>{name}</li>)}
+          </ul>
         </div>
       )}
 
