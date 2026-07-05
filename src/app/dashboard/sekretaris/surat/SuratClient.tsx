@@ -6,6 +6,7 @@ import { Plus, FileText, Mail, MailOpen } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
+import { getViewerUrl } from "@/utils/driveClientUpload";
 import { tambahSurat, editSurat, hapusSurat } from "./actions";
 
 interface Letter {
@@ -67,11 +68,11 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
       ),
     },
     {
-      key: "file_url" as any,
-      label: "Berkas",
+      key: "file_url",
+      label: "File Surat",
       render: (l) => l.file_url ? (
-        <a href={l.file_url} target="_blank" rel="noreferrer" className="text-[var(--color-primary)] hover:underline text-xs flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <FileText size={14} /> Lihat
+        <a href={getViewerUrl(l.file_url)} target="_blank" rel="noreferrer" className="text-[var(--color-primary)] hover:underline text-xs flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <FileText size={14} /> Buka
         </a>
       ) : <span className="text-gray-400 text-xs">-</span>
     },
@@ -253,7 +254,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
           </div>
           {editData?.file_url && (
             <div className="text-sm text-gray-500">
-              File saat ini: <a href={editData.file_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Lihat Berkas</a>
+              File saat ini: <a href={getViewerUrl(editData.file_url)} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Lihat Berkas</a>
             </div>
           )}
           <div>

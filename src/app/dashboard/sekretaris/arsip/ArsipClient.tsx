@@ -6,7 +6,7 @@ import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
 import { tambahArsip, editArsip, hapusArsip } from "./actions";
-import { uploadFileToDrive } from "@/utils/driveClientUpload";
+import { uploadFileToDrive, getViewerUrl } from "@/utils/driveClientUpload";
 
 interface Archive {
   id: string;
@@ -68,7 +68,7 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
       key: "file_url",
       label: "File",
       render: (a) => a.file_url ? (
-        <a href={a.file_url} target="_blank" rel="noopener noreferrer"
+        <a href={getViewerUrl(a.file_url)} target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline"
           onClick={(e) => e.stopPropagation()}>
           <ExternalLink size={14} /> Buka
@@ -302,7 +302,7 @@ export default function ArsipClient({ archives }: { archives: Archive[] }) {
           </div>
           {editData?.file_url && (
             <div className="text-sm text-gray-500">
-              File saat ini: <a href={editData.file_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Lihat Berkas</a>
+              File saat ini: <a href={editData.file_url ? getViewerUrl(editData.file_url) : '#'} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Lihat Berkas</a>
             </div>
           )}
           <div className="flex gap-3 pt-2">

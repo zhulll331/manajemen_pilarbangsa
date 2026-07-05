@@ -5,6 +5,7 @@ import { Plus, ClipboardList, Calendar, Users, MessageSquare, CheckCircle, Arrow
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { tambahNotulensi, editNotulensi, hapusNotulensi, parseNotulensiRapat, isGeminiConfigured } from "./actions";
+import { getViewerUrl } from "@/utils/driveClientUpload";
 
 interface Minute {
   id: string;
@@ -332,7 +333,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
               <p className="text-sm text-gray-700 whitespace-pre-line">{showDetail.follow_up || "-"}</p>
             </div>
             {showDetail.file_url && (
-              <a href={showDetail.file_url} target="_blank" rel="noopener noreferrer"
+              <a href={getViewerUrl(showDetail.file_url)} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline">
                 <LinkIcon size={14} /> Lihat Dokumen
               </a>

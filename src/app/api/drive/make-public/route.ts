@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       console.warn('Catatan: Gagal mengatur permission publik:', permErr.message);
     }
 
-    const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+    const directUrl = `https://drive.google.com/file/d/${fileId}/view`;
     const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
 
     return NextResponse.json({ url: directUrl, downloadUrl, fileId });

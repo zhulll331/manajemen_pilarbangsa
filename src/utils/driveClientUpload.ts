@@ -1,5 +1,13 @@
 import { compressImageIfNeeded } from './compressImage';
 
+export const getViewerUrl = (url: string) => {
+  if (url && url.includes('drive.google.com/uc?export=view&id=')) {
+    const fileId = url.split('id=')[1]?.split('&')[0];
+    if (fileId) return `https://drive.google.com/file/d/${fileId}/view`;
+  }
+  return url;
+};
+
 /**
  * Upload file ke Google Drive.
  * 
@@ -91,7 +99,7 @@ export async function uploadFileToDrive(
   const publicData = await publicRes.json();
 
   return {
-    url: publicData.url || `https://drive.google.com/uc?export=view&id=${fileId}`,
+    url: publicData.url || `https://drive.google.com/file/d/${fileId}/view`,
     downloadUrl: publicData.downloadUrl || `https://drive.google.com/uc?export=download&id=${fileId}`,
     fileId,
     name: checkData.name || fileToUpload.name,
