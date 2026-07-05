@@ -6,7 +6,7 @@ import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
 import { ImportCSVModal } from "@/components/ImportCSVModal";
-import { tambahAnggota, editAnggota, hapusAnggota, importAnggotaBatch } from "./actions";
+import { tambahAnggota, editAnggota, hapusAnggota, hapusSemuaAnggota, importAnggotaBatch } from "./actions";
 
 interface Member {
   id: string;
@@ -27,6 +27,7 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [editData, setEditData] = useState<Member | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,18 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
     }
   };
 
+  const handleDeleteAll = async () => {
+    setLoading(true);
+    try {
+      await hapusSemuaAnggota();
+      setShowDeleteAll(false);
+    } catch (e) {
+      alert("Gagal menghapus semua data: " + (e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -99,6 +112,12 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => setShowDeleteAll(true)}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors shadow-sm"
+          >
+            Hapus Semua
+          </button>
           <button
             onClick={() => setShowImport(true)}
             className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors shadow-sm"
@@ -204,6 +223,14 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
         onConfirm={handleDelete}
         loading={loading}
         message={`Apakah Anda yakin ingin menghapus ${deleteTarget?.name}?`}
+      />
+
+      <DeleteConfirm
+        isOpen={showDeleteAll}
+        onClose={() => setShowDeleteAll(false)}
+        onConfirm={handleDeleteAll}
+        loading={loading}
+        message={`Apakah Anda yakin ingin MENGHAPUS SEMUA DATA ANGGOTA? Tindakan ini tidak dapat dibatalkan!`}
       />
 
       {/* Import CSV Modal */}
