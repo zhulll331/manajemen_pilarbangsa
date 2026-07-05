@@ -160,7 +160,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
           </div>
         </div>
         <button
-          onClick={handleOpenAdd}
+          onClick={() => { setEditData(null); setSelectedFile(null); setShowModal(true); }}
           className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm w-full sm:w-auto"
         >
           <Plus size={18} />
