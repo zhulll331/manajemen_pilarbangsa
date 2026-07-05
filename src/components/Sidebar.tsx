@@ -10,6 +10,7 @@ import {
   Calendar, 
   CalendarCheck,
   ClipboardList, 
+  FolderOpen,
   Archive,
   LogOut,
   UserCircle,
