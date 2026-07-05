@@ -50,22 +50,6 @@ export async function hapusAnggota(id: string) {
   revalidatePath('/dashboard', 'layout')
 }
 
-export async function hapusSemuaAnggota() {
-  const supabase = await createClient()
-
-  // Ambil semua ID terlebih dahulu
-  const { data, error: fetchError } = await supabase.from('members').select('id')
-  if (fetchError) throw new Error(fetchError.message)
-
-  if (data && data.length > 0) {
-    const ids = data.map(m => m.id)
-    const { error } = await supabase.from('members').delete().in('id', ids)
-    if (error) throw new Error(error.message)
-  }
-  
-  revalidatePath('/dashboard', 'layout')
-}
-
 export async function importAnggotaBatch(data: any[]) {
   const supabase = await createClient()
   
