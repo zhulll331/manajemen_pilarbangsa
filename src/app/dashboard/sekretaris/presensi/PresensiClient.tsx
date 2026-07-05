@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Save, CalendarCheck, Download } from "lucide-react";
+import { Save, CalendarCheck, Download, Sparkles, Loader2, Bot } from "lucide-react";
 import * as XLSX from "xlsx";
-import { simpanPresensiMassal } from "./actions";
+import { simpanPresensiMassal, parsePresensiAI, isGeminiConfigured } from "./actions";
 
 interface Member {
   id: string;
@@ -42,6 +42,15 @@ export default function PresensiClient({
   const [attendanceMap, setAttendanceMap] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState({ text: "", type: "" });
+  
+  const [showAI, setShowAI] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [hasGemini, setHasGemini] = useState(false);
+
+  useEffect(() => {
+    isGeminiConfigured().then(setHasGemini).catch(() => {});
+  }, []);
 
   // Extract unique filter options
   const divisions = ["Semua", ...Array.from(new Set(members.map(m => m.division).filter(Boolean)))];
@@ -72,6 +81,40 @@ export default function PresensiClient({
       return true;
     });
   }, [members, filterDivisi, filterFakultas, filterAngkatan]);
+
+  const handleProcessAI = async () => {
+    if (!aiText.trim()) return;
+    if (!selectedAgenda) {
+      alert("Silakan pilih agenda terlebih dahulu.");
+      return;
+    }
+    setIsProcessingAI(true);
+    try {
+      const result = await parsePresensiAI(aiText, members.map(m => ({ id: m.id, name: m.name })));
+      
+      const parsedMap = new Map(result.map((r: any) => [r.member_id, r.status]));
+      
+      setAttendanceMap(prev => {
+        const newMap = { ...prev };
+        filteredMembers.forEach(m => {
+          if (parsedMap.has(m.id)) {
+            newMap[m.id] = parsedMap.get(m.id)!;
+          } else {
+            // Default to Alpa if they are not detected by AI
+            newMap[m.id] = "Alpa";
+          }
+        });
+        return newMap;
+      });
+      setShowAI(false);
+      setAiText("");
+      setSaveMessage({ text: "Berhasil mencocokkan data! Silakan periksa kembali dan klik Simpan.", type: "success" });
+    } catch (e: any) {
+      alert(e.message || "Gagal memproses dengan AI.");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
 
   const handleStatusChange = (memberId: string, status: string) => {
     setAttendanceMap(prev => ({ ...prev, [memberId]: status }));
@@ -240,6 +283,56 @@ export default function PresensiClient({
           </div>
         </div>
       </div>
+
+      {/* AI Mass Attendance Panel */}
+      {selectedAgenda && hasGemini && (
+        <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+          <button 
+            onClick={() => setShowAI(!showAI)}
+            className="w-full flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors"
+          >
+            <div className="flex items-center gap-2 text-blue-700 font-semibold">
+              <Sparkles size={18} className="text-blue-500" />
+              <span>Input Presensi Cepat (AI)</span>
+            </div>
+            <span className="text-xs text-blue-600 font-medium">
+              {showAI ? "Tutup Panel" : "Buka Panel"}
+            </span>
+          </button>
+          
+          {showAI && (
+            <div className="p-4 border-t border-blue-100 bg-white">
+              <p className="text-sm text-gray-600 mb-3">
+                Tempelkan (paste) daftar presensi dari WhatsApp atau HP Anda di bawah ini. AI akan secara otomatis mencocokkan nama dan mendata siapa saja yang Hadir, Izin, Sakit. <br/>
+                <strong className="text-red-500">Penting: Anggota yang namanya tidak ada di catatan otomatis akan dianggap Alpa.</strong>
+              </p>
+              <textarea
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+                placeholder="Contoh:&#10;Hadir: Budi, Siti, Andi&#10;Izin: Joko&#10;Sakit: Doni"
+                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none min-h-[150px] text-sm font-mono text-gray-700 mb-3 bg-gray-50"
+              />
+              <button
+                onClick={handleProcessAI}
+                disabled={isProcessingAI || !aiText.trim()}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 w-full sm:w-auto"
+              >
+                {isProcessingAI ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>AI Sedang Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <Bot size={18} />
+                    <span>Proses dengan AI</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Presensi Area */}
       {selectedAgenda ? (
