@@ -1,11 +1,10 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createClient } from '@/utils/supabase/server';
 import BeritaClient from './BeritaClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function KelolaBeritaPage() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = await createClient();
   
   const { data: news } = await supabase
     .from('news_links')

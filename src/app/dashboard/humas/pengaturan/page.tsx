@@ -1,11 +1,10 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createClient } from '@/utils/supabase/server';
 import VisiMisiClient from './VisiMisiClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PengaturanWebsitePage() {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = await createClient();
   
   const { data: settings } = await supabase
     .from('website_settings')

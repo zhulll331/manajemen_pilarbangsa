@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { Save, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -27,7 +27,7 @@ export default function VisiMisiClient({ initialData }: { initialData?: VisiMisi
   const [data, setData] = useState<VisiMisiData>(initialData || defaultData);
   const [isLoading, setIsLoading] = useState(false);
 
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const router = useRouter();
 
   const handleSave = async () => {

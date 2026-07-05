@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { Plus, Trash2, Edit2, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -25,7 +25,7 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
     image_url: ""
   });
 
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const router = useRouter();
 
   const handleOpenModal = (news?: NewsLink) => {
