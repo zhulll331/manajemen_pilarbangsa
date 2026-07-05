@@ -95,7 +95,7 @@ export default function PresensiClient({
       const result = await parsePresensiAI(aiText, members.map(m => ({ id: m.id, name: m.name })));
       
       const matchedData = result.matched || [];
-      const parsedMap = new Map(matchedData.map((r: any) => [r.member_id, r.status]));
+      const parsedMap = new Map<string, string>(matchedData.map((r: any) => [r.member_id, r.status]));
       
       setAttendanceMap(prev => {
         const newMap = { ...prev };
