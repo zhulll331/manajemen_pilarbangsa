@@ -59,7 +59,7 @@ Instruksi:
 1. Ekstrak siapa saja yang hadir, izin, atau sakit dari teks kotor.
 2. Cocokkan nama mereka dengan daftar anggota resmi di atas secara fuzzy (misal singkatan/nama panggilan).
 3. Untuk setiap orang yang berhasil dicocokkan, tentukan status presensinya: "Hadir", "Izin", atau "Sakit".
-4. Kumpulkan SEMUA NAMA yang ada di catatan kotor tetapi TIDAK BERHASIL DICOCOKKAN dengan daftar resmi ke dalam array `unmatched_names`.
+4. Kumpulkan SEMUA NAMA yang ada di catatan kotor tetapi TIDAK BERHASIL DICOCOKKAN dengan daftar resmi ke dalam array "unmatched_names".
 5. Jika ada orang dalam teks kotor yang tidak jelas statusnya, asumsikan "Hadir".
 6. Format output HARUS berupa JSON murni dengan format object seperti berikut, tanpa backticks atau teks tambahan apa pun. Contoh:
 {
