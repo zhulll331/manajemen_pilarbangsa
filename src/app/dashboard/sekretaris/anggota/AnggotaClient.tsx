@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Search } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
@@ -30,6 +30,12 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
   const [editData, setEditData] = useState<Member | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredMembers = members.filter(m => 
+    m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    m.nim?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const columns: Column<Member>[] = [
     { key: "name", label: "Nama", render: (m) => <span className="font-medium text-gray-900">{m.name}</span> },
@@ -99,6 +105,16 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Cari anggota atau NIM..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full sm:w-64 pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white"
+            />
+          </div>
           <button
             onClick={() => setShowImport(true)}
             className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors shadow-sm"
@@ -119,7 +135,7 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <DataTable pagination pageSize={10}
           columns={columns}
-          data={members}
+          data={filteredMembers}
           onEdit={(m) => { setEditData(m); setShowModal(true); }}
           onDelete={(m) => { setDeleteTarget(m); setShowDelete(true); }}
           emptyMessage="Belum ada data anggota."
@@ -170,11 +186,16 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Divisi</label>
-              <select name="division" defaultValue={editData?.division || ""}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white">
-                <option value="">Pilih Divisi</option>
-                {divisions.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
+              <input 
+                list="divisions" 
+                name="division" 
+                defaultValue={editData?.division || ""}
+                placeholder="Pilih atau ketik divisi..."
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white"
+              />
+              <datalist id="divisions">
+                {divisions.map(d => <option key={d} value={d} />)}
+              </datalist>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
