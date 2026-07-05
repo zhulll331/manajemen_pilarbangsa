@@ -21,7 +21,8 @@ interface Letter {
   status: string;
 }
 
-const letterStatuses = ["Diterima", "Diproses", "Terkirim", "Selesai"];
+const letterStatuses = ["Diterima", "Diproses", "Terkirim", "Selesai", "Diarsipkan"];
+const documentTypes = ["Surat Masuk", "Surat Keluar", "Proposal", "LPJ", "SK", "Dokumentasi", "Lainnya"];
 
 export default function SuratClient({ letters }: { letters: Letter[] }) {
   const [showModal, setShowModal] = useState(false);
@@ -29,7 +30,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   const [editData, setEditData] = useState<Letter | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<"Semua" | "Masuk" | "Keluar">("Semua");
+  const [filter, setFilter] = useState<string>("Semua");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const filteredLetters = filter === "Semua"
@@ -37,22 +38,26 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
     : letters.filter(l => l.letter_type === filter);
 
   const columns: Column<Letter>[] = [
-    { key: "letter_number", label: "No. Surat", render: (l) => <span className="font-medium text-gray-900 text-xs">{l.letter_number}</span> },
+    { key: "letter_number", label: "No. Surat / Dokumen", render: (l) => <span className="font-medium text-gray-900 text-xs">{l.letter_number || "-"}</span> },
     {
       key: "letter_type",
-      label: "Tipe",
+      label: "Kategori",
       render: (l) => (
         <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full w-fit ${
-          l.letter_type === "Masuk" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700"
+          l.letter_type === "Surat Masuk" ? "bg-blue-100 text-blue-700" :
+          l.letter_type === "Surat Keluar" ? "bg-indigo-100 text-indigo-700" :
+          "bg-gray-100 text-gray-700"
         }`}>
-          {l.letter_type === "Masuk" ? <Mail size={12} /> : <MailOpen size={12} />}
+          {l.letter_type === "Surat Masuk" ? <Mail size={12} /> : 
+           l.letter_type === "Surat Keluar" ? <MailOpen size={12} /> : 
+           <FileText size={12} />}
           {l.letter_type}
         </span>
       ),
     },
     { key: "date", label: "Tanggal" },
-    { key: "subject", label: "Perihal", render: (l) => <span className="line-clamp-1 max-w-[200px]">{l.subject}</span> },
-    { key: "sender", label: "Pengirim" },
+    { key: "subject", label: "Perihal / Judul", render: (l) => <span className="line-clamp-1 max-w-[200px]">{l.subject}</span> },
+    { key: "sender", label: "Pengirim / Pembuat", render: (l) => l.sender || "-" },
     {
       key: "status",
       label: "Status",
@@ -150,93 +155,110 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
             <FileText size={24} />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Persuratan</h1>
-            <p className="text-sm text-gray-500 line-clamp-2 sm:line-clamp-none">Kelola surat masuk dan surat keluar</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Arsip & Persuratan</h1>
+            <p className="text-sm text-gray-500 line-clamp-2 sm:line-clamp-none">Kelola surat masuk, surat keluar, proposal, LPJ, dan arsip dokumen lainnya</p>
           </div>
         </div>
         <button
-          onClick={() => { setEditData(null); setSelectedFile(null); setShowModal(true); }}
+          onClick={handleOpenAdd}
           className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm w-full sm:w-auto"
         >
           <Plus size={18} />
-          Tambah Surat
+          Tambah Data
         </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2">
-        {(["Semua", "Masuk", "Keluar"] as const).map(tab => (
+      <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar gap-2">
+        <button
+          onClick={() => setFilter("Semua")}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+            filter === "Semua" ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+          }`}
+        >
+          Semua Data
+        </button>
+        {documentTypes.map(type => (
           <button
-            key={tab}
-            onClick={() => setFilter(tab)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              filter === tab
-                ? "bg-[var(--color-primary)] text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            key={type}
+            onClick={() => setFilter(type)}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              filter === type ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             }`}
           >
-            {tab === "Semua" ? "Semua Surat" : `Surat ${tab}`}
+            {type}
           </button>
         ))}
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <DataTable pagination pageSize={10}
           columns={columns}
           data={filteredLetters}
           onEdit={(l) => { setEditData(l); setSelectedFile(null); setShowModal(true); }}
           onDelete={(l) => { setDeleteTarget(l); setShowDelete(true); }}
-          emptyMessage="Belum ada data surat."
+          emptyMessage="Belum ada data."
         />
       </div>
 
-      {/* Modal Form */}
       <DataModal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditData(null); setSelectedFile(null); }}
-        title={editData ? "Edit Surat" : "Tambah Surat Baru"}
+        onClose={() => { setShowModal(false); setEditData(null); }}
+        title={editData ? "Edit Data" : "Tambah Data"}
       >
         <form action={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">No. Surat</label>
-              <input name="letter_number" defaultValue={editData?.letter_number} required
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kategori / Tipe Dokumen</label>
+              <select name="letter_type" defaultValue={editData?.letter_type || documentTypes[0]}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white">
+                {documentTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Surat</label>
-              <select name="letter_type" defaultValue={editData?.letter_type || "Masuk"}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select name="status" defaultValue={editData?.status || "Diterima"}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white">
-                <option value="Masuk">Surat Masuk</option>
-                <option value="Keluar">Surat Keluar</option>
+                {letterStatuses.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-            <input type="date" name="date" defaultValue={editData?.date}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-              <input name="sender" defaultValue={editData?.sender}
+              <label className="block text-sm font-medium text-gray-700 mb-1">No. Surat / Dokumen (Opsional)</label>
+              <input name="letter_number" defaultValue={editData?.letter_number || ""}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-              <input name="recipient" defaultValue={editData?.recipient}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+              <input type="date" name="date" defaultValue={editData?.date} required
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Pengirim / Pembuat (Opsional)</label>
+              <input name="sender" defaultValue={editData?.sender || ""}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Penerima / Tujuan (Opsional)</label>
+              <input name="recipient" defaultValue={editData?.recipient || ""}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Perihal</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Perihal / Judul Dokumen</label>
             <input name="subject" defaultValue={editData?.subject} required
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
           </div>
+
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Upload File Surat (Google Drive)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Upload File (Google Drive)</label>
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-500 transition-colors bg-blue-50/20">
               <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
@@ -244,14 +266,16 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
               {selectedFile && (
                 <p className="mt-2 text-xs font-bold text-green-600">File terpilih: {selectedFile.name}</p>
               )}
-              <p className="mt-1 text-[11px] text-gray-400">Surat akan otomatis masuk ke folder Google Drive &quot;Sekretaris &gt; Surat Masuk/Keluar&quot;.</p>
+              <p className="mt-1 text-[11px] text-gray-400">Berkas akan masuk ke Google Drive Sekretaris.</p>
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Atau Link Eksternal</label>
             <input name="file_url" defaultValue={editData?.file_url || ""} placeholder="https://drive.google.com/..."
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
           </div>
+
           {editData?.file_url && (
             <div className="text-sm text-gray-500">
               File saat ini: <a href={getViewerUrl(editData.file_url)} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Lihat Berkas</a>
