@@ -59,14 +59,14 @@ export async function proxy(request: NextRequest) {
     let userRole = profile?.role
     const email = user.email?.toLowerCase() || ''
 
-    if (
+    if (email.includes('humas') || userRole === 'humas') {
+      userRole = 'humas'
+    } else if (
       userRole === 'divisi' ||
       userRole === 'admin_divisi' ||
-      userRole === 'humas' ||
       userRole === 'riset' ||
       userRole === 'penalaran' ||
       userRole === 'pengabdian' ||
-      email.includes('humas') ||
       email.includes('riset') ||
       email.includes('penalaran') ||
       email.includes('pengabdian') ||
@@ -104,6 +104,11 @@ export async function proxy(request: NextRequest) {
       url.pathname = '/dashboard/divisi'
       return NextResponse.redirect(url)
     }
+    if (userRole === 'humas' && !pathname.startsWith('/dashboard/humas') && !pathname.startsWith('/dashboard/divisi')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard/humas/berita'
+      return NextResponse.redirect(url)
+    }
   } else if (pathname === '/login' && user && request.method !== 'POST') {
     // Jika sudah login tapi buka halaman login (via GET), redirect ke dashboardnya
     const { data: profile } = await supabase
@@ -115,14 +120,14 @@ export async function proxy(request: NextRequest) {
     let userRole = profile?.role
     const email = user.email?.toLowerCase() || ''
 
-    if (
+    if (email.includes('humas') || userRole === 'humas') {
+      userRole = 'humas'
+    } else if (
       userRole === 'divisi' ||
       userRole === 'admin_divisi' ||
-      userRole === 'humas' ||
       userRole === 'riset' ||
       userRole === 'penalaran' ||
       userRole === 'pengabdian' ||
-      email.includes('humas') ||
       email.includes('riset') ||
       email.includes('penalaran') ||
       email.includes('pengabdian') ||

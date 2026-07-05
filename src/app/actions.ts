@@ -27,14 +27,14 @@ export async function login(formData: FormData) {
   let userRole = profile?.role
   const email = authData.user.email?.toLowerCase() || ''
 
-  if (
+  if (email.includes('humas') || userRole === 'humas') {
+    userRole = 'humas'
+  } else if (
     userRole === 'divisi' ||
     userRole === 'admin_divisi' ||
-    userRole === 'humas' ||
     userRole === 'riset' ||
     userRole === 'penalaran' ||
     userRole === 'pengabdian' ||
-    email.includes('humas') ||
     email.includes('riset') ||
     email.includes('penalaran') ||
     email.includes('pengabdian') ||

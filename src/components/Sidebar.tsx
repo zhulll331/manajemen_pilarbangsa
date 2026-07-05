@@ -37,6 +37,7 @@ export function Sidebar({
           { href: "/dashboard/sekretaris/anggota", label: "Data Anggota", icon: <Users size={20} /> },
           { href: "/dashboard/sekretaris/surat", label: "Persuratan", icon: <FileText size={20} /> },
           { href: "/dashboard/sekretaris/notulensi", label: "Notulensi", icon: <ClipboardList size={20} /> },
+          { href: "/dashboard/sekretaris/agenda", label: "Agenda Organisasi", icon: <Calendar size={20} /> },
           { href: "/dashboard/sekretaris/presensi", label: "Presensi", icon: <CalendarCheck size={20} /> },
           { href: "/dashboard/sekretaris/arsip", label: "Arsip Dokumen", icon: <FolderOpen size={20} /> },
           { href: "/dashboard/sekretaris/arsip-lama", label: "Arsip Lama", icon: <Archive size={20} /> },
@@ -71,7 +72,6 @@ export function Sidebar({
         return [
           { href: "/dashboard/ketua", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
           { href: "/dashboard/ketua/program", label: "Program Kerja", icon: <ClipboardList size={20} /> },
-          { href: "/dashboard/ketua/agenda", label: "Agenda Organisasi", icon: <Calendar size={20} /> },
           { href: "/dashboard/ketua/evaluasi", label: "Evaluasi", icon: <FileText size={20} /> },
         ];
     }

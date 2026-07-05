@@ -137,6 +137,56 @@ export default function PresensiClient({
     XLSX.writeFile(workbook, `Laporan_Presensi_${agendaName}.xlsx`);
   };
 
+  const handleExportAllExcel = () => {
+    if (agendas.length === 0) {
+      alert("Tidak ada agenda untuk diekspor.");
+      return;
+    }
+
+    const workbook = XLSX.utils.book_new();
+
+    // Iterate through all agendas
+    agendas.forEach(agenda => {
+      // Get all attendance for this specific agenda
+      const agendaAttendance = allAttendance.filter(a => a.agenda_id === agenda.id);
+      const agendaAttendanceMap: Record<string, string> = {};
+      agendaAttendance.forEach(a => {
+        agendaAttendanceMap[a.member_id] = a.status;
+      });
+
+      // Prepare data for the worksheet using all members (unfiltered by current UI filters to ensure complete recap)
+      const exportData = members.map((member, index) => ({
+        "No": index + 1,
+        "Nama Anggota": member.name,
+        "Divisi": member.division || "-",
+        "Fakultas": member.faculty || "-",
+        "Angkatan": member.generation || "-",
+        "Kehadiran": agendaAttendanceMap[member.id] || "Belum Diisi",
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      const wscols = [
+        {wch: 5}, {wch: 30}, {wch: 20}, {wch: 20}, {wch: 10}, {wch: 15}
+      ];
+      worksheet['!cols'] = wscols;
+
+      // Safe sheet name (max 31 chars and no invalid chars)
+      let safeSheetName = agenda.title.replace(/[:\\/?*\[\]]/g, '').trim().substring(0, 31);
+      if (!safeSheetName) safeSheetName = `Agenda_${agenda.id.substring(0, 8)}`;
+
+      // Try appending sheet, handle duplicate names if they occur
+      try {
+        XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName);
+      } catch (e) {
+        // If sheet name already exists or invalid, use a fallback
+        XLSX.utils.book_append_sheet(workbook, worksheet, `Agenda_${Math.floor(Math.random() * 1000)}`);
+      }
+    });
+
+    XLSX.writeFile(workbook, `Rekapan_Presensi_Lengkap.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Configuration Bar */}
@@ -269,11 +319,20 @@ export default function PresensiClient({
             
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
-                onClick={handleExportExcel}
-                className="w-full sm:w-auto px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                onClick={handleExportAllExcel}
+                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                title="Unduh Rekapan Semua Agenda (Multi-Sheet)"
               >
                 <Download size={18} />
-                Ekspor Excel
+                Rekapan Lengkap
+              </button>
+              <button
+                onClick={handleExportExcel}
+                className="w-full sm:w-auto px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                title="Unduh Agenda Ini Saja"
+              >
+                <Download size={18} />
+                Ekspor Saat Ini
               </button>
               <button
                 onClick={handleSave}
