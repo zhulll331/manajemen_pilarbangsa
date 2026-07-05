@@ -62,3 +62,91 @@ export async function tambahIuranMassal(data: any[]) {
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
 }
+
+export async function isGeminiConfigured() {
+  return !!process.env.GEMINI_API_KEY;
+}
+
+export async function parseIuranAI(rawText: string, members: { id: string, name: string }[]) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("API Key Gemini tidak ditemukan. Hubungi admin.");
+
+  const membersListStr = members.map(m => `- ${m.name} (ID: ${m.id})`).join("\n");
+
+  const prompt = `
+Anda adalah sistem pengekstrak data pembayaran iuran kas.
+Tugas Anda membaca teks kotor dari catatan HP, dan mencocokkannya dengan daftar anggota resmi berikut:
+${membersListStr}
+
+Catatan kotor:
+"""
+${rawText}
+"""
+
+Instruksi:
+1. Ekstrak siapa saja yang membayar iuran dan BERAPA TOTAL NOMINAL uang yang mereka bayarkan dari teks kotor.
+   (Misal: "Andi 15k" berarti 15000, "Budi bayar 5000" berarti 5000). Nominal HARUS angka.
+2. Cocokkan nama mereka dengan daftar anggota resmi di atas secara fuzzy.
+3. Kumpulkan SEMUA NAMA yang ada di catatan kotor tetapi TIDAK BERHASIL DICOCOKKAN dengan daftar resmi ke dalam array "unmatched_names".
+4. Format output HARUS berupa JSON murni dengan format object seperti berikut, tanpa backticks atau teks tambahan apa pun. Contoh:
+{
+  "matched": [
+    { "member_id": "id-dari-daftar", "name": "Nama Resmi", "total_amount": 15000 }
+  ],
+  "unmatched_names": [
+    "Nama Asing 1", "Bukan Anggota 2"
+  ]
+}
+  `;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      }
+    );
+
+    if (!response.ok) throw new Error(response.statusText);
+    const result = await response.json();
+    const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!responseText) throw new Error("Respons AI kosong.");
+
+    return JSON.parse(responseText.trim());
+  } catch (error: any) {
+    throw new Error(error.message || "Gagal memproses dengan AI.");
+  }
+}
+
+export async function tambahIuranMassalAI(duesData: any[], totalAmount: number, description: string) {
+  const supabase = await createClient();
+  
+  // 1. Insert dues
+  if (duesData.length > 0) {
+    const { error: duesError } = await supabase.from('dues').insert(duesData);
+    if (duesError) throw new Error("Gagal menyimpan iuran: " + duesError.message);
+  }
+
+  // 2. Insert finance transaction
+  if (totalAmount > 0) {
+    const payloadTransaction = {
+      transaction_date: new Date().toISOString().split('T')[0],
+      type: 'Pemasukan',
+      category: 'Iuran',
+      amount: totalAmount,
+      description: description,
+      responsible_person: 'Bendahara (Via AI)',
+      proof_url: null
+    };
+
+    const { error: transError } = await supabase.from('finance_transactions').insert(payloadTransaction);
+    if (transError) throw new Error("Gagal mencatat transaksi keuangan: " + transError.message);
+  }
+
+  revalidatePath('/dashboard', 'layout');
+}

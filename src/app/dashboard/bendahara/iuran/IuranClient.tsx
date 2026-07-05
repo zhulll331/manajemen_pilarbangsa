@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, CheckCircle, XCircle, ExternalLink, Download, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, CheckCircle, XCircle, ExternalLink, Download, Users, Sparkles, Loader2, Bot, Save } from "lucide-react";
 import * as XLSX from "xlsx";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable } from "@/components/DataTable";
-import { tambahIuran, editIuran, hapusIuran, tambahIuranMassal } from "./actions";
+import { tambahIuran, editIuran, hapusIuran, tambahIuranMassal, parseIuranAI, tambahIuranMassalAI, isGeminiConfigured } from "./actions";
 
 const MONTHS = [
   { value: 1, label: "Januari" },
@@ -36,6 +36,20 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
   const [selectedData, setSelectedData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [showAI, setShowAI] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [aiStartMonth, setAiStartMonth] = useState(new Date().getMonth() + 1);
+  const [aiStartYear, setAiStartYear] = useState(CURRENT_YEAR);
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [hasGemini, setHasGemini] = useState(false);
+  const [unmatchedNames, setUnmatchedNames] = useState<string[]>([]);
+  const [parsedPreview, setParsedPreview] = useState<any[]>([]);
+  const [aiDescription, setAiDescription] = useState("");
+
+  useEffect(() => {
+    isGeminiConfigured().then(setHasGemini).catch(() => {});
+  }, []);
 
   // Bulk State
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
@@ -83,6 +97,105 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
   const openDelete = (data: any) => {
     setSelectedData(data);
     setIsDeleteOpen(true);
+  };
+
+  const handleProcessAI = async () => {
+    if (!aiText.trim()) return;
+    setIsProcessingAI(true);
+    setUnmatchedNames([]);
+    setParsedPreview([]);
+    
+    try {
+      const result = await parseIuranAI(aiText, members.map(m => ({ id: m.id, name: m.name })));
+      
+      if (result.unmatched_names) {
+        setUnmatchedNames(result.unmatched_names);
+      }
+      
+      const matchedData = result.matched || [];
+      const newPreview: any[] = [];
+      
+      matchedData.forEach((m: any) => {
+        let remaining = Number(m.total_amount) || 0;
+        let currentMonth = aiStartMonth;
+        let currentYear = aiStartYear;
+        
+        const details = [];
+        const entries = [];
+        
+        while (remaining > 0) {
+          if (remaining >= 5000) {
+            entries.push({
+              member_id: m.member_id,
+              month: currentMonth,
+              year: currentYear,
+              amount: 5000,
+              status: "Lunas",
+              payment_date: new Date().toISOString().split('T')[0]
+            });
+            details.push(`${MONTHS.find(mn => mn.value === currentMonth)?.label} ${currentYear} (Lunas)`);
+            remaining -= 5000;
+          } else {
+            // less than 5000
+            entries.push({
+              member_id: m.member_id,
+              month: currentMonth,
+              year: currentYear,
+              amount: remaining,
+              status: "Belum Lunas",
+              payment_date: new Date().toISOString().split('T')[0]
+            });
+            details.push(`${MONTHS.find(mn => mn.value === currentMonth)?.label} ${currentYear} (Sisa ${remaining})`);
+            remaining = 0;
+          }
+          
+          currentMonth++;
+          if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+          }
+        }
+        
+        newPreview.push({
+          member_id: m.member_id,
+          name: m.name,
+          total_amount: m.total_amount,
+          entries: entries,
+          detailsStr: details.join(", ")
+        });
+      });
+      
+      setParsedPreview(newPreview);
+      
+    } catch (e: any) {
+      alert(e.message || "Gagal memproses AI");
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
+  const handleSaveAI = async () => {
+    if (parsedPreview.length === 0) return;
+    setIsLoading(true);
+    
+    try {
+      const allEntries = parsedPreview.flatMap(p => p.entries);
+      const totalAmount = parsedPreview.reduce((sum, p) => sum + Number(p.total_amount), 0);
+      const desc = aiDescription.trim() || `Pemasukan Iuran Massal via AI (${allEntries.length} entri bulan)`;
+      
+      await tambahIuranMassalAI(allEntries, totalAmount, desc);
+      
+      setShowAI(false);
+      setAiText("");
+      setParsedPreview([]);
+      setUnmatchedNames([]);
+      setAiDescription("");
+      alert("Berhasil menyimpan iuran massal dan mencatat pemasukan!");
+    } catch (error: any) {
+      alert(error.message || "Gagal menyimpan");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -266,6 +379,146 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
           </button>
         </div>
       </div>
+
+      {/* AI Mass Kas Panel */}
+      {hasGemini && (
+        <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden mb-6">
+          <button 
+            onClick={() => setShowAI(!showAI)}
+            className="w-full flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors"
+          >
+            <div className="flex items-center gap-2 text-blue-700 font-semibold">
+              <Sparkles size={18} className="text-blue-500" />
+              <span>Input Iuran Cepat (AI)</span>
+            </div>
+            <span className="text-xs text-blue-600 font-medium">
+              {showAI ? "Tutup Panel" : "Buka Panel"}
+            </span>
+          </button>
+          
+          {showAI && (
+            <div className="p-4 border-t border-blue-100 bg-white">
+              <p className="text-sm text-gray-600 mb-4">
+                Tempelkan teks laporan bayar kas (misal dari WhatsApp) di bawah ini. AI akan secara otomatis memecah nominal uang besar menjadi beberapa bulan berturut-turut.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Mulai Dari Bulan</label>
+                  <select 
+                    value={aiStartMonth}
+                    onChange={e => setAiStartMonth(Number(e.target.value))}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50"
+                  >
+                    {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Tahun</label>
+                  <input 
+                    type="number"
+                    value={aiStartYear}
+                    onChange={e => setAiStartYear(Number(e.target.value))}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50"
+                  />
+                </div>
+              </div>
+
+              <textarea
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+                placeholder="Contoh:&#10;Andi 15000&#10;Budi 5k&#10;Siti 12.000"
+                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none min-h-[120px] text-sm font-mono text-gray-700 mb-3 bg-gray-50"
+              />
+              
+              <button
+                onClick={handleProcessAI}
+                disabled={isProcessingAI || !aiText.trim()}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 w-full sm:w-auto"
+              >
+                {isProcessingAI ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>AI Sedang Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <Bot size={18} />
+                    <span>Pratinjau dengan AI</span>
+                  </>
+                )}
+              </button>
+
+              {/* Unmatched Names Warning */}
+              {unmatchedNames.length > 0 && (
+                <div className="mt-4 bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-xl shadow-sm">
+                  <h3 className="font-bold text-orange-800 mb-1">Peringatan: Anggota Tidak Terdaftar</h3>
+                  <p className="text-sm text-orange-700 mb-2">
+                    AI menemukan nama-nama berikut tetapi <strong>tidak ada</strong> di database anggota resmi.
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-orange-800 font-medium">
+                    {unmatchedNames.map((name, i) => <li key={i}>{name}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {/* Preview Data */}
+              {parsedPreview.length > 0 && (
+                <div className="mt-4 border rounded-xl overflow-hidden">
+                  <div className="bg-gray-50 p-3 border-b flex justify-between items-center">
+                    <h4 className="font-semibold text-gray-700">Hasil Pratinjau Pembagian Bulan</h4>
+                  </div>
+                  <div className="overflow-x-auto max-h-[300px]">
+                    <table className="w-full text-left text-sm text-gray-600">
+                      <thead className="bg-white text-gray-700 sticky top-0 border-b">
+                        <tr>
+                          <th className="p-3 font-medium">Nama Anggota</th>
+                          <th className="p-3 font-medium">Total Uang</th>
+                          <th className="p-3 font-medium">Rincian Bulan (Dibuat otomatis)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y bg-white">
+                        {parsedPreview.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="p-3 font-medium">{item.name}</td>
+                            <td className="p-3">Rp {item.total_amount.toLocaleString('id-ID')}</td>
+                            <td className="p-3">
+                              <div className="flex flex-wrap gap-1">
+                                {item.entries.map((entry: any, i: number) => (
+                                  <span key={i} className={`px-2 py-1 text-xs rounded-full border ${entry.status === 'Lunas' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                    {MONTHS.find(mn => mn.value === entry.month)?.label} {entry.year} ({entry.status === 'Lunas' ? 'Lunas' : `Sisa Rp${entry.amount.toLocaleString('id-ID')}`})
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="p-4 bg-gray-50 border-t flex flex-col sm:flex-row gap-3">
+                    <input 
+                      type="text"
+                      value={aiDescription}
+                      onChange={e => setAiDescription(e.target.value)}
+                      placeholder="Keterangan Pemasukan (opsional, misal: Iuran dari WA)"
+                      className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                    />
+                    <button
+                      onClick={handleSaveAI}
+                      disabled={isLoading}
+                      className="px-5 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap"
+                    >
+                      {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                      Simpan ke Database
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <DataTable pagination pageSize={10} 
         data={filteredData}
