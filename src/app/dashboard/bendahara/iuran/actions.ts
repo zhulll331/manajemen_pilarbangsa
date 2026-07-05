@@ -86,9 +86,10 @@ ${rawText}
 Instruksi:
 1. Ekstrak siapa saja yang membayar iuran dan BERAPA TOTAL NOMINAL uang yang mereka bayarkan dari teks kotor.
    (Misal: "Andi 15k" berarti 15000, "Budi bayar 5000" berarti 5000). Nominal HARUS angka.
-2. Cocokkan nama mereka dengan daftar anggota resmi di atas secara fuzzy.
-3. Kumpulkan SEMUA NAMA yang ada di catatan kotor tetapi TIDAK BERHASIL DICOCOKKAN dengan daftar resmi ke dalam array "unmatched_names".
-4. Format output HARUS berupa JSON murni dengan format object seperti berikut, tanpa backticks atau teks tambahan apa pun. Contoh:
+2. **PENTING**: Jika hanya tertulis nama saja tanpa nominal uang (contoh: "Andi", "Budi"), asumsikan nominal uangnya adalah 5000.
+3. Cocokkan nama mereka dengan daftar anggota resmi di atas secara fuzzy.
+4. Kumpulkan SEMUA NAMA yang ada di catatan kotor tetapi TIDAK BERHASIL DICOCOKKAN dengan daftar resmi ke dalam array "unmatched_names".
+5. Format output HARUS berupa JSON murni dengan format object seperti berikut, tanpa backticks atau teks tambahan apa pun. Contoh:
 {
   "matched": [
     { "member_id": "id-dari-daftar", "name": "Nama Resmi", "total_amount": 15000 }
