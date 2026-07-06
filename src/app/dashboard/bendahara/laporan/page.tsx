@@ -11,10 +11,7 @@ export default async function LaporanPage() {
     .from("finance_transactions")
     .select("*");
 
-  // Fetch all dues
-  const { data: dues } = await supabase
-    .from("dues")
-    .select("*");
+
 
   let totalPemasukan = 0;
   let totalPengeluaran = 0;
@@ -40,24 +37,7 @@ export default async function LaporanPage() {
     });
   }
 
-  if (dues) {
-    // Iuran is considered Pemasukan if paid (Lunas)
-    dues.forEach((d) => {
-      if (d.status === "Lunas" && d.payment_date) {
-        totalPemasukan += d.amount;
-        
-        const date = new Date(d.payment_date);
-        const year = date.getFullYear();
-        const monthIdx = date.getMonth();
-        const monthName = MONTH_NAMES[monthIdx];
-        const monthKey = `${year}-${String(monthIdx + 1).padStart(2, "0")}`;
-        
-        if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { pemasukan: 0, pengeluaran: 0, year, month: monthName };
-        
-        monthlyMap[monthKey].pemasukan += d.amount;
-      }
-    });
-  }
+
 
   const saldoKas = totalPemasukan - totalPengeluaran;
 
