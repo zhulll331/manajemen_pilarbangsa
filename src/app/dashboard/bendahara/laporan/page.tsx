@@ -58,7 +58,6 @@ export default async function LaporanPage() {
 
       <LaporanClient 
         transactions={transactions || []}
-        dues={dues || []}
         totalPemasukan={totalPemasukan}
         totalPengeluaran={totalPengeluaran}
         saldoKas={saldoKas}
