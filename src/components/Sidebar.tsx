@@ -38,7 +38,8 @@ export function Sidebar({
           { href: "/dashboard/sekretaris/surat", label: "Arsip & Persuratan", icon: <FileText size={20} /> },
           { href: "/dashboard/sekretaris/notulensi", label: "Notulensi", icon: <ClipboardList size={20} /> },
           { href: "/dashboard/sekretaris/agenda", label: "Agenda Organisasi", icon: <Calendar size={20} /> },
-          { href: "/dashboard/sekretaris/presensi", label: "Presensi", icon: <CalendarCheck size={20} /> },
+          { href: "/dashboard/sekretaris/presensi", label: "Presensi Anggota", icon: <CalendarCheck size={20} /> },
+          { href: "/dashboard/sekretaris/presensi-pengurus", label: "Presensi Pengurus", icon: <CalendarCheck size={20} /> },
           { href: "/dashboard/sekretaris/arsip-lama", label: "Arsip Lama", icon: <Archive size={20} /> },
           { href: "/dashboard/sekretaris/evaluasi", label: "Evaluasi", icon: <FileText size={20} /> },
         ];
