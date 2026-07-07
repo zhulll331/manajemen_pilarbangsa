@@ -136,32 +136,8 @@ export default function KelolaProkerPage() {
     setErrorMessage('')
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      const email = (user.email || '').toLowerCase()
-      let divName = 'Humas & Kerjasama'
-      let keyword = ''
-
-      if (email.includes('humas')) { divName = 'Humas & Kerjasama'; keyword = 'humas' }
-      else if (email.includes('riset')) { divName = 'Riset & Penelitian'; keyword = 'riset' }
-      else if (email.includes('penalaran')) { divName = 'Penalaran & Program Kompetisi'; keyword = 'penalaran' }
-      else if (email.includes('pengabdian')) { divName = 'Pengabdian & Advokasi'; keyword = 'pengabdian' }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('division_name')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.division_name) {
-        divName = profile.division_name
-        const pDiv = divName.toLowerCase()
-        if (pDiv.includes('humas')) keyword = 'humas'
-        else if (pDiv.includes('riset')) keyword = 'riset'
-        else if (pDiv.includes('penalaran')) keyword = 'penalaran'
-        else if (pDiv.includes('pengabdian')) keyword = 'pengabdian'
-      }
-      setDivisionName(divName)
-
-      // Ambil data proker
+      // Karena Humas mengelola SEMUA proker, tidak perlu lagi membatasi tampilan (filter)
+      // berdasarkan profil. Ambil semua proker dari tabel.
       const { data: prokerData, error } = await supabase
         .from('programs')
         .select('*')
@@ -203,15 +179,7 @@ export default function KelolaProkerPage() {
           };
         });
 
-        if (keyword) {
-          const filtered = formattedPrograms.filter(p => {
-            const div = (p.division || '').toLowerCase()
-            return div.includes(keyword)
-          })
-          setPrograms(filtered)
-        } else {
-          setPrograms(formattedPrograms)
-        }
+        setPrograms(formattedPrograms)
       }
     }
     setLoading(false)
@@ -550,12 +518,16 @@ export default function KelolaProkerPage() {
 
               <div className="space-y-2">
                 <label className="block text-sm font-bold text-gray-700">Divisi Pelaksana</label>
-                <input
-                  type="text"
+                <select
                   value={divisionName}
                   onChange={(e) => setDivisionName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-800 font-bold shadow-sm"
-                />
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 font-bold focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+                >
+                  <option value="Humas & Kerjasama">Humas & Kerjasama</option>
+                  <option value="Penalaran & Program Kompetisi">Penalaran & Program Kompetisi</option>
+                  <option value="Riset & Penelitian">Riset & Penelitian</option>
+                  <option value="Pengabdian & Advokasi">Pengabdian & Advokasi</option>
+                </select>
               </div>
 
               <div className="space-y-2">
@@ -785,9 +757,9 @@ export default function KelolaProkerPage() {
         ) : programs.length === 0 ? (
           <div className="p-16 text-center bg-gray-50 rounded-3xl border border-gray-200 space-y-4">
             <AlertCircle className="w-12 h-12 text-gray-300 mx-auto" />
-            <h4 className="text-xl font-bold text-gray-700">Belum Ada Program Kerja untuk Divisi Anda</h4>
+            <h4 className="text-xl font-bold text-gray-700">Belum Ada Program Kerja</h4>
             <p className="text-base text-gray-500 max-w-md mx-auto">
-              Tabel programs di database Anda saat ini belum memiliki proker dengan nama divisi Anda ({divisionName}). Silakan isi formulir di atas untuk menambahkan data pertama Anda.
+              Tabel programs di database Anda saat ini masih kosong. Silakan isi formulir di atas untuk menambahkan program kerja baru dari divisi manapun.
             </p>
           </div>
         ) : (
