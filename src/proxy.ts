@@ -61,19 +61,6 @@ export async function proxy(request: NextRequest) {
 
     if (email.includes('humas') || userRole === 'humas') {
       userRole = 'humas'
-    } else if (
-      userRole === 'divisi' ||
-      userRole === 'admin_divisi' ||
-      userRole === 'riset' ||
-      userRole === 'penalaran' ||
-      userRole === 'pengabdian' ||
-      email.includes('riset') ||
-      email.includes('penalaran') ||
-      email.includes('pengabdian') ||
-      email.includes('divisi') ||
-      email.includes('wakilketua')
-    ) {
-      userRole = 'divisi'
     } else if (!userRole) {
       userRole = 'ketua'
     }
@@ -99,12 +86,7 @@ export async function proxy(request: NextRequest) {
       url.pathname = '/dashboard/bendahara'
       return NextResponse.redirect(url)
     }
-    if (userRole === 'divisi' && !pathname.startsWith('/dashboard/divisi')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard/divisi'
-      return NextResponse.redirect(url)
-    }
-    if (userRole === 'humas' && !pathname.startsWith('/dashboard/humas') && !pathname.startsWith('/dashboard/divisi')) {
+    if (userRole === 'humas' && !pathname.startsWith('/dashboard/humas')) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard/humas/berita'
       return NextResponse.redirect(url)
@@ -122,19 +104,6 @@ export async function proxy(request: NextRequest) {
 
     if (email.includes('humas') || userRole === 'humas') {
       userRole = 'humas'
-    } else if (
-      userRole === 'divisi' ||
-      userRole === 'admin_divisi' ||
-      userRole === 'riset' ||
-      userRole === 'penalaran' ||
-      userRole === 'pengabdian' ||
-      email.includes('riset') ||
-      email.includes('penalaran') ||
-      email.includes('pengabdian') ||
-      email.includes('divisi') ||
-      email.includes('wakilketua')
-    ) {
-      userRole = 'divisi'
     } else if (!userRole) {
       userRole = 'ketua'
     }

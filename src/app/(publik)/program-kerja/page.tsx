@@ -107,7 +107,7 @@ export default function ProgramKerjaPage() {
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi')
   const [selectedStatus, setSelectedStatus] = useState('Semua Status')
   const [searchQuery, setSearchQuery] = useState('')
-  const [programs, setPrograms] = useState<ProgramWork[]>(dummyPrograms)
+  const [programs, setPrograms] = useState<ProgramWork[]>([])
   const [loading, setLoading] = useState(true)
 
   const supabase = createClient()
@@ -145,7 +145,7 @@ export default function ProgramKerjaPage() {
         })
         setPrograms(livePrograms)
       } else {
-        setPrograms(dummyPrograms)
+        setPrograms([])
       }
       setLoading(false)
     }

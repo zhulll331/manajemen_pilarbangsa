@@ -29,19 +29,6 @@ export async function login(formData: FormData) {
 
   if (email.includes('humas') || userRole === 'humas') {
     userRole = 'humas'
-  } else if (
-    userRole === 'divisi' ||
-    userRole === 'admin_divisi' ||
-    userRole === 'riset' ||
-    userRole === 'penalaran' ||
-    userRole === 'pengabdian' ||
-    email.includes('riset') ||
-    email.includes('penalaran') ||
-    email.includes('pengabdian') ||
-    email.includes('divisi') ||
-    email.includes('wakilketua')
-  ) {
-    userRole = 'divisi'
   } else if (!userRole) {
     userRole = 'ketua'
   }

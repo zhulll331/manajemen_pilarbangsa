@@ -49,19 +49,9 @@ export function Sidebar({
           { href: "/dashboard/bendahara/iuran", label: "Iuran Anggota", icon: <Users size={20} /> },
           { href: "/dashboard/bendahara/laporan", label: "Laporan Keuangan", icon: <FileText size={20} /> },
         ];
-      case "divisi":
-      case "admin_divisi":
-      case "riset":
-      case "penalaran":
-      case "pengabdian":
-        return [
-          { href: "/dashboard/divisi", label: "Ringkasan Divisi", icon: <LayoutDashboard size={20} /> },
-          { href: "/dashboard/divisi/proker", label: "Kelola Proker (CRUD)", icon: <ClipboardList size={20} /> },
-        ];
       case "humas":
         return [
-          { href: "/dashboard/divisi", label: "Ringkasan Divisi", icon: <LayoutDashboard size={20} /> },
-          { href: "/dashboard/divisi/proker", label: "Kelola Proker", icon: <ClipboardList size={20} /> },
+          { href: "/dashboard/humas/proker", label: "Kelola Proker", icon: <ClipboardList size={20} /> },
           { href: "/dashboard/humas/berita", label: "Kelola Berita", icon: <FileText size={20} /> },
           { href: "/dashboard/humas/banner", label: "Pengaturan Banner", icon: <FolderOpen size={20} /> },
           { href: "/dashboard/humas/pengaturan", label: "Pengaturan Visi Misi", icon: <Users size={20} /> },

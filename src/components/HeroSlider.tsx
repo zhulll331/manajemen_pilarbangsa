@@ -3,34 +3,17 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import Link from 'next/link'
 
-const defaultSlides = [
+const fallbackSlides = [
   {
     id: 1,
     title: "Pilar Bangsa Digital Office",
     subtitle: "Wadah Transformasi & Kolaborasi Mahasiswa Universitas",
-    description: "Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel berbasis sistem digital terpadu sesuai Misi ke-2 Kepengurusan 2026/2027.",
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+    description: "Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel berbasis sistem digital terpadu.",
+    image_url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
     badge: "Transformasi Digital",
-    accentColor: "#E31837" // Merah
-  },
-  {
-    id: 2,
-    title: "Tri Dharma Perguruan Tinggi",
-    subtitle: "Pilar Pembelajaran, Penelitian, dan Pengabdian",
-    description: "Bersama membangun bangsa melalui riset inovatif dan pengabdian masyarakat yang berkelanjutan dan tepat sasaran.",
-    image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
-    badge: "Inovasi & Riset",
-    accentColor: "#008000" // Hijau
-  },
-  {
-    id: 3,
-    title: "Berlandaskan Trisakti Sukarno",
-    subtitle: "Berdaulat, Berdikari, dan Berkepribadian",
-    description: "Membentuk karakter kepemimpinan mahasiswa yang berakar pada budaya bangsa dan berdaya saing global.",
-    image: "https://images.unsplash.com/photo-1517486808906-697b691ed59b?auto=format&fit=crop&w=1200&q=80",
-    badge: "Kepemimpinan",
-    accentColor: "#FFD700" // Kuning
+    accent_color: "#E31837" // Merah
   }
 ]
 
@@ -48,7 +31,7 @@ function getCleanImageUrl(url: string, defaultImg: string) {
 export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
-  const [slides, setSlides] = useState(defaultSlides)
+  const [slides, setSlides] = useState<any[]>(fallbackSlides)
 
   const supabase = createClient()
 
@@ -60,22 +43,7 @@ export function HeroSlider() {
         .order('id', { ascending: true })
 
       if (!error && data && data.length > 0) {
-        const liveSlides = defaultSlides.map((defSlide) => {
-          const found = data.find((b: any) => b.id === defSlide.id)
-          if (found) {
-            return {
-              ...defSlide,
-              title: found.title || defSlide.title,
-              subtitle: found.subtitle || defSlide.subtitle,
-              description: found.description || defSlide.description,
-              image: getCleanImageUrl(found.image_url, defSlide.image),
-              badge: found.badge || defSlide.badge,
-              accentColor: found.accent_color || defSlide.accentColor
-            }
-          }
-          return defSlide
-        })
-        setSlides(liveSlides)
+        setSlides(data)
       }
     }
 
@@ -83,7 +51,7 @@ export function HeroSlider() {
   }, [])
 
   useEffect(() => {
-    if (isPaused) return
+    if (isPaused || slides.length <= 1) return
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
@@ -99,6 +67,8 @@ export function HeroSlider() {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
   }
+
+  if (!slides || slides.length === 0) return null;
 
   return (
     <div 
@@ -117,7 +87,7 @@ export function HeroSlider() {
           {/* Background Image with Overlay */}
           <div className="absolute inset-0 bg-black/60 z-10" />
           <img
-            src={slide.image}
+            src={getCleanImageUrl(slide.image_url, fallbackSlides[0].image_url)}
             alt={slide.title}
             className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out group-hover:scale-100"
           />
@@ -127,7 +97,7 @@ export function HeroSlider() {
             <div className="max-w-4xl text-center space-y-6">
               {/* Badge */}
               <div className="inline-block px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase bg-white/10 backdrop-blur-md border border-white/20 shadow-lg"
-                   style={{ borderLeft: `4px solid ${slide.accentColor}` }}>
+                   style={{ borderLeft: `4px solid ${slide.accent_color}` }}>
                 {slide.badge}
               </div>
 
@@ -148,56 +118,75 @@ export function HeroSlider() {
 
               {/* Action Buttons */}
               <div className="pt-4 flex flex-wrap gap-4 justify-center">
-                <a
-                  href="#tentang"
-                  className="px-8 py-3 rounded-xl font-bold text-black bg-white hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                <Link
+                  href="/program-kerja"
+                  className="px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                >
+                  Lihat Program Kerja
+                </Link>
+                <Link
+                  href="/tentang-kami"
+                  className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white font-semibold rounded-full hover:bg-white/20 transition-colors shadow-lg"
                 >
                   Pelajari Lebih Lanjut
-                </a>
-                <a
-                  href="/program-kerja"
-                  className="px-8 py-3 rounded-xl font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                >
-                  Program Kerja
-                </a>
+                </Link>
               </div>
             </div>
           </div>
         </div>
       ))}
 
-      {/* Manual Navigation Buttons */}
-      <button
-        onClick={prevSlide}
-        aria-label="Previous Slide"
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl"
-      >
-        <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
-      </button>
-
-      <button
-        onClick={nextSlide}
-        aria-label="Next Slide"
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl"
-      >
-        <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
-      </button>
-
-      {/* Indicator Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-3">
-        {slides.map((slide, index) => (
+      {/* Navigation Arrows */}
+      {slides.length > 1 && (
+        <>
           <button
-            key={slide.id}
-            onClick={() => setCurrentSlide(index)}
-            aria-label={`Go to slide ${index + 1}`}
-            className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-500 ${
-              index === currentSlide 
-                ? 'bg-white scale-125 shadow-lg shadow-white/50' 
-                : 'bg-white/40 hover:bg-white/60'
-            }`}
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-black/30 backdrop-blur-sm text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-all opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} className="md:w-8 md:h-8" />
+          </button>
+          
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-black/30 backdrop-blur-sm text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} className="md:w-8 md:h-8" />
+          </button>
+        </>
+      )}
+
+      {/* Navigation Dots */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`transition-all duration-300 rounded-full ${
+                index === currentSlide 
+                  ? 'w-8 h-2.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' 
+                  : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/60'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-30">
+          <div 
+            className="h-full bg-white transition-all duration-[4000ms] ease-linear"
+            style={{ 
+              width: isPaused ? '100%' : currentSlide === 0 && !isPaused ? '0%' : '100%',
+              transition: isPaused ? 'none' : 'width 4000ms linear'
+            }}
           />
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
