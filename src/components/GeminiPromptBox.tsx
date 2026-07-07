@@ -134,7 +134,14 @@ export function GeminiPromptBox() {
                       : "bg-gray-50 text-gray-800 border border-gray-200/60 rounded-bl-none"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                  <p className="whitespace-pre-wrap break-words">
+                    {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                      if (part.startsWith('**') && part.endsWith('**')) {
+                        return <strong key={i} className={msg.sender === "user" ? "font-extrabold text-white" : "font-extrabold text-black"}>{part.slice(2, -2)}</strong>;
+                      }
+                      return <span key={i}>{part}</span>;
+                    })}
+                  </p>
                 </div>
               </div>
             ))}
