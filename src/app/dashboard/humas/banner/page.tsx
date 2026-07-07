@@ -111,7 +111,9 @@ export default function BannerManagementPage() {
 
   const handleAddBanner = async () => {
     try {
+       const nextId = slides.length > 0 ? Math.max(...slides.map(s => Number(s.id))) + 1 : 1;
        const newBanner = {
+         id: nextId,
          title: "Judul Baru",
          subtitle: "Sub Judul",
          description: "Deskripsi",
