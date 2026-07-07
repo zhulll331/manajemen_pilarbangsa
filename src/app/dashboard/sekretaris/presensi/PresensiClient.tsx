@@ -39,7 +39,6 @@ export default function PresensiClient({
   const [filterDivisi, setFilterDivisi] = useState<string>("Semua");
   const [filterFakultas, setFilterFakultas] = useState<string>("Semua");
   const [filterAngkatan, setFilterAngkatan] = useState<string>("Semua");
-  const [filterRole, setFilterRole] = useState<string>("Semua");
   
   const [attendanceMap, setAttendanceMap] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -81,11 +80,9 @@ export default function PresensiClient({
       if (filterDivisi !== "Semua" && m.division !== filterDivisi) return false;
       if (filterFakultas !== "Semua" && m.faculty !== filterFakultas) return false;
       if (filterAngkatan !== "Semua" && m.generation !== filterAngkatan) return false;
-      if (filterRole === "Hanya Pengurus" && m.status !== "Pengurus Aktif") return false;
-      if (filterRole === "Hanya Anggota" && m.status !== "Aktif") return false;
       return true;
     });
-  }, [members, filterDivisi, filterFakultas, filterAngkatan, filterRole]);
+  }, [members, filterDivisi, filterFakultas, filterAngkatan]);
 
   const handleProcessAI = async () => {
     if (!aiText.trim()) return;
