@@ -4,106 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, Clock, CalendarPlus, Flag, AlertCircle, RefreshCw } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 
-// Dummy Data Acara (Roadmap Satu Periode Penuh 2026-2027) sebagai Fallback
-const dummyEvents = [
-  {
-    id: '1',
-    title: 'Pilar Strategic Partnership & Gathering',
-    date: '2026-07-15',
-    time: '09:00',
-    division: 'Humas & Kerjasama',
-    description: 'Penggalangan kemitraan strategis bersama universitas, media, dan instansi korporat untuk pendanaan dan kolaborasi kegiatan.'
-  },
-  {
-    id: '2',
-    title: 'Olimpiade Pemikiran Kritis Mahasiswa',
-    date: '2026-08-22',
-    time: '08:30',
-    division: 'Penalaran & Program Kompetisi',
-    description: 'Ajang kompetisi debat dan penulisan esai tingkat nasional guna mengasah ketajaman bernalar para mahasiswa.'
-  },
-  {
-    id: '3',
-    title: 'Simposium Riset & Teknologi Terapan',
-    date: '2026-09-14',
-    time: '10:00',
-    division: 'Riset & Penelitian',
-    description: 'Deseminasi hasil penelitian mahasiswa terkait pengembangan teknologi tepat guna bagi masyarakat pedesaan.'
-  },
-  {
-    id: '4',
-    title: 'Pilar Mengajar & Desa Binaan Ke-1',
-    date: '2026-10-10',
-    time: '07:00',
-    division: 'Pengabdian & Advokasi',
-    description: 'Penerjunan relawan pengajar ke sekolah-sekolah di pelosok daerah guna memperkuat inklusivitas pendidikan dasar.'
-  },
-  {
-    id: '5',
-    title: 'Media & Alumni Network Connect',
-    date: '2026-11-20',
-    time: '13:30',
-    division: 'Humas & Kerjasama',
-    description: 'Pembangunan relasi berkelanjutan bersama jaringan alumni UKM Pilar Bangsa guna pendampingan karir dan beasiswa.'
-  },
-  {
-    id: '6',
-    title: 'Kompetisi Rancangan Bisnis Digital',
-    date: '2026-12-12',
-    time: '09:00',
-    division: 'Penalaran & Program Kompetisi',
-    description: 'Kompetisi merancang solusi bisnis digital masa depan dengan menghadirkan para juri dari ekosistem startup.'
-  },
-  {
-    id: '7',
-    title: 'Penyusunan Indeks Kesejahteraan Mahasiswa',
-    date: '2027-01-18',
-    time: '14:00',
-    division: 'Riset & Penelitian',
-    description: 'Pengumpulan data survei independen untuk mengukur kepuasan dan kesejahteraan mahasiswa di lingkungan kampus.'
-  },
-  {
-    id: '8',
-    title: 'Advokasi Biaya Pendidikan & Beasiswa',
-    date: '2027-02-25',
-    time: '15:00',
-    division: 'Pengabdian & Advokasi',
-    description: 'Pendampingan hukum dan konsultasi beasiswa bagi mahasiswa yang mengalami kendala finansial dalam perkuliahan.'
-  },
-  {
-    id: '9',
-    title: 'Pilar Bangsa International Public Lecture',
-    date: '2027-03-20',
-    time: '09:00',
-    division: 'Humas & Kerjasama',
-    description: 'Kuliah umum internasional secara hybrid dengan menghadirkan narasumber profesor terkemuka dari universitas dunia.'
-  },
-  {
-    id: '10',
-    title: 'Hackathon Inovasi Sosial 24 Jam',
-    date: '2027-04-15',
-    time: '08:00',
-    division: 'Penalaran & Program Kompetisi',
-    description: 'Pembuatan solusi inovatif kemasyarakatan dalam ajang maraton pemrograman dan perancangan ide selama 24 jam penuh.'
-  },
-  {
-    id: '11',
-    title: 'Pameran Prototipe Hasil Penelitian',
-    date: '2027-05-12',
-    time: '11:00',
-    division: 'Riset & Penelitian',
-    description: 'Gelar pameran terbuka di aula utama kampus untuk mempublikasikan prototipe alat riset karya tim peneliti mahasiswa.'
-  },
-  {
-    id: '12',
-    title: 'Bakti Sosial Akbar Akhir Periode',
-    date: '2027-06-25',
-    time: '08:00',
-    division: 'Pengabdian & Advokasi',
-    description: 'Kegiatan bakti sosial puncak berupa layanan kesehatan gratis dan pembagian paket sembako di desa binaan Pilar Bangsa.'
-  }
-]
-
 const divisionsList = [
   'Semua',
   'Humas & Kerjasama',
@@ -171,7 +71,7 @@ function getDivisionBadgeClass(division: string) {
 export function TimelineRoadmap() {
   const [divisionFilter, setDivisionFilter] = useState('Semua')
   const [monthFilter, setMonthFilter] = useState('Satu Periode Penuh')
-  const [events, setEvents] = useState(dummyEvents)
+  const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   const supabase = createClient()
@@ -199,12 +99,13 @@ export function TimelineRoadmap() {
             date: dateStr,
             time: '09:00', // Waktu standar pelaksanaan kegiatan
             division: p.division || p.division_name || 'Humas & Kerjasama',
-            description: cleanDesc || 'Pelaksanaan program kerja unggulan divisi dalam rangka meningkatkan kapasitas kelembagaan UKM Pilar Bangsa.'
+            description: cleanDesc || 'Pelaksanaan program kerja unggulan divisi dalam rangka meningkatkan kapasitas kelembagaan UKM Pilar Bangsa.',
+            status: p.status || 'Belum Dimulai'
           }
         })
         setEvents(liveEvents)
       } else {
-        setEvents(dummyEvents)
+        setEvents([])
       }
       setLoading(false)
     }
@@ -324,9 +225,20 @@ export function TimelineRoadmap() {
                           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-black"></div>
                           
                           <div className="flex items-center justify-between">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}`}>
-                              {event.division}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}`}>
+                                {event.division}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${
+                                event.status === 'Selesai'
+                                  ? 'bg-red-100 text-red-800 border-red-200'
+                                  : event.status === 'Berjalan' || event.status === 'Sedang Berjalan'
+                                  ? 'bg-green-100 text-green-800 border-green-200'
+                                  : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                              }`}>
+                                {event.status}
+                              </span>
+                            </div>
                             <span className="text-[10px] font-black text-gray-400">#{index + 1}</span>
                           </div>
 
@@ -379,9 +291,20 @@ export function TimelineRoadmap() {
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[10px] border-b-black"></div>
                           
                           <div className="flex items-center justify-between">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}`}>
-                              {event.division}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${badgeClass}`}>
+                                {event.division}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${
+                                event.status === 'Selesai'
+                                  ? 'bg-red-100 text-red-800 border-red-200'
+                                  : event.status === 'Berjalan' || event.status === 'Sedang Berjalan'
+                                  ? 'bg-green-100 text-green-800 border-green-200'
+                                  : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                              }`}>
+                                {event.status}
+                              </span>
+                            </div>
                             <span className="text-[10px] font-black text-gray-400">#{index + 1}</span>
                           </div>
 
