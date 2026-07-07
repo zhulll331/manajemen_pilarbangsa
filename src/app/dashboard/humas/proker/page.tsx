@@ -105,6 +105,7 @@ export default function KelolaProkerPage() {
   const [currentEditId, setCurrentEditId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [filterDivision, setFilterDivision] = useState('Semua Divisi')
 
   // Form States
   const [title, setTitle] = useState('')
@@ -738,15 +739,28 @@ export default function KelolaProkerPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
           <div>
             <h3 className="text-2xl font-bold text-gray-900">Daftar Program Kerja & Monitoring Administrasi</h3>
-            <p className="text-sm text-gray-500">Pantau kelengkapan SK dan Laporan LPJ untuk setiap kegiatan divisi Anda</p>
+            <p className="text-sm text-gray-500">Pantau kelengkapan SK dan Laporan LPJ untuk setiap kegiatan divisi</p>
           </div>
-          <button
-            onClick={fetchData}
-            className="inline-flex items-center space-x-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Muat Ulang Data</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <select
+              value={filterDivision}
+              onChange={(e) => setFilterDivision(e.target.value)}
+              className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <option value="Semua Divisi">Semua Divisi</option>
+              <option value="Humas & Kerjasama">Humas & Kerjasama</option>
+              <option value="Penalaran">Penalaran & Program Kompetisi</option>
+              <option value="Riset">Riset & Penelitian</option>
+              <option value="Pengabdian">Pengabdian & Advokasi</option>
+            </select>
+            <button
+              onClick={fetchData}
+              className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-colors w-full sm:w-auto"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Muat Ulang Data</span>
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -776,7 +790,7 @@ export default function KelolaProkerPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm font-medium text-gray-700">
-                {programs.map((p) => (
+                {programs.filter(p => filterDivision === 'Semua Divisi' ? true : (p.division || p.division_name || '').toLowerCase().includes(filterDivision.toLowerCase())).map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="font-extrabold text-gray-900">{p.title}</div>
