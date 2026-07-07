@@ -17,14 +17,13 @@ export function GeminiPromptBox() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Typewriter effect state
   const placeholders = [
-    "Tanyakan seputar proker Pilar Bangsa...",
+    "Tanyakan seputar UKM Pilar Bangsa...",
     "AI Pilar Asisten siap membantu Anda...",
-    "Kapan pendaftaran anggota baru dibuka?",
+    "Apa saja tugas dari Ketua Umum?",
     "Apa saja divisi di UKM Pilar Bangsa?",
     "Jelaskan visi dan misi organisasi ini...",
-    "Kapan acara selanjutnya dilaksanakan?"
+    "Sebutkan tugas dari divisi Humas!"
   ];
   const [placeholderText, setPlaceholderText] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);

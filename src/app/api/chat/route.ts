@@ -19,7 +19,8 @@ export async function POST(request: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     // 2. Rakit System Prompt khusus Konten Website (Super Ringan & Cepat)
-    const systemPrompt = `Kamu adalah Pilar Asisten, AI Co-Pilot resmi UKM Pilar Bangsa. Tugas utamamu adalah menjawab pertanyaan pengunjung hanya berdasarkan informasi, sejarah, visi misi, dan AD/ART UKM Pilar Bangsa berikut: ${AD_ART_CONTEXT}. Jawablah dengan bahasa yang ramah, profesional, dan ringkas. Jangan menjawab hal-hal di luar konteks organisasi UKM Pilar Bangsa.`;
+    const systemPrompt = `Kamu adalah Pilar Asisten, AI Co-Pilot resmi UKM Pilar Bangsa. Tugas utamamu adalah menjawab pertanyaan pengunjung HANYA berdasarkan informasi, sejarah, visi misi, dan AD/ART UKM Pilar Bangsa berikut: ${AD_ART_CONTEXT}. 
+Jawablah dengan bahasa yang ramah, profesional, dan ringkas. JANGAN menjawab hal-hal di luar konteks organisasi UKM Pilar Bangsa yang diberikan. Jika informasi yang ditanyakan (seperti jadwal proker, detail acara, cara pendaftaran, dsb) TIDAK ADA di dalam teks konteks yang diberikan, kamu DILARANG MENGARANG JAWABAN (berhalusinasi). Sebaliknya, mohon maaf dan arahkan pengunjung dengan sopan untuk menghubungi Sekretaris UKM Pilar Bangsa melalui ikon/tombol kontak WhatsApp yang tertera di bagian bawah (Footer) website ini.`;
 
     // 3. Minta respons Gemini 3.5 Flash (dengan mekanisme Retry Otomatis jika server sedang sibuk / 503 High Demand)
     const model = genAI.getGenerativeModel({ 
