@@ -17,6 +17,47 @@ export function GeminiPromptBox() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Typewriter effect state
+  const placeholders = [
+    "Tanyakan seputar proker Pilar Bangsa...",
+    "AI Pilar Asisten siap membantu Anda...",
+    "Kapan pendaftaran anggota baru dibuka?",
+    "Apa saja divisi di UKM Pilar Bangsa?",
+    "Jelaskan visi dan misi organisasi ini...",
+    "Kapan acara selanjutnya dilaksanakan?"
+  ];
+  const [placeholderText, setPlaceholderText] = useState("");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentString = placeholders[placeholderIndex];
+    let timeout: NodeJS.Timeout;
+
+    if (isDeleting) {
+      if (charIndex > 0) {
+        timeout = setTimeout(() => {
+          setPlaceholderText(currentString.substring(0, charIndex - 1));
+          setCharIndex(charIndex - 1);
+        }, 50);
+      } else {
+        setIsDeleting(false);
+        setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+      }
+    } else {
+      if (charIndex < currentString.length) {
+        timeout = setTimeout(() => {
+          setPlaceholderText(currentString.substring(0, charIndex + 1));
+          setCharIndex(charIndex + 1);
+        }, 100);
+      } else {
+        timeout = setTimeout(() => setIsDeleting(true), 2500);
+      }
+    }
+    return () => clearTimeout(timeout);
+  }, [charIndex, isDeleting, placeholderIndex]);
+
   useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -127,7 +168,7 @@ export function GeminiPromptBox() {
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Yuk, tulis atau buat sesuatu bersama..."
+          placeholder={placeholderText}
           className="flex-1 bg-transparent border-none outline-none text-base sm:text-lg text-gray-800 placeholder-gray-500 py-1 font-normal w-full"
         />
         {inputText.trim() && (
