@@ -21,7 +21,7 @@ interface Member {
 }
 
 const divisions = ["Pendidikan", "Sosial", "Kewirausahaan", "Seni Budaya"];
-const statuses = ["Aktif", "Cuti", "Alumni"];
+const statuses = ["Aktif", "Pengurus Aktif", "Cuti", "Alumni"];
 
 export default function AnggotaClient({ members }: { members: Member[] }) {
   const [showModal, setShowModal] = useState(false);
@@ -49,6 +49,7 @@ export default function AnggotaClient({ members }: { members: Member[] }) {
       label: "Status",
       render: (m) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          m.status === "Pengurus Aktif" ? "bg-purple-100 text-purple-700" :
           m.status === "Aktif" ? "bg-green-100 text-green-700" :
           m.status === "Cuti" ? "bg-yellow-100 text-yellow-700" :
           "bg-gray-100 text-gray-600"

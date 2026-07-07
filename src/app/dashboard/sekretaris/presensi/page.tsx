@@ -15,8 +15,8 @@ export default async function PresensiPage() {
 
   const { data: members } = await supabase
     .from("members")
-    .select("id, name, division, faculty, generation")
-    .eq("status", "Aktif")
+    .select("id, name, division, faculty, generation, status")
+    .in("status", ["Aktif", "Pengurus Aktif"])
     .order("name");
 
   return (
