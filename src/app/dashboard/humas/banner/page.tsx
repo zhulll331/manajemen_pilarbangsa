@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { Image, Save, RefreshCw, CheckCircle2, Upload, AlertCircle, Trash2, Plus } from 'lucide-react'
+import { Image as ImageIcon, Save, RefreshCw, CheckCircle2, Upload, AlertCircle, Trash2, Plus } from 'lucide-react'
 import { uploadFileToDrive } from '@/utils/driveClientUpload'
 
 function getCleanImageUrl(url: string, defaultImg: string) {
