@@ -284,9 +284,9 @@ export default function ProgramKerjaPage() {
       {/* Catatan Panduan Transparansi */}
       <section className="bg-gradient-to-r from-gray-900 to-black text-white rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 border-l-8 border-[#FFD700]">
         <div className="space-y-3 max-w-2xl">
-          <h3 className="text-2xl font-extrabold tracking-tight">Menjaga Amanah AD/ART Pasal 10</h3>
+          <h3 className="text-2xl font-extrabold tracking-tight">Transparansi Informasi Publik</h3>
           <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-            Setiap akhir kegiatan, 4 Wakil Ketua Bidang diwajibkan memperbarui status program kerja dan mengunggah dokumentasi ke dalam folder Google Drive resmi organisasi untuk menjamin transparansi akuntabilitas publik.
+            Sesuai dengan pedoman keterbukaan informasi, Biro Humas & Kerjasama secara rutin memperbarui status pelaksanaan program kerja dari seluruh divisi dan mengunggah dokumentasi pelaksanaannya ke dalam portal ini.
           </p>
         </div>
         <div className="flex-shrink-0">
@@ -294,7 +294,7 @@ export default function ProgramKerjaPage() {
             href="/login"
             className="px-8 py-4 bg-white text-black font-extrabold rounded-2xl shadow-xl hover:bg-gray-100 transition-all duration-300 inline-block hover:-translate-y-1"
           >
-            Akses Panel Admin Divisi
+            Akses Dashboard Humas
           </a>
         </div>
       </section>
