@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { Shield, BookOpen, Compass, Heart, Award, Users, Milestone, Anchor, CheckCircle2, Search, TrendingUp, Sparkles, Flag, Target } from 'lucide-react'
 import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
-
+import { StrukturPimpinan } from '@/components/StrukturPimpinan'
 async function getVisiMisi() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -483,6 +483,11 @@ export default async function TentangPage() {
             </div>
           </div>
         </section>
+      </ScrollReveal>
+
+      {/* Tokoh & Pemimpin Section */}
+      <ScrollReveal direction="up">
+        <StrukturPimpinan />
       </ScrollReveal>
     </div>
   )
