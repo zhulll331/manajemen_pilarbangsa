@@ -23,18 +23,7 @@ interface ProgramItem {
   laporan_url?: string
 }
 
-// Fungsi pembantu konversi URL Google Drive ke format direct render uc?export=view&id=ID
-function convertGoogleDriveUrl(url: string): string {
-  if (!url) return ''
-  if (url.includes('uc?export=view') || !url.includes('drive.google.com')) {
-    return url
-  }
-  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/)
-  if (match && match[1]) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`
-  }
-  return url
-}
+
 
 // Fungsi pembantu cerdas untuk mengonversi foto potrait (vertikal) menjadi landscape (horizontal 16:9)
 // menggunakan HTML5 Canvas dengan efek blur background yang premium dan elegan

@@ -24,7 +24,7 @@ export async function GET() {
       'https://www.googleapis.com/drive/v3/about?fields=storageQuota',
       {
         headers: {
-          'Authorization': \Bearer \ + accessToken,
+          'Authorization': `Bearer ${accessToken}`,
         }
       }
     );
