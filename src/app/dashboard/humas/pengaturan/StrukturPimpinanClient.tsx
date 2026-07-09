@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Save, Plus, Trash2, ArrowUp, ArrowDown, Upload } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { uploadFileToDrive } from '@/utils/driveClientUpload';
 
 interface StrukturData {
   pembina: {
@@ -85,6 +86,7 @@ export default function StrukturPimpinanClient({ initialData }: { initialData?: 
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [data, setData] = useState<StrukturData>(initialData || defaultStruktur);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -154,6 +156,25 @@ export default function StrukturPimpinanClient({ initialData }: { initialData?: 
     });
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string | 'pembina') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingId(id);
+    try {
+      const { url } = await uploadFileToDrive(file);
+      if (id === 'pembina') {
+        handlePembinaChange('foto', url);
+      } else {
+        handleKetuaChange(id, 'foto', url);
+      }
+    } catch (err: any) {
+      alert(`Gagal mengunggah foto: ${err.message}`);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Pembina Section */}
@@ -198,13 +219,35 @@ export default function StrukturPimpinanClient({ initialData }: { initialData?: 
           </div>
           <div className="space-y-1 md:col-span-2">
             <label className="text-sm font-medium text-gray-700">Path Foto / Link Google Drive</label>
-            <input 
-              type="text" 
-              value={data.pembina.foto} 
-              onChange={(e) => handlePembinaChange('foto', e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E31837] focus:bg-white transition-colors"
-              placeholder="/umum-ukm/pembina-ukm.webp ATAU Link Google Drive"
-            />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input 
+                type="text" 
+                value={data.pembina.foto} 
+                onChange={(e) => handlePembinaChange('foto', e.target.value)}
+                className="flex-grow px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E31837] focus:bg-white transition-colors"
+                placeholder="/umum-ukm/pembina-ukm.webp ATAU Link Google Drive"
+              />
+              <label className="flex-shrink-0 cursor-pointer inline-flex items-center justify-center space-x-2 bg-white text-gray-700 border border-gray-200 px-4 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors">
+                {uploadingId === 'pembina' ? (
+                  <span className="flex items-center space-x-2 text-[#E31837]">
+                    <div className="w-4 h-4 border-2 border-[#E31837]/30 border-t-[#E31837] rounded-full animate-spin" />
+                    <span>Mengunggah...</span>
+                  </span>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Foto</span>
+                  </>
+                )}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => handleFileUpload(e, 'pembina')} 
+                  disabled={uploadingId === 'pembina'}
+                />
+              </label>
+            </div>
             <p className="text-xs text-gray-500 mt-1">Gunakan foto di folder public (misal: <code className="bg-gray-100 px-1 rounded">/umum-ukm/pembina-ukm.webp</code>) atau masukkan link Google Drive.</p>
           </div>
         </div>
@@ -297,13 +340,35 @@ export default function StrukturPimpinanClient({ initialData }: { initialData?: 
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-500">Path Foto / Link Google Drive</label>
-                  <input 
-                    type="text" 
-                    value={ketua.foto} 
-                    onChange={(e) => handleKetuaChange(ketua.id, 'foto', e.target.value)}
-                    className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#E31837]"
-                    placeholder="/umum-ukm/kak-nuzul.webp ATAU Link Google Drive"
-                  />
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <input 
+                      type="text" 
+                      value={ketua.foto} 
+                      onChange={(e) => handleKetuaChange(ketua.id, 'foto', e.target.value)}
+                      className="flex-grow px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#E31837]"
+                      placeholder="/umum-ukm/kak-nuzul.webp ATAU Link Google Drive"
+                    />
+                    <label className="flex-shrink-0 cursor-pointer inline-flex items-center justify-center space-x-2 bg-white text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                      {uploadingId === ketua.id ? (
+                        <span className="flex items-center space-x-2 text-[#E31837]">
+                          <div className="w-3.5 h-3.5 border-2 border-[#E31837]/30 border-t-[#E31837] rounded-full animate-spin" />
+                          <span>Upload...</span>
+                        </span>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload</span>
+                        </>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => handleFileUpload(e, ketua.id)} 
+                        disabled={uploadingId === ketua.id}
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
