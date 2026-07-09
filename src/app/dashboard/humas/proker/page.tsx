@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Plus, CheckCircle2, Clock, PlayCircle, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, AlertCircle, FileCheck, FileText, Upload, Image as ImageIcon } from 'lucide-react'
 import { uploadFileToDrive } from '@/utils/driveClientUpload'
+import { convertGoogleDriveUrl } from '@/utils/convertGoogleDriveUrl'
+import { StorageWidget } from '@/components/StorageWidget'
 
 interface ProgramItem {
   id: string
@@ -341,6 +343,12 @@ export default function KelolaProkerPage() {
         end_date: endDate || null
       }
 
+      if (status === 'Selesai' && !finalLaporanUrl) {
+        setErrorMessage('Tidak bisa menyimpan status Selesai. File Laporan LPJ wajib diunggah!');
+        setUploadingFile(false);
+        return;
+      }
+
       if (currentEditId) {
         const { error } = await supabase
           .from('programs')
@@ -457,6 +465,11 @@ export default function KelolaProkerPage() {
           </p>
         </div>
       </section>
+
+      {/* Storage Widget Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StorageWidget />
+      </div>
 
       {/* Pesan Error & Success */}
       {errorMessage && (

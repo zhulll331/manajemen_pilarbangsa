@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Users, ClipboardList, Calendar, Wallet, TrendingUp, FileText, Star } from "lucide-react";
 import { SummaryCard } from "@/components/SummaryCard";
 import { ChartCard } from "@/components/ChartCard";
+import { StorageWidget } from "@/components/StorageWidget";
 import dynamic from "next/dynamic";
 
 const ResponsiveContainer = dynamic(() => import("recharts").then(mod => mod.ResponsiveContainer), { ssr: false });
@@ -38,6 +39,11 @@ export default function DashboardKetuaClient({
 
   return (
     <div className="space-y-8">
+      {/* Storage Widget Row */}
+      <div className="grid grid-cols-1 gap-6">
+        <StorageWidget />
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link href="/dashboard/sekretaris/anggota" className="block hover:scale-[1.02] transition-transform">
