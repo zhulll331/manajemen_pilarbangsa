@@ -2,64 +2,93 @@
 
 import React, { useRef } from 'react'
 import Image from 'next/image'
-import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 
-// Data Pembina
-const pembina = {
-  nama: 'Sahru Romadloni, S.PD., M.PD',
-  jabatan: 'Pembina UKM Pilar Bangsa',
-  ig: '@sahru_romadloni',
-  link: 'https://www.instagram.com/sahru_romadloni?igsh=ZXQ1NmRyb3V5ZWZr',
-  // Menggunakan gambar placeholder yang profesional
-  foto: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop'
+interface StrukturData {
+  pembina: {
+    nama: string
+    jabatan: string
+    ig: string
+    link: string
+    foto: string
+  }
+  ketuaUmum: {
+    id: string
+    nama: string
+    periode: string
+    jabatan: string
+    ig: string
+    link: string
+    foto: string
+  }[]
 }
 
-// Data Ketua Umum
-const ketuaUmum = [
-  {
-    nama: 'Firdausi Nuzula',
-    periode: '2026-2027',
-    jabatan: 'Ketua Umum Kelima',
-    ig: '@_zhull_03',
-    link: 'https://www.instagram.com/_zhull_03?igsh=cjN1MTB0cnd6N2Zl',
-    foto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop'
+interface StrukturPimpinanProps {
+  initialData?: StrukturData | null
+}
+const defaultStruktur: StrukturData = {
+  pembina: {
+    nama: 'Sahru Romadloni, S.PD., M.PD',
+    jabatan: 'Pembina UKM Pilar Bangsa',
+    ig: '@sahru_romadloni',
+    link: 'https://www.instagram.com/sahru_romadloni?igsh=ZXQ1NmRyb3V5ZWZr',
+    foto: '/umum-ukm/pembina-ukm.webp'
   },
-  {
-    nama: 'Lidia Yesa Mega Wijayanti',
-    periode: '2025-2026',
-    jabatan: 'Ketua Umum Keempat',
-    ig: '@lidia_megaa',
-    link: 'https://www.instagram.com/lidia_megaa?igsh=b2Z2em1mcDM2cjJr',
-    foto: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    nama: 'Aisyah Nabilla Pasha',
-    periode: '2024-2025',
-    jabatan: 'Ketua Umum Ketiga',
-    ig: '@pashaa.a.n',
-    link: 'https://www.instagram.com/pashaa.a.n?igsh=MXJrM2wwN2xndG5pOA==',
-    foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    nama: 'Putri Luvita Dewi',
-    periode: '2023-2024',
-    jabatan: 'Ketua Umum Kedua',
-    ig: '@luvita_dewii',
-    link: 'https://www.instagram.com/luvita_dewii?igsh=dGZqdXEyOHE3Y2Vm',
-    foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    nama: 'Anisa Lutvia Marsyaf',
-    periode: '2 Periode',
-    jabatan: 'Ketua Umum Pertama',
-    ig: '@anisaalutvia',
-    link: 'https://www.instagram.com/anisaalutvia?igsh=MWxzbHZnYXJ2bXk1aQ==',
-    foto: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop'
-  }
-]
+  ketuaUmum: [
+    {
+      id: '5',
+      nama: 'Firdausi Nuzula',
+      periode: '2026-2027',
+      jabatan: 'Ketua Umum Kelima',
+      ig: '@_zhull_03',
+      link: 'https://www.instagram.com/_zhull_03?igsh=cjN1MTB0cnd6N2Zl',
+      foto: '/umum-ukm/kak-nuzul.webp'
+    },
+    {
+      id: '4',
+      nama: 'Lidia Yesa Mega Wijayanti',
+      periode: '2025-2026',
+      jabatan: 'Ketua Umum Keempat',
+      ig: '@lidia_megaa',
+      link: 'https://www.instagram.com/lidia_megaa?igsh=b2Z2em1mcDM2cjJr',
+      foto: '/umum-ukm/kak-lidia.webp'
+    },
+    {
+      id: '3',
+      nama: 'Aisyah Nabilla Pasha',
+      periode: '2024-2025',
+      jabatan: 'Ketua Umum Ketiga',
+      ig: '@pashaa.a.n',
+      link: 'https://www.instagram.com/pashaa.a.n?igsh=MXJrM2wwN2xndG5pOA==',
+      foto: '/umum-ukm/kak-aisyah.webp'
+    },
+    {
+      id: '2',
+      nama: 'Putri Luvita Dewi',
+      periode: '2023-2024',
+      jabatan: 'Ketua Umum Kedua',
+      ig: '@luvita_dewii',
+      link: 'https://www.instagram.com/luvita_dewii?igsh=dGZqdXEyOHE3Y2Vm',
+      foto: '/umum-ukm/kak-luvita.webp'
+    },
+    {
+      id: '1',
+      nama: 'Anisa Lutvia Marsya',
+      periode: '2021-2023',
+      jabatan: 'Ketua Umum Pertama',
+      ig: '@anisaalutvia',
+      link: 'https://www.instagram.com/anisaalutvia?igsh=MWxzbHZnYXJ2bXk1aQ==',
+      foto: '/umum-ukm/kak-anisa.webp'
+    }
+  ]
+}
 
-export function StrukturPimpinan() {
+export function StrukturPimpinan({ initialData }: StrukturPimpinanProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  
+  const data = initialData || defaultStruktur
+  const pembina = data.pembina
+  const ketuaUmum = data.ketuaUmum
   
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -195,7 +224,7 @@ export function StrukturPimpinan() {
                     </h4>
                     <div className="flex items-center space-x-1.5 text-gray-300">
                       <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                        <MapPin className="w-3 h-3 text-white" />
+                        <Calendar className="w-3 h-3 text-white" />
                       </div>
                       <span className="text-xs font-bold uppercase tracking-widest text-white/80">{tokoh.periode}</span>
                     </div>

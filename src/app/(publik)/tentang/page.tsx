@@ -4,7 +4,8 @@ import { Shield, BookOpen, Compass, Heart, Award, Users, Milestone, Anchor, Chec
 import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
 import { StrukturPimpinan } from '@/components/StrukturPimpinan'
-async function getVisiMisi() {
+
+async function getStrukturPimpinan() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   const supabase = createClient(supabaseUrl, supabaseKey)
@@ -12,43 +13,13 @@ async function getVisiMisi() {
   const { data } = await supabase
     .from('website_settings')
     .select('setting_value')
-    .eq('setting_key', 'visi_misi')
+    .eq('setting_key', 'struktur_pimpinan')
     .single()
 
   if (data?.setting_value) {
-    return data.setting_value as {
-      visi: string;
-      misi: { id: string; title: string; desc: string; pasal: string; color: string }[];
-    };
+    return data.setting_value
   }
 
-  // Fallback if not found in DB
-  return {
-    visi: "Menjadikan UKM Pilar Bangsa sebagai wadah pengembangan intelektualitas, riset, dan pengabdian mahasiswa yang inklusif, adaptif terhadap perkembangan teknologi, serta berorientasi pada kolaborasi lintas disiplin demi terwujudnya kontribusi nyata bagi civitas akademika dan masyarakat.",
-    misi: [
-      {
-        id: "1",
-        title: "Mewujudkan ekosistem organisasi yang inklusif, kekeluargaan, dan sinergis.",
-        desc: "UKM Pilar Bangsa harus menjadi ruang yang terbuka bagi mahasiswa dari berbagai fakultas untuk berkolaborasi, menyatukan gagasan, serta membangun budaya organisasi yang saling mendukung dan kekeluargaan.",
-        pasal: "Pasal 5",
-        color: "#E31837"
-      },
-      {
-        id: "2",
-        title: "Mengembangkan tata kelola organisasi yang modern, efektif, dan efisien.",
-        desc: "Pengelolaan administrasi, data anggota, presensi, arsip, agenda, dan evaluasi kegiatan perlu diarahkan menuju sistem yang lebih rapi dan digital agar kerja organisasi menjadi lebih tertata, transparan, dan berkelanjutan.",
-        pasal: "Pasal 6 ayat (2)",
-        color: "#008000"
-      },
-      {
-        id: "3",
-        title: "Meningkatkan kapasitas anggota melalui pembelajaran, riset, dan pengembangan keterampilan.",
-        desc: "UKM Pilar Bangsa tidak hanya menjadi tempat menjalankan program kerja, tetapi juga menjadi ruang belajar bagi anggota untuk mengembangkan soft skill, hard skill, kepemimpinan, literasi digital, kemampuan riset, dan kepedulian sosial.",
-        pasal: "Pasal 4, Pasal 5, dan Pasal 6 ayat (3)",
-        color: "#FFD700"
-      },
-      {
-        id: "4",
         title: "Memperkuat kolaborasi internal dan eksternal organisasi.",
         desc: "Membangun kemitraan strategis yang sinergis antardivisi di dalam internal organisasi serta mempererat relasi eksternal dengan universitas, alumni, media, dan pemangku kepentingan lainnya.",
         pasal: "Pasal 10 ayat (2)",
@@ -129,74 +100,9 @@ export default async function TentangPage() {
         </section>
       </ScrollReveal>
 
-      {/* VISI & MISI KEPENGURUSAN SECTION */}
+      {/* Tokoh & Pemimpin Section (Menggantikan Visi Misi) */}
       <ScrollReveal direction="up">
-        <section className="bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white rounded-3xl p-8 sm:p-16 shadow-2xl relative overflow-hidden space-y-16 border-t-8 border-[#FFD700] mx-4 sm:mx-6 lg:mx-8 max-w-7xl xl:mx-auto">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[radial-gradient(#E31837_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none" />
-
-          {/* Visi */}
-          <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
-            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#FFD700] text-xs sm:text-sm font-black tracking-widest uppercase border border-white/20 shadow-lg">
-              <Flag className="w-4 h-4" />
-              <span>Visi Kepengurusan</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
-              {visiMisiData.visi}
-            </h2>
-          </div>
-
-          {/* Misi */}
-          <div className="border-t border-white/10 pt-12 max-w-5xl mx-auto space-y-12 relative z-10">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-[#E31837] text-white text-xs sm:text-sm font-black tracking-widest uppercase shadow-lg shadow-red-500/30">
-                <Target className="w-4 h-4" />
-                <span>Misi Kepengurusan</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Pilar Misi & Landasan Konstitusional AD/ART
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 gap-8">
-              {visiMisiData.misi.map((m) => {
-                // Dynamically apply border left if color is green
-                const borderClass = m.color === "#008000" ? "border-l-8 border-l-[#008000]" : "";
-                // Dynamically change text color for yellow
-                const numberColor = m.color === "#FFD700" ? "text-black" : "text-white";
-                
-                return (
-                  <div key={m.id} className={`bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-all shadow-xl flex flex-col md:flex-row gap-6 items-start ${borderClass}`}>
-                    <div 
-                      className={`w-14 h-14 font-extrabold text-2xl rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${numberColor}`}
-                      style={{ backgroundColor: m.color, boxShadow: `0 10px 15px -3px ${m.color}40` }}
-                    >
-                      {m.id.padStart(2, '0')}
-                    </div>
-                    <div className="space-y-4 flex-grow">
-                      <h4 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                        {m.title}
-                      </h4>
-                      <p className="text-gray-300 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                        {m.desc}
-                      </p>
-                      {m.pasal && (
-                        <div className="inline-block px-4 py-1.5 rounded-xl bg-white/10 text-[#FFD700] text-xs font-extrabold tracking-wider border border-white/20">
-                          Landasan AD/ART: {m.pasal}
-                        </div>
-                      )}
-                      {m.id === "2" && m.color === "#008000" && (
-                        <div className="mt-2 text-xs text-green-400 font-extrabold flex items-center space-x-1">
-                          <Sparkles className="w-4 h-4" />
-                          <span>Misi inilah yang menjadi cikal bakal berdirinya Pilar Digital Office ini.</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
+        <StrukturPimpinan initialData={strukturData} />
       </ScrollReveal>
 
       {/* Filosofi Logo Section */}
@@ -483,11 +389,6 @@ export default async function TentangPage() {
             </div>
           </div>
         </section>
-      </ScrollReveal>
-
-      {/* Tokoh & Pemimpin Section */}
-      <ScrollReveal direction="up">
-        <StrukturPimpinan />
       </ScrollReveal>
     </div>
   )
