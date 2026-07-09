@@ -19,25 +19,13 @@ async function getStrukturPimpinan() {
   if (data?.setting_value) {
     return data.setting_value
   }
-
-        title: "Memperkuat kolaborasi internal dan eksternal organisasi.",
-        desc: "Membangun kemitraan strategis yang sinergis antardivisi di dalam internal organisasi serta mempererat relasi eksternal dengan universitas, alumni, media, dan pemangku kepentingan lainnya.",
-        pasal: "Pasal 10 ayat (2)",
-        color: "#E31837"
-      },
-      {
-        id: "5",
-        title: "Menghadirkan program pengabdian masyarakat yang inovatif, relevan, dan berdampak.",
-        desc: "Setiap program kerja perlu diarahkan agar tidak hanya bersifat seremonial, tetapi benar-benar menjawab kebutuhan masyarakat, mengembangkan potensi lokal, serta membawa manfaat nyata bagi lingkungan kampus dan masyarakat.",
-        pasal: "Pasal 5 dan Pasal 6 ayat (3)",
-        color: "#008000"
-      }
-    ]
-  };
+  return null
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function TentangPage() {
-  const visiMisiData = await getVisiMisi();
+  const strukturData = await getStrukturPimpinan();
 
   return (
     <div className="space-y-24 py-8 overflow-hidden">
