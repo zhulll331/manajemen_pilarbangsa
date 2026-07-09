@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import Image from 'next/image'
-import { ExternalLink, MapPin, ChevronLeft, ChevronRight, User, Instagram } from 'lucide-react'
+import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 // Data Pembina
 const pembina = {
@@ -120,7 +120,11 @@ export function StrukturPimpinan() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-2 bg-white text-black px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
               >
-                <Instagram className="w-4 h-4" />
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
                 <span>Follow {pembina.ig}</span>
               </a>
             </div>
