@@ -26,6 +26,20 @@ interface StrukturData {
 interface StrukturPimpinanProps {
   initialData?: StrukturData | null
 }
+
+// Fungsi pembantu konversi URL Google Drive ke format direct render uc?export=view&id=ID
+function convertGoogleDriveUrl(url: string): string {
+  if (!url) return ''
+  if (url.includes('uc?export=view') || !url.includes('drive.google.com')) {
+    return url
+  }
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/)
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?export=view&id=${match[1]}`
+  }
+  return url
+}
+
 const defaultStruktur: StrukturData = {
   pembina: {
     nama: 'Sahru Romadloni, S.PD., M.PD',
@@ -121,7 +135,7 @@ export function StrukturPimpinan({ initialData }: StrukturPimpinanProps) {
         <div className="flex flex-col md:flex-row items-center gap-8 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-10 backdrop-blur-md">
           <div className="w-40 h-40 md:w-56 md:h-56 rounded-2xl overflow-hidden relative shadow-2xl flex-shrink-0 border-2 border-white/10">
             <Image 
-              src={pembina.foto} 
+              src={convertGoogleDriveUrl(pembina.foto)} 
               alt={pembina.nama}
               fill
               className="object-cover"
@@ -197,7 +211,7 @@ export function StrukturPimpinan({ initialData }: StrukturPimpinanProps) {
               >
                 {/* Image */}
                 <Image 
-                  src={tokoh.foto} 
+                  src={convertGoogleDriveUrl(tokoh.foto)} 
                   alt={tokoh.nama}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -233,13 +247,12 @@ export function StrukturPimpinan({ initialData }: StrukturPimpinanProps) {
                   {/* Connect / Instagram Row */}
                   <div className="flex items-center justify-between pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                     <div className="flex items-center space-x-2">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-800">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-800 relative">
                         <Image 
-                          src={tokoh.foto}
+                          src={convertGoogleDriveUrl(tokoh.foto)}
                           alt={tokoh.ig}
-                          width={32}
-                          height={32}
-                          className="object-cover w-full h-full"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                       <span className="text-white text-xs font-medium">{tokoh.ig}</span>

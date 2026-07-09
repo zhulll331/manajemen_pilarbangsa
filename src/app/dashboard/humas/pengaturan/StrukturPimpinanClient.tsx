@@ -197,15 +197,15 @@ export default function StrukturPimpinanClient({ initialData }: { initialData?: 
             />
           </div>
           <div className="space-y-1 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700">Path Foto (Asset)</label>
+            <label className="text-sm font-medium text-gray-700">Path Foto / Link Google Drive</label>
             <input 
               type="text" 
               value={data.pembina.foto} 
               onChange={(e) => handlePembinaChange('foto', e.target.value)}
               className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E31837] focus:bg-white transition-colors"
-              placeholder="/umum-ukm/pembina-ukm.webp"
+              placeholder="/umum-ukm/pembina-ukm.webp ATAU Link Google Drive"
             />
-            <p className="text-xs text-gray-500 mt-1">Gunakan foto di folder public, misal: <code className="bg-gray-100 px-1 rounded">/umum-ukm/pembina-ukm.webp</code></p>
+            <p className="text-xs text-gray-500 mt-1">Gunakan foto di folder public (misal: <code className="bg-gray-100 px-1 rounded">/umum-ukm/pembina-ukm.webp</code>) atau masukkan link Google Drive.</p>
           </div>
         </div>
       </div>
@@ -296,13 +296,13 @@ export default function StrukturPimpinanClient({ initialData }: { initialData?: 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500">Path Foto (Asset)</label>
+                  <label className="text-xs font-medium text-gray-500">Path Foto / Link Google Drive</label>
                   <input 
                     type="text" 
                     value={ketua.foto} 
                     onChange={(e) => handleKetuaChange(ketua.id, 'foto', e.target.value)}
                     className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#E31837]"
-                    placeholder="/umum-ukm/kak-nuzul.webp"
+                    placeholder="/umum-ukm/kak-nuzul.webp ATAU Link Google Drive"
                   />
                 </div>
               </div>
