@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Plus, CheckCircle2, Clock, PlayCircle, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, AlertCircle, FileCheck, FileText, Upload, Image as ImageIcon } from 'lucide-react'
 import { uploadFileToDrive } from '@/utils/driveClientUpload'
-import { convertGoogleDriveUrl } from '@/utils/convertGoogleDriveUrl'
 import { StorageWidget } from '@/components/StorageWidget'
 
 interface ProgramItem {
@@ -21,6 +20,19 @@ interface ProgramItem {
   gallery_drive_url?: string
   sk_url?: string
   laporan_url?: string
+}
+
+// Fungsi pembantu konversi URL Google Drive ke format direct render uc?export=view&id=ID
+function convertGoogleDriveUrl(url: string): string {
+  if (!url) return ''
+  if (url.includes('uc?export=view') || !url.includes('drive.google.com')) {
+    return url
+  }
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/)
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?export=view&id=${match[1]}`
+  }
+  return url
 }
 
 
