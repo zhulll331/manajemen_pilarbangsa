@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { uploadFileToDrive } from "@/utils/driveClientUpload";
-import { Plus, FileText, Mail, MailOpen, Loader2 } from "lucide-react";
+import { Plus, FileText, Mail, MailOpen, Loader2, Sparkles } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
+import { useRef } from "react";
 import { DataTable, type Column } from "@/components/DataTable";
 import { getViewerUrl } from "@/utils/driveClientUpload";
 import { tambahSurat, editSurat, hapusSurat } from "./actions";
@@ -30,8 +31,47 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   const [editData, setEditData] = useState<Letter | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [filter, setFilter] = useState<string>("Semua");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleExtract = async () => {
+    if (!selectedFile) {
+      alert("Pilih file terlebih dahulu sebelum melakukan ekstraksi otomatis!");
+      return;
+    }
+
+    setExtracting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const res = await fetch("/api/gemini/extract-surat", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal mengekstrak dokumen");
+
+      if (formRef.current) {
+        const elements = formRef.current.elements as any;
+        if (data.letter_number && elements.letter_number) elements.letter_number.value = data.letter_number;
+        if (data.date && elements.date) elements.date.value = data.date;
+        if (data.sender && elements.sender) elements.sender.value = data.sender;
+        if (data.recipient && elements.recipient) elements.recipient.value = data.recipient;
+        if (data.subject && elements.subject) elements.subject.value = data.subject;
+      }
+      
+      // Optional: beri tahu user berhasil
+      alert("✨ Ekstraksi berhasil! Kolom formulir telah diisi otomatis.");
+    } catch (e: any) {
+      alert("Gagal ekstraksi otomatis: " + e.message);
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   const filteredLetters = filter === "Semua"
     ? letters
@@ -205,15 +245,17 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
 
       <DataModal
         isOpen={showModal}
-        onClose={() => { if (!loading) { setShowModal(false); setEditData(null); } }}
+        onClose={() => { if (!loading && !extracting) { setShowModal(false); setEditData(null); } }}
         title={editData ? "Edit Data" : "Tambah Data"}
       >
-        <form onSubmit={handleSubmit} className="space-y-4 relative">
-          {loading && (
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 relative">
+          {(loading || extracting) && (
             <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center backdrop-blur-[1px] rounded-xl">
               <div className="flex flex-col items-center text-blue-600 gap-2">
                 <Loader2 size={32} className="animate-spin" />
-                <span className="text-sm font-semibold">Memproses Dokumen...</span>
+                <span className="text-sm font-semibold">
+                  {extracting ? "✨ AI sedang membaca dokumen..." : "Memproses Dokumen..."}
+                </span>
               </div>
             </div>
           )}
@@ -269,7 +311,20 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Upload File (Google Drive)</label>
+            <div className="flex justify-between items-end mb-1">
+              <label className="block text-sm font-medium text-gray-700">Upload File (Google Drive)</label>
+              {selectedFile && (
+                <button 
+                  type="button" 
+                  onClick={handleExtract}
+                  disabled={extracting || loading}
+                  className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors border border-indigo-200"
+                >
+                  <Sparkles size={14} />
+                  Ekstrak Otomatis 🪄
+                </button>
+              )}
+            </div>
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-500 transition-colors bg-blue-50/20">
               <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
