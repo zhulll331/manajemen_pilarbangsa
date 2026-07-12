@@ -335,8 +335,6 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       <DataTable pagination pageSize={10} 
         data={filteredData}
         columns={columns}
-        onEdit={openEdit}
-        onDelete={openDelete}
         emptyMessage={`Belum ada data ${filter === 'Semua' ? 'transaksi' : filter.toLowerCase()}.`}
       />
 
