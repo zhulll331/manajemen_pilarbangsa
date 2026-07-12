@@ -39,7 +39,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
 
   // Auto-generation state
   const [pendingAgenda, setPendingAgenda] = useState<any>(null);
-  const [pendingPresensi, setPendingPresensi] = useState<any[]>(null);
+  const [pendingPresensi, setPendingPresensi] = useState<any[] | null>(null);
   const [missingInfo, setMissingInfo] = useState<string[]>([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
