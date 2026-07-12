@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Plus, ClipboardList, Calendar, Users, MessageSquare, CheckCircle, ArrowRight, Link as LinkIcon, Sparkles, Mic, Square, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
-import { tambahNotulensi, editNotulensi, hapusNotulensi, parseNotulensiRapat, isGeminiConfigured } from "./actions";
+import { tambahNotulensi, editNotulensi, hapusNotulensi, parseNotulensiRapat, isGeminiConfigured, tambahNotulensiDanOtomasi } from "./actions";
 import { getViewerUrl } from "@/utils/driveClientUpload";
 
 interface Minute {
@@ -37,6 +37,12 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
 
+  // Auto-generation state
+  const [pendingAgenda, setPendingAgenda] = useState<any>(null);
+  const [pendingPresensi, setPendingPresensi] = useState<any[]>(null);
+  const [missingInfo, setMissingInfo] = useState<string[]>([]);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+
   const [formDataState, setFormDataState] = useState({
     title: "",
     meeting_date: "",
@@ -63,6 +69,10 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
     setNotulenText("");
     setShowAIPanel(false);
     setErrorMsg("");
+    setPendingAgenda(null);
+    setPendingPresensi(null);
+    setMissingInfo([]);
+    setShowWarningModal(false);
     setShowModal(true);
   };
 
@@ -133,15 +143,22 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
     setErrorMsg("");
     try {
       const parsed = await parseNotulensiRapat(notulenText);
+      const { notulensi, agenda, presensi, missing_info } = parsed;
+
       setFormDataState(prev => ({
         ...prev,
-        title: parsed.title || prev.title,
-        meeting_date: parsed.meeting_date || prev.meeting_date,
-        participants: parsed.participants || prev.participants,
-        discussion: parsed.discussion || prev.discussion,
-        decisions: parsed.decisions || prev.decisions,
-        follow_up: parsed.follow_up || prev.follow_up
+        title: notulensi.title || prev.title,
+        meeting_date: notulensi.meeting_date || prev.meeting_date,
+        participants: notulensi.participants || prev.participants,
+        discussion: notulensi.discussion || prev.discussion,
+        decisions: notulensi.decisions || prev.decisions,
+        follow_up: notulensi.follow_up || prev.follow_up
       }));
+
+      if (agenda) setPendingAgenda(agenda);
+      if (presensi) setPendingPresensi(presensi);
+      if (missing_info) setMissingInfo(missing_info);
+
       setShowAIPanel(false);
     } catch (err: any) {
       setErrorMsg(err.message || "Gagal memproses dengan AI");
@@ -150,27 +167,32 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (loading) return; // Prevent double submit
+  const confirmSubmit = async () => {
+    if (loading) return;
     setLoading(true);
     setErrorMsg("");
-
-    const formData = new FormData();
-    if (editData) formData.append("id", editData.id);
-    formData.append("title", formDataState.title);
-    formData.append("meeting_date", formDataState.meeting_date);
-    formData.append("participants", formDataState.participants);
-    formData.append("discussion", formDataState.discussion);
-    formData.append("decisions", formDataState.decisions);
-    formData.append("follow_up", formDataState.follow_up);
-    formData.append("file_url", formDataState.file_url);
+    setShowWarningModal(false);
 
     try {
       if (editData) {
+        // Edit flow
+        const formData = new FormData();
+        formData.append("id", editData.id);
+        formData.append("title", formDataState.title);
+        formData.append("meeting_date", formDataState.meeting_date);
+        formData.append("participants", formDataState.participants);
+        formData.append("discussion", formDataState.discussion);
+        formData.append("decisions", formDataState.decisions);
+        formData.append("follow_up", formDataState.follow_up);
+        formData.append("file_url", formDataState.file_url);
         await editNotulensi(formData);
       } else {
-        await tambahNotulensi(formData);
+        // Create flow with auto Agenda & Presensi
+        await tambahNotulensiDanOtomasi(
+          formDataState,
+          pendingAgenda,
+          pendingPresensi
+        );
       }
       setShowModal(false);
       setEditData(null);
@@ -179,6 +201,18 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Validate missing info before saving new entry
+    if (!editData && (missingInfo.includes("participants_missing") || !formDataState.participants.trim())) {
+      setShowWarningModal(true);
+      return;
+    }
+    
+    // Continue normal submit
+    confirmSubmit();
   };
 
   const handleDelete = async () => {
@@ -379,9 +413,18 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
                     </div>
                   ) : (
                     <div className="space-y-3 mt-2">
-                      <p className="text-xs text-gray-500">
-                        Anda bisa mendiktekan jalannya rapat di sini. AI akan merangkumnya ke dalam form otomatis.
+                      <p className="text-xs text-gray-500 mb-2">
+                        Anda bisa mendiktekan jalannya rapat di sini. AI akan merangkumnya ke dalam form Notulensi, dan sekaligus membuatkan <b>Agenda</b> & merekap <b>Presensi</b> secara otomatis!
                       </p>
+                      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-3">
+                        <p className="text-xs font-bold text-blue-800 mb-1">💡 Tips Format agar AI akurat:</p>
+                        <pre className="text-[10px] text-blue-700 font-mono whitespace-pre-wrap">
+{`Agenda: Rapat Rutin Pengurus
+Tanggal: 20 Agustus 2026
+Kehadiran: Budi, Siti (Izin), ... (Nama tanpa keterangan dianggap Hadir)
+Pembahasan: ...`}
+                        </pre>
+                      </div>
                       <div className="relative">
                         <textarea
                           value={notulenText}
@@ -422,6 +465,12 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {pendingAgenda && (
+               <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-xs rounded-lg flex items-center gap-2">
+                 <CheckCircle size={14} />
+                 <span>AI akan menjadwalkan <b>Agenda</b> & merekap <b>Presensi</b> ini otomatis saat disimpan.</span>
+               </div>
+            )}
             {errorMsg && (
               <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
                 {errorMsg}
@@ -516,6 +565,35 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
         loading={loading}
         message={`Hapus notulensi "${deleteTarget?.title}"?`}
       />
+
+      {/* Warning Modal */}
+      <DataModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        title="⚠️ Peringatan Data Kosong"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Sebelum simpan, sepertinya Anda lupa mencatat siapa saja yang hadir dalam rapat ini. Apakah Anda yakin ingin menyimpan tanpa data presensi?
+          </p>
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={() => setShowWarningModal(false)}
+              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              Batal (Lengkapi Teks)
+            </button>
+            <button
+              onClick={confirmSubmit}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+              Tetap Simpan
+            </button>
+          </div>
+        </div>
+      </DataModal>
     </div>
   );
 }
