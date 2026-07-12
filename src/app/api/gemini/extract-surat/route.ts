@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Gunakan gemini-1.5-flash sebagai model standar untuk ekstraksi dokumen dan gambar saat ini
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Gunakan gemini-3.5-flash sesuai masukan dari pengguna
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     // Mengonversi File menjadi Buffer, lalu menjadi Base64
     const buffer = Buffer.from(await file.arrayBuffer());
