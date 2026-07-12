@@ -57,6 +57,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
 
       if (formRef.current) {
         const elements = formRef.current.elements as any;
+        if (data.letter_type && elements.letter_type) elements.letter_type.value = data.letter_type;
         if (data.letter_number && elements.letter_number) elements.letter_number.value = data.letter_number;
         if (data.date && elements.date) elements.date.value = data.date;
         if (data.sender && elements.sender) elements.sender.value = data.sender;
@@ -295,7 +296,15 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Pengirim / Pembuat (Opsional)</label>
               <input name="sender" defaultValue={editData?.sender || ""}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition mb-2" />
+              <div className="flex gap-2">
+                <button type="button" onClick={() => { if(formRef.current) (formRef.current.elements as any).sender.value = 'Sekretaris 1'; }} className="text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md transition-colors">
+                  Sekretaris 1
+                </button>
+                <button type="button" onClick={() => { if(formRef.current) (formRef.current.elements as any).sender.value = 'Sekretaris 2'; }} className="text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md transition-colors">
+                  Sekretaris 2
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Penerima / Tujuan (Opsional)</label>
