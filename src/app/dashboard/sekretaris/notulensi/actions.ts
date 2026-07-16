@@ -86,13 +86,13 @@ export async function hapusNotulensi(id: string) {
 }
 
 export async function isGeminiConfigured() {
-  return !!process.env.GEMINI_API_KEY;
+  return !!process.env.OPENROUTER_API_KEY;
 }
 
 export async function parseNotulensiRapat(notulenText: string) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    throw new Error("Kunci API Gemini tidak ditemukan.");
+    throw new Error("Kunci API OpenRouter tidak ditemukan. Harap tambahkan OPENROUTER_API_KEY di .env.local");
   }
 
   const supabase = await createClient();
@@ -132,29 +132,35 @@ Format JSON yang DIWAJIBKAN:
   "presensi": [
     { "member_id": "id-dari-daftar-resmi", "name": "Nama Resmi", "status": "Hadir/Izin/Sakit/Alpa" }
   ],
-  "missing_info": [ "participants_missing" ] // Jika data kehadiran sama sekali tidak ada di teks
+  "missing_info": [ "participants_missing" ]
 }`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      }
-    );
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://pilarbangsa-official.vercel.app", 
+        "X-Title": "Pilar Bangsa Management" 
+      },
+      body: JSON.stringify({
+        model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
 
     if (!response.ok) throw new Error(response.statusText);
     const result = await response.json();
-    const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    let responseText = result.choices?.[0]?.message?.content;
+    
     if (!responseText) throw new Error("Respons AI kosong.");
 
-    return JSON.parse(responseText.trim());
+    // Bersihkan format markdown jika model Nemotron membungkus JSON dengan backtick
+    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    return JSON.parse(responseText);
   } catch (error: any) {
-    throw new Error(error.message || "Gagal memproses dengan AI.");
+    throw new Error(error.message || "Gagal memproses dengan AI (OpenRouter).");
   }
 }
