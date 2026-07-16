@@ -110,16 +110,22 @@ ${notulenText}
 Instruksi:
 1. Ekstrak data Notulensi (Judul, Tanggal, Pembahasan, Keputusan, Tindak Lanjut).
 2. Tentukan Agenda Rapat (Judul Agenda, Kategori [Rapat Pengurus/Rapat Anggota/dsb], Tanggal).
-3. Ekstrak siapa saja yang hadir/izin/sakit dan COCOKKAN namanya dengan daftar anggota resmi di atas (Fuzzy match).
-4. PENTING UNTUK PRESENSI: Jika ada nama yang TIDAK mencantumkan keterangan (misal hanya disebut namanya saja), maka asumsikan dia "Hadir".
-5. Identifikasi kekurangan data: Jika di teks tidak ada penyebutan peserta sama sekali, set "missing_info": ["participants_missing"].
+3. ATURAN PRESENSI - Ikuti aturan berikut SECARA KETAT untuk SETIAP anggota di daftar resmi:
+   a. Jika nama DISEBUT di teks TANPA keterangan apapun → statusnya "Hadir"
+   b. Jika nama DISEBUT dengan keterangan I atau Izin → statusnya "Izin"
+   c. Jika nama DISEBUT dengan keterangan S atau Sakit → statusnya "Sakit"
+   d. Jika nama DISEBUT dengan keterangan A atau Alpa → statusnya "Alpa"
+   e. Jika nama SAMA SEKALI TIDAK DISEBUT di teks → statusnya "Alpa" (WAJIB masuk ke daftar presensi!)
+4. SANGAT PENTING: Array "presensi" di output HARUS berisi SEMUA anggota dari daftar resmi di atas, tidak boleh ada yang terlewat. Anggota yang tidak disebut = Alpa.
+5. Cocokkan nama dengan fuzzy match (mirip = sama, abaikan typo kecil dan perbedaan kapital).
+6. Identifikasi kekurangan data: Jika di teks tidak ada penyebutan peserta sama sekali, set "missing_info": ["participants_missing"].
 
 Format JSON yang DIWAJIBKAN:
 {
   "notulensi": {
     "title": "string (Judul rapat)",
     "meeting_date": "string (Tanggal rapat YYYY-MM-DD. Kosongkan jika tidak ada)",
-    "participants": "string (Siapa saja yang hadir, pisahkan dengan koma)",
+    "participants": "string (Siapa saja yang Hadir, pisahkan dengan koma)",
     "discussion": "string (Poin pembahasan, gunakan list bullet dengan strip '-')",
     "decisions": "string (Kesimpulan rapat, gunakan list bullet dengan strip '-')",
     "follow_up": "string (Tindak lanjut rapat, gunakan list bullet dengan strip '-')"

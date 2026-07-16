@@ -406,9 +406,9 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
                 <div className="p-4 pt-0 border-t border-blue-100">
                   {!hasGeminiKey ? (
                     <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mt-2">
-                      <h4 className="font-bold text-yellow-800 mb-1">Kunci API Gemini Belum Dikonfigurasi</h4>
+                      <h4 className="font-bold text-yellow-800 mb-1">Kunci API OpenRouter Belum Dikonfigurasi</h4>
                       <p className="text-sm text-yellow-700 mb-3">
-                        Untuk menggunakan fitur AI gratis ini, Anda harus mendaftarkan kunci API di file .env.local.
+                        Untuk menggunakan fitur AI (Nemotron 3 Ultra), Anda harus menambahkan <b>OPENROUTER_API_KEY</b> di file .env.local dan Vercel Environment Variables.
                       </p>
                     </div>
                   ) : (
