@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // Gunakan gemini-1.5-flash (versi 3.5 belum ada/tidak valid)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     // Mengonversi File menjadi Buffer, lalu menjadi Base64
     const buffer = Buffer.from(await file.arrayBuffer());
