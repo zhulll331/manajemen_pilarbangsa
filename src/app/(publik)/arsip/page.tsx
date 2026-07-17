@@ -25,10 +25,12 @@ export default async function ArsipPublikPage() {
   );
 
   // Ambil semua arsip sekali, filter dilakukan di client (instant, tanpa loading)
-  const { data: archives } = await supabase
+  const { data } = await supabase
     .from("archives")
     .select("id, title, period, category, drive_url, programs(title)")
     .order("created_at", { ascending: false });
 
-  return <ArsipPublikClient archives={archives || []} />;
+  const archives = (data as any[]) || [];
+
+  return <ArsipPublikClient archives={archives} />;
 }
