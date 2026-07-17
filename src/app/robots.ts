@@ -10,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/dashboard/', '/login', '/api/'],
       },
     ],
-    sitemap: 'https://pilarbangsa.my.id/sitemap.xml',
+    sitemap: 'https://www.pilarbangsa.my.id/sitemap.xml',
   }
 }
