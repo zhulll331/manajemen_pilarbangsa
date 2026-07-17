@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { AD_ART_CONTEXT } from "@/utils/context/ad_art";
 
 export async function POST(request: Request) {
@@ -10,38 +9,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Pesan tidak boleh kosong" }, { status: 400 });
     }
 
-    // 1. Inisialisasi Google Gemini SDK
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY belum dikonfigurasi di variabel lingkungan");
+      throw new Error("OPENROUTER_API_KEY belum dikonfigurasi di variabel lingkungan");
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    // 2. Rakit System Prompt khusus Konten Website (Super Ringan & Cepat)
     const systemPrompt = `Kamu adalah Pilar Asisten, AI Co-Pilot resmi UKM Pilar Bangsa. Tugas utamamu adalah menjawab pertanyaan pengunjung HANYA berdasarkan informasi, sejarah, visi misi, dan AD/ART UKM Pilar Bangsa berikut: ${AD_ART_CONTEXT}. 
 Jawablah dengan bahasa yang ramah, profesional, dan ringkas. JANGAN menjawab hal-hal di luar konteks organisasi UKM Pilar Bangsa yang diberikan. Jika informasi yang ditanyakan (seperti jadwal proker, detail acara, cara pendaftaran, dsb) TIDAK ADA di dalam teks konteks yang diberikan, kamu DILARANG MENGARANG JAWABAN (berhalusinasi). Sebaliknya, mohon maaf dan arahkan pengunjung dengan sopan untuk menghubungi Sekretaris UKM Pilar Bangsa melalui ikon/tombol kontak WhatsApp yang tertera di bagian bawah (Footer) website ini.`;
 
-    // 3. Minta respons Gemini 3.5 Flash (dengan mekanisme Retry Otomatis jika server sedang sibuk / 503 High Demand)
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.5-flash",
-      systemInstruction: systemPrompt
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://pilarbangsa-official.vercel.app",
+        "X-Title": "Pilar Bangsa Management"
+      },
+      body: JSON.stringify({
+        model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ]
+      })
     });
 
-    try {
-      const result = await model.generateContent(message);
-      const textResponse = result.response.text();
-      return NextResponse.json({ response: textResponse });
-    } catch (primaryError: any) {
-      console.warn("gemini-3.5-flash sedang sibuk (503), melakukan percobaan ulang (retry)...", primaryError.message);
-      
-      // Jeda 1 detik sebelum retry
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const retryResult = await model.generateContent(message);
-      const retryTextResponse = retryResult.response.text();
-      return NextResponse.json({ response: retryTextResponse });
+    if (!response.ok) {
+      throw new Error(`OpenRouter Error: ${response.statusText}`);
     }
+
+    const data = await response.json();
+    const textResponse = data.choices?.[0]?.message?.content;
+
+    if (!textResponse) {
+       throw new Error("Respons AI kosong.");
+    }
+
+    return NextResponse.json({ response: textResponse });
 
   } catch (error: any) {
     console.error("Error in /api/chat:", error);
