@@ -69,6 +69,12 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
             >
               Program Kerja
             </Link>
+            <Link 
+              href="/arsip" 
+              className="font-bold text-sm tracking-wide text-gray-800 hover:text-[#0000FF] transition-colors py-2"
+            >
+              Arsip UKM
+            </Link>
           </nav>
 
           {/* Login Button */}

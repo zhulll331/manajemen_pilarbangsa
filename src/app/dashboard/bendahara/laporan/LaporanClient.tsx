@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, TrendingUp, TrendingDown, Users, Wallet } from "lucide-react";
+import { Download, TrendingUp, TrendingDown, Users, Wallet, Eye, EyeOff } from "lucide-react";
 import { SummaryCard } from "@/components/SummaryCard";
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -24,6 +24,8 @@ export default function LaporanClient({
   const printReport = () => {
     window.print();
   };
+
+  const [saldoVisible, setSaldoVisible] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -49,19 +51,32 @@ export default function LaporanClient({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SummaryCard 
           title={`Pemasukan (${filterYear})`}
-          value={`Rp ${yearTotalPemasukan.toLocaleString('id-ID')}`}
+          value={saldoVisible ? `Rp ${yearTotalPemasukan.toLocaleString('id-ID')}` : "Rp ••••••••"}
           icon={<TrendingUp size={24} className="text-green-600" />}
         />
         <SummaryCard 
           title={`Pengeluaran (${filterYear})`}
-          value={`Rp ${yearTotalPengeluaran.toLocaleString('id-ID')}`}
+          value={saldoVisible ? `Rp ${yearTotalPengeluaran.toLocaleString('id-ID')}` : "Rp ••••••••"}
           icon={<TrendingDown size={24} className="text-red-600" />}
         />
-        <SummaryCard 
-          title="Saldo Kas Saat Ini"
-          value={`Rp ${saldoKas.toLocaleString('id-ID')}`}
-          icon={<Wallet size={24} className="text-[var(--color-primary)]" />}
-        />
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-xl text-[var(--color-primary)]"><Wallet size={24} /></div>
+              <p className="text-sm font-medium text-gray-500">Saldo Kas Saat Ini</p>
+            </div>
+            <button
+              onClick={() => setSaldoVisible(!saldoVisible)}
+              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors print:hidden"
+              title={saldoVisible ? "Sembunyikan" : "Tampilkan"}
+            >
+              {saldoVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <p className="text-2xl font-bold text-gray-800 tracking-tight transition-all duration-300">
+            {saldoVisible ? `Rp ${saldoKas.toLocaleString('id-ID')}` : "Rp ••••••••"}
+          </p>
+        </div>
       </div>
 
       <div className="bg-white border rounded-xl overflow-hidden shadow-sm">

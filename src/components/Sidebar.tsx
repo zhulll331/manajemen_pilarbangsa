@@ -56,6 +56,7 @@ export function Sidebar({
           { href: "/dashboard/humas/berita", label: "Kelola Berita", icon: <FileText size={20} /> },
           { href: "/dashboard/humas/banner", label: "Pengaturan Banner", icon: <FolderOpen size={20} /> },
           { href: "/dashboard/humas/pengaturan", label: "Kelola Tokoh & Pemimpin", icon: <Users size={20} /> },
+          { href: "/dashboard/humas/arsip", label: "Arsip Publik", icon: <Archive size={20} /> },
         ];
       case "ketua":
       default:

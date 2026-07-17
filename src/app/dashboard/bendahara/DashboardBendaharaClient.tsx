@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Wallet, TrendingUp, TrendingDown, Users } from "lucide-react";
+import { useState } from "react";
+import { Wallet, TrendingUp, TrendingDown, Users, Eye, EyeOff } from "lucide-react";
 import { SummaryCard } from "@/components/SummaryCard";
 import { ChartCard } from "@/components/ChartCard";
 import dynamic from "next/dynamic";
@@ -49,18 +50,47 @@ export default function DashboardBendaharaClient({
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(value);
 
+  const [saldoVisible, setSaldoVisible] = useState(false);
+
   return (
     <div className="space-y-8">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link href="/dashboard/bendahara/laporan" className="block hover:scale-[1.02] transition-transform">
-          <SummaryCard title="Saldo Kas" value={formatCurrency(saldoKas)} icon={<Wallet size={24} />} color="primary" />
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-xl text-[var(--color-primary)]"><Wallet size={24} /></div>
+                <p className="text-sm font-medium text-gray-500">Saldo Kas</p>
+              </div>
+              <button
+                onClick={(e) => { e.preventDefault(); setSaldoVisible(!saldoVisible); }}
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title={saldoVisible ? "Sembunyikan" : "Tampilkan"}
+              >
+                {saldoVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            <p className="text-2xl font-bold text-gray-800 tracking-tight transition-all duration-300">
+              {saldoVisible ? formatCurrency(saldoKas) : "Rp ••••••••"}
+            </p>
+          </div>
         </Link>
         <Link href="/dashboard/bendahara/transaksi" className="block hover:scale-[1.02] transition-transform">
-          <SummaryCard title="Total Pemasukan" value={formatCurrency(totalPemasukan)} icon={<TrendingUp size={24} />} color="green" />
+          <SummaryCard 
+            title="Total Pemasukan" 
+            value={saldoVisible ? formatCurrency(totalPemasukan) : "Rp ••••••••"} 
+            icon={<TrendingUp size={24} />} 
+            color="green" 
+          />
         </Link>
         <Link href="/dashboard/bendahara/transaksi" className="block hover:scale-[1.02] transition-transform">
-          <SummaryCard title="Total Pengeluaran" value={formatCurrency(totalPengeluaran)} icon={<TrendingDown size={24} />} color="red" />
+          <SummaryCard 
+            title="Total Pengeluaran" 
+            value={saldoVisible ? formatCurrency(totalPengeluaran) : "Rp ••••••••"} 
+            icon={<TrendingDown size={24} />} 
+            color="red" 
+          />
         </Link>
         <Link href="/dashboard/bendahara/iuran" className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Iuran Belum Lunas" value={`${iuranBelumLunas} Org`} icon={<Users size={24} />} color="yellow" />
