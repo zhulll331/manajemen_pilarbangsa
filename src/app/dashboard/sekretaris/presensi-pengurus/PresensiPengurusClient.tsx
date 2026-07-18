@@ -100,12 +100,11 @@ export default function PresensiPengurusClient({
       
       setAttendanceMap(prev => {
         const newMap = { ...prev };
+        // Hanya update status yang ditemukan di notulensi.
+        // Yang tidak ditemukan dibiarkan kosong (tidak di-Alpa).
         filteredMembers.forEach(m => {
           if (parsedMap.has(m.id)) {
             newMap[m.id] = parsedMap.get(m.id)!;
-          } else {
-            // Default to Alpa if they are not detected by AI
-            newMap[m.id] = "Alpa";
           }
         });
         return newMap;
@@ -117,7 +116,7 @@ export default function PresensiPengurusClient({
         setUnmatchedNames(result.unmatched_names);
         setSaveMessage({ text: "Berhasil mencocokkan sebagian data. Ada nama yang tidak terdaftar di database anggota!", type: "warning" });
       } else {
-        setSaveMessage({ text: "Berhasil mencocokkan data! Silakan periksa kembali dan klik Simpan.", type: "success" });
+        setSaveMessage({ text: "Berhasil mencocokkan data! Anggota yang tidak ada di notulensi dibiarkan kosong.", type: "success" });
       }
     } catch (e: any) {
       alert(e.message || "Gagal memproses dengan AI.");

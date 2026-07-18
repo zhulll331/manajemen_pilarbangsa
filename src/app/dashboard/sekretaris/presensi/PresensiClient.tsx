@@ -49,21 +49,10 @@ export default function PresensiClient({
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [hasGemini, setHasGemini] = useState(false);
   const [unmatchedNames, setUnmatchedNames] = useState<string[]>([]);
-  const [skippedNonPengurus, setSkippedNonPengurus] = useState(0);
 
   useEffect(() => {
     isGeminiConfigured().then(setHasGemini).catch(() => {});
   }, []);
-
-  // Deteksi apakah agenda merupakan rapat khusus pengurus
-  const detectRapatPengurus = (agendaTitle: string, text: string): boolean => {
-    const keywords = [
-      'rapat pengurus', 'rapat pleno', 'rapat kepengurusan',
-      'rapat badan pengurus', 'rapat internal pengurus', 'rapat harian pengurus'
-    ];
-    const combined = (agendaTitle + ' ' + text).toLowerCase();
-    return keywords.some(kw => combined.includes(kw));
-  };
 
   // Extract unique filter options
   const divisions = ["Semua", ...Array.from(new Set(members.map(m => m.division).filter(Boolean)))];
@@ -103,44 +92,31 @@ export default function PresensiClient({
     }
     setIsProcessingAI(true);
     setUnmatchedNames([]);
-    setSkippedNonPengurus(0);
     try {
       const result = await parsePresensiAI(aiText, members.map(m => ({ id: m.id, name: m.name })));
       
       const matchedData = result.matched || [];
       const parsedMap = new Map<string, string>(matchedData.map((r: any) => [r.member_id, r.status]));
 
-      // Deteksi rapat pengurus dari judul agenda atau teks yang di-paste
-      const agendaTitle = agendas.find(a => a.id === selectedAgenda)?.title || "";
-      const isPengurusRapat = detectRapatPengurus(agendaTitle, aiText);
-
-      let skippedCount = 0;
       setAttendanceMap(prev => {
         const newMap = { ...prev };
+        // Hanya update status anggota yang ditemukan di notulensi.
+        // Yang tidak ditemukan dibiarkan kosong (tidak di-Alpa).
         filteredMembers.forEach(m => {
           if (parsedMap.has(m.id)) {
             newMap[m.id] = parsedMap.get(m.id)!;
-          } else if (isPengurusRapat && !m.division) {
-            // Ini rapat pengurus — anggota tanpa divisi tidak perlu diabsen
-            // Biarkan status mereka tidak berubah (tidak di-Alpa)
-            skippedCount++;
-          } else {
-            newMap[m.id] = "Alpa";
           }
         });
         return newMap;
       });
-      setSkippedNonPengurus(skippedCount);
       setShowAI(false);
       setAiText("");
       
       if (result.unmatched_names && result.unmatched_names.length > 0) {
         setUnmatchedNames(result.unmatched_names);
         setSaveMessage({ text: "Berhasil mencocokkan sebagian data. Ada nama yang tidak terdaftar di database anggota!", type: "warning" });
-      } else if (isPengurusRapat && skippedCount > 0) {
-        setSaveMessage({ text: `Rapat Pengurus terdeteksi! ${skippedCount} anggota biasa dilewati (tidak di-Alpa). Silakan periksa dan klik Simpan.`, type: "success" });
       } else {
-        setSaveMessage({ text: "Berhasil mencocokkan data! Silakan periksa kembali dan klik Simpan.", type: "success" });
+        setSaveMessage({ text: "Berhasil mencocokkan data! Anggota yang tidak ada di notulensi dibiarkan kosong.", type: "success" });
       }
     } catch (e: any) {
       alert(e.message || "Gagal memproses dengan AI.");
@@ -337,8 +313,7 @@ export default function PresensiClient({
             <div className="p-4 border-t border-blue-100 bg-white">
               <p className="text-sm text-gray-600 mb-3">
                 Tempelkan (paste) daftar presensi atau notulensi dari WhatsApp/HP Anda di bawah ini. AI akan otomatis mencocokkan nama. <br/>
-                <strong className="text-red-500">Penting: Anggota yang namanya tidak ditemukan akan dianggap Alpa.</strong> <br/>
-                <span className="text-blue-600">💡 Jika teks/judul agenda mengandung kata <em>"rapat pengurus"</em>, anggota biasa (tanpa divisi) tidak akan di-Alpa secara otomatis.</span>
+                <span className="text-blue-600">💡 Anggota yang tidak ditemukan di notulensi <strong>dibiarkan kosong</strong>, bukan di-Alpa. Isi manual jika perlu.</span>
               </p>
               <textarea
                 value={aiText}
