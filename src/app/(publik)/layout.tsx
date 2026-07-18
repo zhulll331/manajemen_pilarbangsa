@@ -58,7 +58,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
               Beranda
             </Link>
             <Link 
-              href="/tentang" 
+              href="/tentang-kami" 
               className="font-bold text-sm tracking-wide text-gray-800 hover:text-[#008000] transition-colors py-2"
             >
               Tentang Kami
@@ -170,7 +170,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                   </Link>
                 </li>
                 <li>
-                  <Link href="/tentang" className="hover:text-white transition-colors flex items-center space-x-2">
+                  <Link href="/tentang-kami" className="hover:text-white transition-colors flex items-center space-x-2">
                     <span>Tentang Kami</span>
                   </Link>
                 </li>
