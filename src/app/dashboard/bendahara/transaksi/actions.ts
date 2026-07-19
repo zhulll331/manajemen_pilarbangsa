@@ -39,6 +39,38 @@ export async function tambahTransaksi(formData: FormData) {
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
 }
+export async function tambahTransaksiMassal(transactionsData: any[]) {
+  const supabase = await createClient()
+  
+  // Format data for insertion
+  const payload = transactionsData.map(data => ({
+    transaction_date: data.transaction_date,
+    type: data.type,
+    category: data.category,
+    amount: Number(data.amount),
+    description: data.description,
+    responsible_person: data.responsible_person,
+    proof_url: data.proof_url,
+    folder_id: data.folder_id || null,
+    program_id: data.program_id || null
+  }));
+
+  // Coba insert langsung dengan folder_id.
+  let { error } = await supabase.from('finance_transactions').insert(payload)
+  
+  if (error && error.message.includes('folder_id')) {
+    // Jika folder_id tidak valid di schema database, hapus atributnya sebagai fallback
+    const payloadFallback = payload.map((p) => {
+      const { folder_id, ...rest } = p;
+      return rest;
+    });
+    const { error: fallbackError } = await supabase.from('finance_transactions').insert(payloadFallback)
+    error = fallbackError
+  }
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard', 'layout')
+}
 
 export async function editTransaksi(id: string, formData: FormData) {
   const supabase = await createClient()
@@ -131,3 +163,72 @@ ${transaksiText}
     throw new Error(error.message || "Gagal memproses dengan AI.");
   }
 }
+
+export async function parseBatchTransaksiNemotron(transaksiText: string) {
+  const apiKey = process.env.NEMOTRON_API_KEY || process.env.NVIDIA_API_KEY || process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("Kunci API (NEMOTRON_API_KEY / NVIDIA_API_KEY) tidak ditemukan di .env.local");
+  }
+
+  const isNvidia = apiKey.startsWith('nvapi-');
+  const apiUrl = isNvidia 
+    ? 'https://integrate.api.nvidia.com/v1/chat/completions'
+    : 'https://openrouter.ai/api/v1/chat/completions';
+  
+  // Model name can be different based on provider
+  const model = isNvidia
+    ? 'nvidia/llama-3.1-nemotron-70b-instruct'
+    : 'nvidia/nemotron-3-ultra-550b-a55b';
+
+  const prompt = `Anda adalah asisten Bendahara profesional. Ekstrak teks laporan transaksi/RAB berikut ke dalam array JSON berisi daftar transaksi.
+Format JSON yang DIWAJIBKAN:
+[
+  {
+    "type": "string (Hanya 'Pemasukan' atau 'Pengeluaran')",
+    "category": "string (Kategori singkat, misal: 'Konsumsi', 'Transportasi', 'Honor', 'ATK')",
+    "amount": "number (Hanya angka nominal total biayanya, misal: 50000. Tanpa titik atau koma)",
+    "description": "string (Keterangan singkat, misal: 'Beli aqua kardus untuk rapat')",
+    "responsible_person": "string (Nama pihak terkait jika disebutkan, jika tidak ada kosongkan)"
+  }
+]
+
+Hanya kembalikan array JSON valid tanpa markdown block (\`\`\`json) dan tanpa teks apapun selain JSON. Jika ada field yang tidak diketahui, biarkan kosong.
+
+Teks Laporan Transaksi:
+"""
+${transaksiText}
+"""`;
+
+  try {
+    const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.1
+        })
+      });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText);
+    }
+    const result = await response.json();
+    let responseText = result.choices?.[0]?.message?.content;
+    if (!responseText) throw new Error("Respons AI kosong.");
+
+    // Clean up markdown block if present
+    responseText = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
+
+    const parsed = JSON.parse(responseText);
+    if (!Array.isArray(parsed)) throw new Error("Format respons tidak sesuai (bukan array).");
+    return parsed;
+  } catch (error: any) {
+    throw new Error(error.message || "Gagal memproses dengan AI Nemotron.");
+  }
+}
+

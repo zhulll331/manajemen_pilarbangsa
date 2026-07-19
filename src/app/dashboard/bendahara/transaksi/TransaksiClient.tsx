@@ -8,10 +8,13 @@ import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable } from "@/components/DataTable";
 import { tambahTransaksi, editTransaksi, hapusTransaksi, parseTransaksiHarian } from "./actions";
+import { TransaksiBatchModal } from "./TransaksiBatchModal";
+import { Layers } from "lucide-react";
 
 export default function TransaksiClient({ transactions, programs = [] }: { transactions: any[], programs?: any[] }) {
   const [filter, setFilter] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedData, setSelectedData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -314,6 +317,16 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
         );
       }
     },
+    {
+      key: "actions",
+      label: "Aksi",
+      render: (row: any) => (
+        <div className="flex items-center gap-2">
+          <button onClick={() => openEdit(row)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded text-xs font-medium">Edit</button>
+          <button onClick={() => openDelete(row)} className="text-red-600 hover:bg-red-50 p-1.5 rounded text-xs font-medium">Hapus</button>
+        </div>
+      )
+    }
   ];
 
   return (
@@ -347,6 +360,13 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
             >
               <Download size={20} />
               Ekspor Excel
+            </button>
+            <button
+              onClick={() => setIsBatchModalOpen(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md shadow-purple-200"
+            >
+              <Layers size={20} />
+              Tambah Massal
             </button>
             <button
               onClick={openAdd}
@@ -592,6 +612,13 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
         title="Hapus Transaksi"
         message="Apakah Anda yakin ingin menghapus data transaksi ini?"
         loading={isLoading}
+      />
+
+      <TransaksiBatchModal 
+        isOpen={isBatchModalOpen}
+        onClose={() => setIsBatchModalOpen(false)}
+        programs={programs}
+        onSuccess={() => setIsBatchModalOpen(false)}
       />
     </div>
   );

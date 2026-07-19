@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Download, TrendingUp, TrendingDown, Users, Wallet, Eye, EyeOff } from "lucide-react";
+import { Download, TrendingUp, TrendingDown, Users, Wallet, Eye, EyeOff, FileSpreadsheet } from "lucide-react";
 import { SummaryCard } from "@/components/SummaryCard";
+import * as XLSX from "xlsx";
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -47,6 +48,43 @@ export default function LaporanClient({
     window.print();
   };
 
+  const handleExportExcelProker = () => {
+    const workbook = XLSX.utils.book_new();
+    
+    if (transactions) {
+      const yearTransactions = transactions.filter((t: any) => new Date(t.transaction_date).getFullYear() === filterYear);
+      
+      const prokers = Array.from(new Set(yearTransactions.map((t: any) => t.programs?.title || "Internal (Non-Proker)")));
+      
+      prokers.forEach(proker => {
+        const prokerData = yearTransactions.filter((t: any) => (t.programs?.title || "Internal (Non-Proker)") === proker);
+        
+        const exportData = prokerData.map((d: any, index: number) => ({
+          "No": index + 1,
+          "Tanggal": d.transaction_date,
+          "Tipe": d.type,
+          "Kategori": d.category,
+          "Keterangan": d.description || "-",
+          "Nominal": d.amount,
+          "Penanggung Jawab": d.responsible_person
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        
+        const wscols = [
+          {wch: 5}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 15}, {wch: 25}
+        ];
+        worksheet['!cols'] = wscols;
+
+        // Nama sheet Excel dibatasi max 31 karakter dan tidak boleh ada karakter khusus tertentu
+        let sheetName = proker.substring(0, 31).replace(/[\\/*?:\[\]]/g, '');
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      });
+      
+      XLSX.writeFile(workbook, `Laporan_Proker_${filterYear}.xlsx`);
+    }
+  };
+
   const [saldoVisible, setSaldoVisible] = useState(false);
 
   return (
@@ -61,13 +99,22 @@ export default function LaporanClient({
             <option key={y} value={y}>Tahun {y}</option>
           ))}
         </select>
-        <button
-          onClick={printReport}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center"
-        >
-          <Download size={20} />
-          Cetak Laporan
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleExportExcelProker}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center"
+          >
+            <FileSpreadsheet size={20} />
+            Ekspor LPJ Proker
+          </button>
+          <button
+            onClick={printReport}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center"
+          >
+            <Download size={20} />
+            Cetak
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
