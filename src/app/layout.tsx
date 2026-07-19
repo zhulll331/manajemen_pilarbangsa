@@ -14,8 +14,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Manajemen Pilar Bangsa",
-  description: "Sistem Informasi Manajemen Terpadu untuk UKM Pilar Bangsa",
+  title: {
+    template: "%s | UKM Pilar Bangsa Untag Banyuwangi",
+    default: "Unit Kegiatan Mahasiswa: Pilar Bangsa Untag Banyuwangi",
+  },
+  description: "Wadah Transformasi & Kolaborasi Mahasiswa Universitas 17 Agustus 1945 (Untag) Banyuwangi. Pilar Bangsa Digital Office mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel.",
+  keywords: [
+    "UKM Pilar Bangsa Untag Banyuwangi", 
+    "Universitas 17 Agustus 1945 Banyuwangi", 
+    "Untag Banyuwangi", 
+    "UKM Pilar Bangsa", 
+    "Pilar Bangsa Digital Office",
+    "Sistem Manajemen Pilar Bangsa"
+  ],
 };
 
 export default function RootLayout({

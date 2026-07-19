@@ -8,6 +8,12 @@ import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
 import { ArrowRight, Newspaper } from 'lucide-react'
 
+export const metadata = {
+  title: 'Pilar Bangsa Digital Office | UKM Pilar Bangsa Untag Banyuwangi',
+  description: 'Wadah Transformasi & Kolaborasi Mahasiswa Universitas 17 Agustus 1945 (Untag) Banyuwangi. Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel.',
+  keywords: ['UKM Pilar Bangsa', 'Untag Banyuwangi', 'Pilar Bangsa Digital Office', 'Universitas 17 Agustus 1945 Banyuwangi', 'Organisasi Mahasiswa', 'Sistem Manajemen Pilar Bangsa'],
+}
+
 // Fetch news from Supabase
 async function getNews() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

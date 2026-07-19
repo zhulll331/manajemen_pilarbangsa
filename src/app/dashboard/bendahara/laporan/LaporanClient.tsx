@@ -66,13 +66,14 @@ export default function LaporanClient({
           "Kategori": d.category,
           "Keterangan": d.description || "-",
           "Nominal": d.amount,
-          "Penanggung Jawab": d.responsible_person
+          "Penanggung Jawab": d.responsible_person,
+          "Link Bukti": d.proof_url || "-"
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         
         const wscols = [
-          {wch: 5}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 15}, {wch: 25}
+          {wch: 5}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 15}, {wch: 25}, {wch: 40}
         ];
         worksheet['!cols'] = wscols;
 

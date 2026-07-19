@@ -5,6 +5,11 @@ import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
 import { StrukturPimpinan } from '@/components/StrukturPimpinan'
 
+export const metadata = {
+  title: 'Tentang UKM Pilar Bangsa | Pilar Bangsa Digital Office',
+  description: 'Mengenal lebih dekat UKM Pilar Bangsa Universitas 17 Agustus 1945 Banyuwangi. Profil, sejarah, visi misi, Tri Dharma, dan Trisakti Bung Karno.',
+}
+
 async function getStrukturPimpinan() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
