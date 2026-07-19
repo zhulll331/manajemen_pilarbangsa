@@ -178,7 +178,7 @@ export async function parseBatchTransaksiNemotron(transaksiText: string) {
   // Model name can be different based on provider
   const model = isNvidia
     ? 'nvidia/llama-3.1-nemotron-70b-instruct'
-    : 'nvidia/nemotron-3-ultra-550b-a55b';
+    : 'nvidia/nemotron-3-ultra-550b-a55b:free';
 
   const prompt = `Anda adalah asisten Bendahara profesional. Ekstrak teks laporan transaksi/RAB berikut ke dalam array JSON berisi daftar transaksi.
 Format JSON yang DIWAJIBKAN:
