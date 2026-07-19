@@ -21,6 +21,28 @@ export default function LaporanClient({
   const yearTotalPemasukan = yearMonthlyData.reduce((sum: number, d: any) => sum + d.pemasukan, 0);
   const yearTotalPengeluaran = yearMonthlyData.reduce((sum: number, d: any) => sum + d.pengeluaran, 0);
 
+  // Group pengeluaran by proker for the selected year
+  const prokerExpenses: Record<string, number> = {};
+  let outOfProkerExpense = 0;
+
+  if (transactions) {
+    transactions.forEach((t: any) => {
+      if (t.type === "Pengeluaran") {
+        const date = new Date(t.transaction_date);
+        if (date.getFullYear() === filterYear) {
+          if (t.programs?.title) {
+            const title = t.programs.title;
+            prokerExpenses[title] = (prokerExpenses[title] || 0) + t.amount;
+          } else {
+            outOfProkerExpense += t.amount;
+          }
+        }
+      }
+    });
+  }
+
+  const prokerList = Object.keys(prokerExpenses).sort();
+
   const printReport = () => {
     window.print();
   };
@@ -118,6 +140,39 @@ export default function LaporanClient({
                 <td className={`p-4 font-bold ${(yearTotalPemasukan - yearTotalPengeluaran) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   Rp {(yearTotalPemasukan - yearTotalPengeluaran).toLocaleString('id-ID')}
                 </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      <div className="bg-white border rounded-xl overflow-hidden shadow-sm mt-6">
+        <div className="p-4 border-b bg-gray-50">
+          <h3 className="font-semibold text-gray-800">Rincian Pengeluaran per Program Kerja - Tahun {filterYear}</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50/50">
+                <th className="p-4 font-medium text-gray-600">Program Kerja</th>
+                <th className="p-4 font-medium text-gray-600 text-right">Total Pengeluaran</th>
+              </tr>
+            </thead>
+            <tbody>
+              {prokerList.map((title) => (
+                <tr key={title} className="border-b hover:bg-gray-50/50 transition-colors">
+                  <td className="p-4 font-medium text-gray-800">{title}</td>
+                  <td className="p-4 text-red-600 font-medium text-right">Rp {prokerExpenses[title].toLocaleString('id-ID')}</td>
+                </tr>
+              ))}
+              <tr className="border-b hover:bg-gray-50/50 transition-colors bg-gray-50/30">
+                <td className="p-4 font-medium text-gray-600 italic">Kebutuhan Internal (Diluar Proker)</td>
+                <td className="p-4 text-red-600 font-medium text-right">Rp {outOfProkerExpense.toLocaleString('id-ID')}</td>
+              </tr>
+            </tbody>
+            <tfoot className="bg-gray-50">
+              <tr>
+                <td className="p-4 font-bold text-gray-800">Total Pengeluaran</td>
+                <td className="p-4 font-bold text-red-600 text-right">Rp {yearTotalPengeluaran.toLocaleString('id-ID')}</td>
               </tr>
             </tfoot>
           </table>

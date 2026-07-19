@@ -9,14 +9,14 @@ import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable } from "@/components/DataTable";
 import { tambahTransaksi, editTransaksi, hapusTransaksi, parseTransaksiHarian } from "./actions";
 
-export default function TransaksiClient({ transactions }: { transactions: any[] }) {
+export default function TransaksiClient({ transactions, programs = [] }: { transactions: any[], programs?: any[] }) {
   const [filter, setFilter] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedData, setSelectedData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   // AI & Voice State
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -33,7 +33,8 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
     description: "",
     responsible_person: "",
     proof_url: "",
-    folder_id: ""
+    folder_id: "",
+    program_id: ""
   });
 
   const filteredData = filter === "Semua" 
@@ -52,9 +53,10 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       description: "",
       responsible_person: "",
       proof_url: "",
-      folder_id: ""
+      folder_id: "",
+      program_id: ""
     });
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setTransaksiText("");
     setShowAIPanel(false);
     setErrorMsg("");
@@ -71,9 +73,10 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       description: data.description || "",
       responsible_person: data.responsible_person || "",
       proof_url: data.proof_url || "",
-      folder_id: data.folder_id || ""
+      folder_id: data.folder_id || "",
+      program_id: data.program_id || ""
     });
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setTransaksiText("");
     setShowAIPanel(false);
     setErrorMsg("");
@@ -171,12 +174,15 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
         if (data.folderId) folderId = data.folderId;
       }
 
-      let proofUrl = formDataState.proof_url;
-      if (selectedFile) {
-        // Upload langsung dari browser ke Google Drive (melewati Vercel)
-        const { url: fileUrl } = await uploadFileToDrive(selectedFile, folderId || undefined);
-        if (fileUrl) proofUrl = fileUrl;
+      let proofUrls: string[] = formDataState.proof_url ? formDataState.proof_url.split(',').filter(Boolean) : [];
+      if (selectedFiles.length > 0) {
+        // Upload langsung dari browser ke Google Drive
+        for (const file of selectedFiles) {
+          const { url: fileUrl } = await uploadFileToDrive(file, folderId || undefined);
+          if (fileUrl) proofUrls.push(fileUrl);
+        }
       }
+      const finalProofUrl = proofUrls.join(',');
 
       const formData = new FormData();
       formData.append("transaction_date", formDataState.transaction_date);
@@ -185,8 +191,9 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
       formData.append("amount", formDataState.amount);
       formData.append("description", formDataState.description);
       formData.append("responsible_person", formDataState.responsible_person);
-      formData.append("proof_url", proofUrl);
+      formData.append("proof_url", finalProofUrl);
       formData.append("folder_id", folderId);
+      formData.append("program_id", formDataState.program_id);
 
       if (selectedData) {
         await editTransaksi(selectedData.id, formData);
@@ -206,12 +213,17 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
     setIsLoading(true);
     try {
       // Hapus file bukti dari Google Drive jika ada proof_url
-      if (selectedData.proof_url && selectedData.proof_url.includes('drive.google.com')) {
-        await fetch('/api/drive/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileUrl: selectedData.proof_url })
-        }).catch(err => console.error('Gagal hapus file drive:', err));
+      if (selectedData.proof_url) {
+        const urls = selectedData.proof_url.split(',').filter(Boolean);
+        for (const url of urls) {
+          if (url.includes('drive.google.com')) {
+            await fetch('/api/drive/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fileUrl: url })
+            }).catch(err => console.error('Gagal hapus file drive:', err));
+          }
+        }
       }
 
       await hapusTransaksi(selectedData.id);
@@ -260,7 +272,20 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
         </span>
       ) 
     },
-    { key: "category", label: "Kategori" },
+    { 
+      key: "category", 
+      label: "Kategori",
+      render: (row: any) => (
+        <div className="flex flex-col">
+          <span>{row.category}</span>
+          {row.programs?.title && (
+            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded w-max mt-1">
+              Proker: {row.programs.title}
+            </span>
+          )}
+        </div>
+      )
+    },
     { key: "description", label: "Keterangan" },
     { 
       key: "amount", 
@@ -275,11 +300,19 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
     { 
       key: "proof_url", 
       label: "Bukti", 
-      render: (row: any) => row.proof_url ? (
-        <a href={row.proof_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
-          <ExternalLink size={14} /> Lihat
-        </a>
-      ) : <span className="text-gray-400">-</span>
+      render: (row: any) => {
+        if (!row.proof_url) return <span className="text-gray-400">-</span>;
+        const urls = row.proof_url.split(',').filter(Boolean);
+        return (
+          <div className="flex flex-col gap-1">
+            {urls.map((url: string, idx: number) => (
+              <a key={idx} href={url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs">
+                <ExternalLink size={12} /> Bukti {urls.length > 1 ? idx + 1 : ''}
+              </a>
+            ))}
+          </div>
+        );
+      }
     },
   ];
 
@@ -486,15 +519,29 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Link Bukti (Opsional)</label>
+                <label className="text-sm font-medium text-gray-700">Link Bukti Tambahan (Opsional)</label>
                 <input 
                   type="url"
                   value={formDataState.proof_url}
                   onChange={(e) => setFormDataState({...formDataState, proof_url: e.target.value})}
-                  placeholder="https://..."
+                  placeholder="Jika ada URL eksternal (pisahkan dengan koma jika banyak)"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] outline-none"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Keterkaitan Proker</label>
+              <select 
+                value={formDataState.program_id}
+                onChange={(e) => setFormDataState({...formDataState, program_id: e.target.value})}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] outline-none bg-white"
+              >
+                <option value="">Bukan Proker / Kebutuhan Internal</option>
+                {programs.map((p) => (
+                  <option key={p.id} value={p.id}>{p.title}</option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -502,14 +549,19 @@ export default function TransaksiClient({ transactions }: { transactions: any[] 
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-50-hover transition-colors bg-blue-50/20">
                 <input
                   type="file"
+                  multiple
                   accept="image/*,.pdf"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                   className="w-full text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:transition-colors cursor-pointer"
                 />
-                {selectedFile && (
-                  <p className="mt-2 text-xs font-bold text-green-600">File terpilih: {selectedFile.name}</p>
+                {selectedFiles.length > 0 && (
+                  <div className="mt-2 text-xs font-bold text-green-600 text-left space-y-1">
+                    {selectedFiles.map((f, i) => (
+                      <p key={i}>✓ {f.name}</p>
+                    ))}
+                  </div>
                 )}
-                <p className="mt-1 text-[11px] text-gray-400">Bukti akan masuk ke folder Google Drive &quot;Bendahara &gt; Bukti Kas {formDataState.type}&quot; secara otomatis.</p>
+                <p className="mt-1 text-[11px] text-gray-400">Anda dapat memilih lebih dari satu file. Bukti akan masuk ke folder Google Drive "Bendahara" secara otomatis.</p>
               </div>
             </div>
 

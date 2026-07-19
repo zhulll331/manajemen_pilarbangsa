@@ -9,7 +9,7 @@ export default async function LaporanPage() {
   // Fetch all transactions
   const { data: transactions } = await supabase
     .from("finance_transactions")
-    .select("*");
+    .select("*, programs(title)");
 
 
 

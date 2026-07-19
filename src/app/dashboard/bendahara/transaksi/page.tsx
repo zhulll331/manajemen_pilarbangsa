@@ -6,8 +6,13 @@ export default async function TransaksiPage() {
 
   const { data: transactions } = await supabase
     .from("finance_transactions")
-    .select("*")
+    .select("*, programs(title)")
     .order("transaction_date", { ascending: false });
+
+  const { data: programs } = await supabase
+    .from("programs")
+    .select("id, title")
+    .order("created_at", { ascending: false });
 
   return (
     <div>
@@ -16,7 +21,7 @@ export default async function TransaksiPage() {
         <p className="text-gray-600 mt-1">Kelola data pemasukan dan pengeluaran organisasi.</p>
       </div>
 
-      <TransaksiClient transactions={transactions || []} />
+      <TransaksiClient transactions={transactions || []} programs={programs || []} />
     </div>
   );
 }

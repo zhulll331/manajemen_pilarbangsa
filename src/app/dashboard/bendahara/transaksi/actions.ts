@@ -15,7 +15,8 @@ export async function tambahTransaksi(formData: FormData) {
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
-    folder_id
+    folder_id,
+    program_id: formData.get('program_id') || null
   };
 
   const payloadFallback = {
@@ -25,7 +26,8 @@ export async function tambahTransaksi(formData: FormData) {
     amount: Number(formData.get('amount')),
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
-    proof_url: formData.get('proof_url')
+    proof_url: formData.get('proof_url'),
+    program_id: formData.get('program_id') || null
   };
 
   let { error } = await supabase.from('finance_transactions').insert(payloadAll)
@@ -50,7 +52,8 @@ export async function editTransaksi(id: string, formData: FormData) {
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
-    folder_id
+    folder_id,
+    program_id: formData.get('program_id') || null
   };
 
   const payloadFallback = {
@@ -60,7 +63,8 @@ export async function editTransaksi(id: string, formData: FormData) {
     amount: Number(formData.get('amount')),
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
-    proof_url: formData.get('proof_url')
+    proof_url: formData.get('proof_url'),
+    program_id: formData.get('program_id') || null
   };
 
   let { error } = await supabase.from('finance_transactions').update(payloadAll).eq('id', id)
