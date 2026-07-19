@@ -54,9 +54,9 @@ export default function LaporanClient({
     if (transactions) {
       const yearTransactions = transactions.filter((t: any) => new Date(t.transaction_date).getFullYear() === filterYear);
       
-      const prokers = Array.from(new Set(yearTransactions.map((t: any) => t.programs?.title || "Internal (Non-Proker)")));
+      const prokers: string[] = Array.from(new Set(yearTransactions.map((t: any) => String(t.programs?.title || "Internal (Non-Proker)"))));
       
-      prokers.forEach(proker => {
+      prokers.forEach((proker: string) => {
         const prokerData = yearTransactions.filter((t: any) => (t.programs?.title || "Internal (Non-Proker)") === proker);
         
         const exportData = prokerData.map((d: any, index: number) => ({
