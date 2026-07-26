@@ -3,37 +3,62 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 
+// Helper: tunggu beberapa milidetik
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Keep old actions if needed, or remove them. We'll replace with simpanPresensiMassal.
 export async function simpanPresensiMassal(agenda_id: string, presensiData: { member_id: string, status: string }[]) {
-  const supabase = await createClient()
-
   if (!agenda_id) throw new Error("Agenda belum dipilih")
 
-  // Delete all existing attendance for this agenda first
-  const { error: deleteError } = await supabase
-    .from('attendance')
-    .delete()
-    .eq('agenda_id', agenda_id)
+  const MAX_RETRIES = 3;
+  let lastError: Error | null = null;
 
-  if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + deleteError.message)
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const supabase = await createClient()
 
-  // Insert the new ones
-  if (presensiData.length > 0) {
-    const recordsToInsert = presensiData.map(p => ({
-      agenda_id: agenda_id,
-      member_id: p.member_id,
-      status: p.status
-    }))
+      // Delete all existing attendance for this agenda first
+      const { error: deleteError } = await supabase
+        .from('attendance')
+        .delete()
+        .eq('agenda_id', agenda_id)
 
-    const { error: insertError } = await supabase
-      .from('attendance')
-      .insert(recordsToInsert)
+      if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + deleteError.message)
 
-    if (insertError) throw new Error("Gagal menyimpan presensi baru: " + insertError.message)
+      // Insert the new ones
+      if (presensiData.length > 0) {
+        const recordsToInsert = presensiData.map(p => ({
+          agenda_id: agenda_id,
+          member_id: p.member_id,
+          status: p.status
+        }))
+
+        const { error: insertError } = await supabase
+          .from('attendance')
+          .insert(recordsToInsert)
+
+        if (insertError) throw new Error("Gagal menyimpan presensi baru: " + insertError.message)
+      }
+
+      revalidatePath('/dashboard', 'layout')
+      return; // Sukses, keluar dari loop
+    } catch (err: any) {
+      lastError = err;
+      const isNetworkError = err.message?.includes('fetch failed') || err.cause?.code === 'ECONNRESET';
+      if (isNetworkError && attempt < MAX_RETRIES) {
+        console.warn(`⚠️ Simpan presensi gagal (percobaan ${attempt}/${MAX_RETRIES}), coba lagi dalam 1 detik...`);
+        await sleep(1000 * attempt); // Tunggu 1s, 2s, 3s
+        continue;
+      }
+      throw err; // Bukan network error, atau sudah melebihi retry
+    }
   }
 
-  revalidatePath('/dashboard', 'layout')
+  throw lastError;
 }
+
 
 export async function isGeminiConfigured() {
   return !!process.env.GEMINI_API_KEY;

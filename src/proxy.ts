@@ -27,13 +27,19 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const {
+  let {
     data: { user },
     error: authError
   } = await supabase.auth.getUser()
 
   if (authError) {
-    console.error('🔴 AUTH ERROR IN PROXY:', authError);
+    console.error('🔴 AUTH ERROR IN PROXY (getUser):', authError.message);
+    // Fallback ke getSession jika getUser gagal (misal karena ECONNRESET/fetch failed)
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData?.session?.user) {
+      console.log('🟢 FALLBACK TO SESSION USER BERHASIL');
+      user = sessionData.session.user;
+    }
   }
 
   const { pathname } = request.nextUrl

@@ -35,6 +35,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
   const [notulenText, setNotulenText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [meetingType, setMeetingType] = useState("auto"); // "auto" | "pengurus" | "umum"
   const recognitionRef = useRef<any>(null);
 
   // Auto-generation state
@@ -142,7 +143,7 @@ export default function NotulensiClient({ minutes }: { minutes: Minute[] }) {
     setIsAnalyzing(true);
     setErrorMsg("");
     try {
-      const parsed = await parseNotulensiRapat(notulenText);
+      const parsed = await parseNotulensiRapat(notulenText, meetingType);
       const { notulensi, agenda, presensi, missing_info } = parsed;
 
       setFormDataState(prev => ({
@@ -424,6 +425,18 @@ Tanggal: 20 Agustus 2026
 Kehadiran: Budi, Siti (Izin), ... (Nama tanpa keterangan dianggap Hadir)
 Pembahasan: ...`}
                         </pre>
+                      </div>
+                      <div className="mb-3">
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Jenis Rapat (Filter Presensi Alpa)</label>
+                        <select
+                          value={meetingType}
+                          onChange={(e) => setMeetingType(e.target.value)}
+                          className="w-full p-2.5 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                        >
+                          <option value="auto">Biar AI yang tentukan otomatis</option>
+                          <option value="pengurus">Rapat Pengurus Inti / UKM</option>
+                          <option value="umum">Rapat UMUM / Kegiatan Lainnya</option>
+                        </select>
                       </div>
                       <div className="relative">
                         <textarea

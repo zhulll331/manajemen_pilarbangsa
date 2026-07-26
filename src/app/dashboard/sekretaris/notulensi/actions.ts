@@ -96,7 +96,8 @@ export async function parseNotulensiRapat(notulenText: string) {
   }
 
   const supabase = await createClient();
-  const { data: membersData } = await supabase.from('members').select('id, name');
+  // Ambil data anggota sekaligus dengan kolom status/role-nya
+  const { data: membersData } = await supabase.from('members').select('id, name, status');
   const membersListStr = membersData ? membersData.map(m => `- ${m.name} (ID: ${m.id})`).join("\n") : "Data anggota kosong.";
 
   const prompt = `Anda adalah asisten Sekretaris profesional. Ekstrak teks notulensi rapat dan cocokkan data kehadiran dengan daftar anggota resmi berikut:
@@ -109,16 +110,14 @@ ${notulenText}
 
 Instruksi:
 1. Ekstrak data Notulensi (Judul, Tanggal, Pembahasan, Keputusan, Tindak Lanjut).
-2. Tentukan Agenda Rapat (Judul Agenda, Kategori [Rapat Pengurus/Rapat Anggota/dsb], Tanggal).
-3. ATURAN PRESENSI - Ikuti aturan berikut SECARA KETAT untuk SETIAP anggota di daftar resmi:
-   a. Jika nama DISEBUT di teks TANPA keterangan apapun → statusnya "Hadir"
+2. Tentukan Agenda Rapat (Judul Agenda, Kategori, Tanggal). Tentukan juga "tipe_rapat" (pilih "pengurus" jika rapat ini khusus pengurus/rapat koordinasi pengurus, atau "umum" jika rapat anggota/rapat umum/kegiatan lain).
+3. ATURAN PRESENSI - Ekstrak HANYA anggota yang secara eksplisit disebutkan di teks:
+   a. Jika nama DISEBUT hadir / tanpa keterangan → statusnya "Hadir"
    b. Jika nama DISEBUT dengan keterangan I atau Izin → statusnya "Izin"
    c. Jika nama DISEBUT dengan keterangan S atau Sakit → statusnya "Sakit"
-   d. Jika nama DISEBUT dengan keterangan A atau Alpa → statusnya "Alpa"
-   e. Jika nama SAMA SEKALI TIDAK DISEBUT di teks → statusnya "Alpa" (WAJIB masuk ke daftar presensi!)
-4. SANGAT PENTING: Array "presensi" di output HARUS berisi SEMUA anggota dari daftar resmi di atas, tidak boleh ada yang terlewat. Anggota yang tidak disebut = Alpa.
-5. Cocokkan nama dengan fuzzy match (mirip = sama, abaikan typo kecil dan perbedaan kapital).
-6. Identifikasi kekurangan data: Jika di teks tidak ada penyebutan peserta sama sekali, set "missing_info": ["participants_missing"].
+   d. Abaikan anggota yang tidak disebutkan. Jangan masukkan status "Alpa" di output Anda.
+4. Cocokkan nama dengan fuzzy match (mirip = sama, abaikan typo kecil dan perbedaan kapital).
+5. Identifikasi kekurangan data: Jika di teks tidak ada penyebutan peserta sama sekali, set "missing_info": ["participants_missing"].
 
 Format JSON yang DIWAJIBKAN:
 {
@@ -133,10 +132,11 @@ Format JSON yang DIWAJIBKAN:
   "agenda": {
     "title": "string (Judul agenda, biasanya mirip judul rapat)",
     "category": "string (Pilih kategori rapat yang sesuai)",
-    "date": "string (Tanggal YYYY-MM-DD)"
+    "date": "string (Tanggal YYYY-MM-DD)",
+    "tipe_rapat": "pengurus | umum"
   },
   "presensi": [
-    { "member_id": "id-dari-daftar-resmi", "name": "Nama Resmi", "status": "Hadir/Izin/Sakit/Alpa" }
+    { "member_id": "id-dari-daftar-resmi", "name": "Nama Resmi", "status": "Hadir/Izin/Sakit" }
   ],
   "missing_info": [ "participants_missing" ]
 }`;
@@ -165,7 +165,38 @@ Format JSON yang DIWAJIBKAN:
     // Bersihkan format markdown jika model Nemotron membungkus JSON dengan backtick
     responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
 
-    return JSON.parse(responseText);
+    const parsedResult = JSON.parse(responseText);
+
+    // ====================================================
+    // LOGIKA FILTERING BACKEND UNTUK STATUS "ALPA"
+    // ====================================================
+    if (membersData && parsedResult.presensi) {
+      const tipeRapat = parsedResult.agenda?.tipe_rapat || 'umum';
+      
+      // 1. Filter target peserta berdasarkan tipe rapat
+      const targetMembers = membersData.filter(m => {
+        if (tipeRapat === 'pengurus') {
+          return m.status === 'Pengurus Aktif';
+        }
+        return true; // Jika rapat umum, targetnya semua anggota
+      });
+
+      // 2. Kumpulkan ID anggota yang sudah diekstrak AI (Hadir, Izin, Sakit)
+      const extractedIds = new Set(parsedResult.presensi.map((p: any) => p.member_id));
+
+      // 3. Tambahkan anggota dari targetMembers yang tidak diekstrak sebagai "Alpa"
+      for (const member of targetMembers) {
+        if (!extractedIds.has(member.id)) {
+          parsedResult.presensi.push({
+            member_id: member.id,
+            name: member.name,
+            status: "Alpa"
+          });
+        }
+      }
+    }
+
+    return parsedResult;
   } catch (error: any) {
     throw new Error(error.message || "Gagal memproses dengan AI (OpenRouter).");
   }
