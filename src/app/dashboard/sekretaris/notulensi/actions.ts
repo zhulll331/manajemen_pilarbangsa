@@ -89,7 +89,7 @@ export async function isGeminiConfigured() {
   return !!process.env.OPENROUTER_API_KEY;
 }
 
-export async function parseNotulensiRapat(notulenText: string) {
+export async function parseNotulensiRapat(notulenText: string, meetingType: string = "auto") {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error("Kunci API OpenRouter tidak ditemukan. Harap tambahkan OPENROUTER_API_KEY di .env.local");
@@ -171,7 +171,7 @@ Format JSON yang DIWAJIBKAN:
     // LOGIKA FILTERING BACKEND UNTUK STATUS "ALPA"
     // ====================================================
     if (membersData && parsedResult.presensi) {
-      const tipeRapat = parsedResult.agenda?.tipe_rapat || 'umum';
+      const tipeRapat = meetingType && meetingType !== "auto" ? meetingType : (parsedResult.agenda?.tipe_rapat || 'umum');
       
       // 1. Filter target peserta berdasarkan tipe rapat
       const targetMembers = membersData.filter(m => {
