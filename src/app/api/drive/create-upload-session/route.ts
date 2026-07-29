@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { requireAuthUser } from '@/utils/auth-guard';
 
 /**
  * Membuat sesi upload resumable Google Drive langsung dari browser.
@@ -8,6 +9,7 @@ import { google } from 'googleapis';
  */
 export async function POST(request: NextRequest) {
   try {
+    await requireAuthUser();
     const { fileName, mimeType, folderId } = await request.json();
 
     if (!fileName) {

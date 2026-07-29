@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahEvaluasi(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const programId = formData.get('program_id');
@@ -21,6 +23,7 @@ export async function tambahEvaluasi(formData: FormData) {
 }
 
 export async function editEvaluasi(id: string, formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const programId = formData.get('program_id');
@@ -40,6 +43,7 @@ export async function editEvaluasi(id: string, formData: FormData) {
 }
 
 export async function hapusEvaluasi(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const { error } = await supabase.from('evaluations').delete().eq('id', id)
@@ -49,10 +53,12 @@ export async function hapusEvaluasi(id: string) {
 }
 
 export async function isGeminiConfigured() {
+  await requireAuthUser();
   return !!process.env.GEMINI_API_KEY;
 }
 
 export async function parseNotulenEvaluasi(notulenText: string) {
+  await requireAuthUser();
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -118,3 +124,4 @@ ${notulenText}
     throw new Error(error.message || "Gagal memproses notulensi menggunakan AI.");
   }
 }
+

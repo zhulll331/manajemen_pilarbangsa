@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDriveClient } from '@/utils/drive';
+import { requireAuthUser } from '@/utils/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAuthUser();
     const { fileUrl, fileId } = await request.json();
 
     let targetFileId = fileId;

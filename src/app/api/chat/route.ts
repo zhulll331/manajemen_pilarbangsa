@@ -5,8 +5,12 @@ export async function POST(request: Request) {
   try {
     const { message, currentPath = "/" } = await request.json();
 
-    if (!message) {
+    if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: "Pesan tidak boleh kosong" }, { status: 400 });
+    }
+
+    if (message.length > 500) {
+      return NextResponse.json({ error: "Pesan terlalu panjang (maksimal 500 karakter)" }, { status: 400 });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;

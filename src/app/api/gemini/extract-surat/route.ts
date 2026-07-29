@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { requireAuthUser } from '@/utils/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAuthUser();
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

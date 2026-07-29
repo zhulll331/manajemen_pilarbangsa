@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, CheckCircle, XCircle, ExternalLink, Download, Users, Sparkles, Loader2, Bot, Save } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Plus, CheckCircle, ExternalLink, Download, Users, Sparkles, Loader2, Bot, Save } from "lucide-react";
 import * as XLSX from "xlsx";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
@@ -24,16 +24,108 @@ const MONTHS = [
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = [CURRENT_YEAR - 1, CURRENT_YEAR, CURRENT_YEAR + 1];
+const PERIOD_START_MONTH = 7; // Configurable: 7 = Juli, 8 = Agustus, dst.
+const BASE_START_YEAR = 2025; // Tahun aplikasi mulai digunakan
+
+function generatePeriodOptions() {
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+  
+  const activeStartYear = currentMonth >= PERIOD_START_MONTH ? currentYear : currentYear - 1;
+  const endYear = activeStartYear + 1; // Allow +1 year ahead for prep
+  
+  const years = [];
+  for (let y = BASE_START_YEAR; y <= endYear; y++) {
+    years.push(y);
+  }
+  return years;
+}
+
+const DYNAMIC_YEARS = generatePeriodOptions();
+
+function getPeriodMonths(startYear: number) {
+  const months = [];
+  let currentMonth = PERIOD_START_MONTH;
+  let currentYear = startYear;
+
+  for (let i = 0; i < 12; i++) {
+    months.push({
+      month: currentMonth,
+      year: currentYear,
+      label: MONTHS.find(m => m.value === currentMonth)?.label || "",
+      key: `period_${currentYear}_${currentMonth}`
+    });
+
+    currentMonth++;
+    if (currentMonth > 12) {
+      currentMonth = 1;
+      currentYear++;
+    }
+  }
+  return months;
+}
+
+function formatMatrixData(dues: any[], members: any[], startYear: number) {
+  const periodMonths = getPeriodMonths(startYear);
+  
+  const filteredDues = dues.filter(d => {
+    return periodMonths.some(pm => pm.month === d.month && pm.year === d.year);
+  });
+  
+  return members
+    .map(member => {
+      const memberDues = filteredDues.filter(d => d.member_id === member.id);
+      
+      const isActive = member.status === "Aktif" || member.status === "Pengurus Aktif";
+      const hasTransactionsInPeriod = memberDues.length > 0;
+      
+      if (!isActive && !hasTransactionsInPeriod) {
+        return null;
+      }
+      
+      const matrixRow: any = {
+        id: member.id, // for DataTable key
+        member_id: member.id,
+        member: member.name,
+        transactions: memberDues,
+        totalTerkumpul: 0,
+        tunggakan: 0,
+      };
+
+      const currentRealMonth = new Date().getMonth() + 1;
+      const currentRealYear = new Date().getFullYear();
+
+      for (const pm of periodMonths) {
+        const payment = memberDues.find(d => d.month === pm.month && d.year === pm.year && d.status === 'Lunas');
+        
+        // Tunggakan if the target period month is in the past or is the current month
+        const isPastOrCurrent = pm.year < currentRealYear || (pm.year === currentRealYear && pm.month <= currentRealMonth);
+
+        if (payment) {
+          matrixRow[pm.key] = { status: 'Lunas', amount: payment.amount };
+          matrixRow.totalTerkumpul += payment.amount || 0;
+        } else {
+          matrixRow[pm.key] = { status: 'Belum Lunas' };
+          if (isPastOrCurrent) {
+             matrixRow.tunggakan += 1;
+          }
+        }
+      }
+      
+      return matrixRow;
+    })
+    .filter(Boolean); // Remove nulls
+}
 
 export default function IuranClient({ dues, members }: { dues: any[], members: any[] }) {
   const [filterYear, setFilterYear] = useState<number>(CURRENT_YEAR);
-  const [filterMonth, setFilterMonth] = useState<number>(0); // 0 means all
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMassalModalOpen, setIsMassalModalOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedData, setSelectedData] = useState<any>(null);
+  const [selectedMemberDetails, setSelectedMemberDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -62,11 +154,8 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
     proof_url: ""
   });
 
-  const filteredData = dues.filter(d => {
-    if (d.year !== filterYear) return false;
-    if (filterMonth !== 0 && d.month !== filterMonth) return false;
-    return true;
-  });
+  const periodMonths = useMemo(() => getPeriodMonths(filterYear), [filterYear]);
+  const matrixData = useMemo(() => formatMatrixData(dues, members, filterYear), [dues, members, filterYear]);
 
   const openAdd = () => {
     setSelectedData(null);
@@ -254,85 +343,91 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
     try {
       await hapusIuran(selectedData.id);
       setIsDeleteOpen(false);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      setErrorMsg(error.message || "Terjadi kesalahan saat menghapus data");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleExportExcel = () => {
-    const exportData = filteredData.map((d, index) => ({
-      "No": index + 1,
-      "Nama Anggota": d.members?.name || "Anggota Dihapus",
-      "Periode": `${MONTHS.find(m => m.value === d.month)?.label} ${d.year}`,
-      "Nominal": d.amount,
-      "Status": d.status,
-      "Tanggal Bayar": d.payment_date || "-",
-    }));
+    
+    const exportData = matrixData.map((d, index) => {
+      const row: any = {
+        "No": index + 1,
+        "Nama Anggota": d.member,
+      };
+      
+      periodMonths.forEach(pm => {
+        const header = `${pm.label.substring(0, 3)} ${pm.year.toString().substring(2)}`;
+        row[header] = d[pm.key].status === 'Lunas' ? "Lunas" : "-";
+      });
+      
+      row["Total Terkumpul (Rp)"] = d.totalTerkumpul;
+      row["Tunggakan (Bulan)"] = d.tunggakan;
+      
+      return row;
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Iuran");
+    XLSX.utils.book_append_sheet(workbook, worksheet, `Periode_${filterYear}-${filterYear+1}`);
     
     const wscols = [
-      {wch: 5}, {wch: 25}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}
+      {wch: 5}, {wch: 25}, 
+      ...periodMonths.map(() => ({wch: 10})),
+      {wch: 20}, {wch: 15}
     ];
     worksheet['!cols'] = wscols;
 
-    XLSX.writeFile(workbook, `Laporan_Iuran_${filterMonth === 0 ? "Semua_Bulan" : MONTHS.find(m => m.value === filterMonth)?.label}_${filterYear}.xlsx`);
+    XLSX.writeFile(workbook, `Laporan_Iuran_Periode_${filterYear}-${filterYear+1}.xlsx`);
   };
 
-  const columns = [
+  const columns = useMemo(() => [
     { 
       key: "member", 
       label: "Anggota",
-      render: (row: any) => row.members?.name || "Anggota Dihapus"
+      render: (row: any) => <span className="font-semibold whitespace-nowrap text-gray-800">{row.member}</span>
     },
-    { 
-      key: "period", 
-      label: "Periode",
-      render: (row: any) => {
-        const monthName = MONTHS.find(m => m.value === row.month)?.label;
-        return `${monthName} ${row.year}`;
-      }
-    },
-    { 
-      key: "amount", 
-      label: "Nominal",
+    ...periodMonths.map(pm => ({
+      key: pm.key,
+      label: `${pm.label.substring(0, 3)} ${pm.year.toString().substring(2)}`,
       render: (row: any) => (
-        <span className="font-medium whitespace-nowrap">
-          Rp {row.amount?.toLocaleString('id-ID')}
+        <span className="flex justify-center">
+          {row[pm.key].status === 'Lunas' ? (
+             <CheckCircle size={16} className="text-green-500" title={`Lunas Rp${row[pm.key].amount?.toLocaleString('id-ID')}`} />
+          ) : (
+             <span className="text-gray-300">-</span>
+          )}
         </span>
       )
+    })),
+    {
+      key: "total",
+      label: "Terkumpul",
+      render: (row: any) => <span className="font-medium text-green-700 whitespace-nowrap">Rp {row.totalTerkumpul.toLocaleString('id-ID')}</span>
     },
-    { 
-      key: "status", 
-      label: "Status", 
+    {
+      key: "tunggakan",
+      label: "Tunggakan",
+      render: (row: any) => <span className={`font-medium ${row.tunggakan > 0 ? 'text-red-600' : 'text-gray-500'}`}>{row.tunggakan} Bln</span>
+    },
+    {
+      key: "actions",
+      label: "Aksi",
       render: (row: any) => (
-        <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-max ${
-          row.status === 'Lunas' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-        }`}>
-          {row.status === 'Lunas' ? <CheckCircle size={12}/> : <XCircle size={12}/>}
-          {row.status}
-        </span>
-      ) 
-    },
-    { 
-      key: "payment_date", 
-      label: "Tgl Bayar",
-      render: (row: any) => row.payment_date ? row.payment_date : "-"
-    },
-    { 
-      key: "proof_url", 
-      label: "Bukti", 
-      render: (row: any) => row.proof_url ? (
-        <a href={row.proof_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
-          <ExternalLink size={14} /> Lihat
-        </a>
-      ) : <span className="text-gray-400">-</span>
-    },
-  ];
+        <button 
+          onClick={() => {
+            setSelectedMemberDetails(row);
+            setIsDetailsOpen(true);
+          }}
+          className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1 font-medium whitespace-nowrap border border-blue-200 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100"
+        >
+          Lihat Detail
+        </button>
+      )
+    }
+  ], [periodMonths]);
 
   return (
     <div className="space-y-6">
@@ -343,15 +438,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
             onChange={(e) => setFilterYear(Number(e.target.value))}
             className="p-2 border rounded-lg outline-none bg-white min-w-[120px]"
           >
-            {YEARS.map(y => <option key={y} value={y}>Tahun {y}</option>)}
-          </select>
-          <select 
-            value={filterMonth}
-            onChange={(e) => setFilterMonth(Number(e.target.value))}
-            className="p-2 border rounded-lg outline-none bg-white min-w-[150px]"
-          >
-            <option value={0}>Semua Bulan</option>
-            {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            {DYNAMIC_YEARS.map(y => <option key={y} value={y}>Periode {y}/{y+1}</option>)}
           </select>
         </div>
 
@@ -520,12 +607,10 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
         </div>
       )}
 
-      <DataTable pagination pageSize={10} 
-        data={filteredData}
+      <DataTable pagination pageSize={20} 
+        data={matrixData}
         columns={columns}
-        onEdit={openEdit}
-        onDelete={openDelete}
-        emptyMessage={`Belum ada data iuran pada periode yang dipilih.`}
+        emptyMessage={`Belum ada data anggota.`}
       />
 
       {/* SINGLE ENTRY MODAL */}
@@ -769,6 +854,70 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
             </button>
           </div>
         </form>
+      </DataModal>
+
+      {/* DETAILS MODAL */}
+      <DataModal
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+        title={`Detail Transaksi: ${selectedMemberDetails?.member || ""}`}
+      >
+        <div className="space-y-4">
+          <div className="flex justify-between bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <div>
+              <p className="text-xs text-blue-700 font-semibold uppercase">Total Terkumpul Periode {filterYear}/{filterYear+1}</p>
+              <p className="text-lg font-bold text-blue-900">Rp {selectedMemberDetails?.totalTerkumpul?.toLocaleString('id-ID') || 0}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-red-700 font-semibold uppercase">Tunggakan</p>
+              <p className="text-lg font-bold text-red-900">{selectedMemberDetails?.tunggakan || 0} Bulan</p>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto border rounded-xl">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 text-gray-700 border-b">
+                <tr>
+                  <th className="p-3 font-medium">Periode</th>
+                  <th className="p-3 font-medium">Nominal</th>
+                  <th className="p-3 font-medium">Tgl Bayar</th>
+                  <th className="p-3 font-medium">Bukti</th>
+                  <th className="p-3 font-medium">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y bg-white">
+                {selectedMemberDetails?.transactions?.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-4 text-center text-gray-500">Belum ada transaksi di tahun ini.</td>
+                  </tr>
+                ) : (
+                  selectedMemberDetails?.transactions
+                    ?.sort((a: any, b: any) => a.month - b.month)
+                    .map((trx: any) => (
+                    <tr key={trx.id} className="hover:bg-gray-50">
+                      <td className="p-3">{MONTHS.find(m => m.value === trx.month)?.label} {trx.year}</td>
+                      <td className="p-3">Rp {trx.amount?.toLocaleString('id-ID')}</td>
+                      <td className="p-3">{trx.payment_date || "-"}</td>
+                      <td className="p-3">
+                        {trx.proof_url ? (
+                          <a href={trx.proof_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                            <ExternalLink size={14} /> Lihat
+                          </a>
+                        ) : "-"}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => { setIsDetailsOpen(false); openEdit(trx); }} className="text-blue-600 hover:text-blue-800 text-xs font-medium">Edit</button>
+                          <button onClick={() => { setIsDetailsOpen(false); openDelete(trx); }} className="text-red-600 hover:text-red-800 text-xs font-medium">Hapus</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </DataModal>
 
       <DeleteConfirm

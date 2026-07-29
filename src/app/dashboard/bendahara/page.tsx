@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import DashboardBendaharaClient from "./DashboardBendaharaClient";
-
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+import { aggregateFinancialData } from "@/utils/finance";
 
 export default async function DashboardBendahara() {
   const supabase = await createClient();
@@ -12,40 +11,10 @@ export default async function DashboardBendahara() {
     .select("*")
     .order("transaction_date", { ascending: false });
 
-  let totalPemasukan = 0;
-  let totalPengeluaran = 0;
+  // Fetch dues
+  const { data: dues } = await supabase.from("dues").select("amount, status, payment_date").eq("status", "Lunas");
 
-  // Monthly aggregation
-  const monthlyMap: Record<string, { pemasukan: number; pengeluaran: number }> = {};
-
-  if (transactions) {
-    transactions.forEach((t) => {
-      if (t.type === "Pemasukan") totalPemasukan += t.amount;
-      else totalPengeluaran += t.amount;
-
-      const date = new Date(t.transaction_date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-      if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { pemasukan: 0, pengeluaran: 0 };
-      if (t.type === "Pemasukan") monthlyMap[monthKey].pemasukan += t.amount;
-      else monthlyMap[monthKey].pengeluaran += t.amount;
-    });
-  }
-
-
-
-  const saldoKas = totalPemasukan - totalPengeluaran;
-
-  // Sort monthly data chronologically
-  const monthlyData = Object.entries(monthlyMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, val]) => {
-      const monthIdx = parseInt(key.split("-")[1], 10) - 1;
-      return {
-        month: MONTH_NAMES[monthIdx],
-        pemasukan: val.pemasukan,
-        pengeluaran: val.pengeluaran,
-      };
-    });
+  const { totalPemasukan, totalPengeluaran, saldoKas, monthlyData } = aggregateFinancialData(transactions || [], dues || []);
 
   // Iuran belum lunas (distinct member count)
   const { data: unpaidDues } = await supabase

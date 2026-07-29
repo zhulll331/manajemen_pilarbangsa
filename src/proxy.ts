@@ -37,7 +37,7 @@ export async function proxy(request: NextRequest) {
     // Fallback ke getSession jika getUser gagal (misal karena ECONNRESET/fetch failed)
     const { data: sessionData } = await supabase.auth.getSession();
     if (sessionData?.session?.user) {
-      console.log('🟢 FALLBACK TO SESSION USER BERHASIL');
+
       user = sessionData.session.user;
     }
   }
@@ -48,8 +48,7 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     // Jika belum login
     if (!user) {
-      console.log('🔴 PROXY REDIRECT TO LOGIN. Pathname:', pathname);
-      console.log('🔴 Request cookies:', request.cookies.getAll());
+
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)

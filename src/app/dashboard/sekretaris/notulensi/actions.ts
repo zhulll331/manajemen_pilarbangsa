@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahNotulensi(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const { error } = await supabase.from('minutes').insert({
@@ -25,6 +27,7 @@ export async function tambahNotulensiDanOtomasi(
   agendaData: { title: string, category: string, date: string } | null,
   presensiData: { member_id: string, name: string, status: string }[] | null
 ) {
+  await requireAuthUser();
   const supabase = await createClient()
 
   // 1. Tambah Notulensi
@@ -61,6 +64,7 @@ export async function tambahNotulensiDanOtomasi(
 }
 
 export async function editNotulensi(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   const id = formData.get('id') as string
 
@@ -79,6 +83,7 @@ export async function editNotulensi(formData: FormData) {
 }
 
 export async function hapusNotulensi(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
   const { error } = await supabase.from('minutes').delete().eq('id', id)
   if (error) throw new Error(error.message)
@@ -86,10 +91,12 @@ export async function hapusNotulensi(id: string) {
 }
 
 export async function isGeminiConfigured() {
+  await requireAuthUser();
   return !!process.env.OPENROUTER_API_KEY;
 }
 
 export async function parseNotulensiRapat(notulenText: string, meetingType: string = "auto") {
+  await requireAuthUser();
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error("Kunci API OpenRouter tidak ditemukan. Harap tambahkan OPENROUTER_API_KEY di .env.local");
@@ -201,3 +208,4 @@ Format JSON yang DIWAJIBKAN:
     throw new Error(error.message || "Gagal memproses dengan AI (OpenRouter).");
   }
 }
+

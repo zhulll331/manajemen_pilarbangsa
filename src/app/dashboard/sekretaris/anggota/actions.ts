@@ -2,17 +2,22 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahAnggota(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
 
+  const name = String(formData.get('name') || '').trim();
+  if (!name || name.length > 255) throw new Error("Nama tidak valid");
+
   const { error } = await supabase.from('members').insert({
-    name: formData.get('name'),
+    name,
     nim: formData.get('nim'),
     faculty: formData.get('faculty'),
     study_program: formData.get('study_program'),
     generation: formData.get('generation'),
-    phone: formData.get('phone'),
+    phone: String(formData.get('phone') || '').trim().substring(0, 50),
     division: formData.get('division'),
     status: formData.get('status')
   })
@@ -22,16 +27,20 @@ export async function tambahAnggota(formData: FormData) {
 }
 
 export async function editAnggota(id: string, formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
+
+  const name = String(formData.get('name') || '').trim();
+  if (!name || name.length > 255) throw new Error("Nama tidak valid");
 
   const { error } = await supabase.from('members')
     .update({
-      name: formData.get('name'),
+      name,
       nim: formData.get('nim'),
       faculty: formData.get('faculty'),
       study_program: formData.get('study_program'),
       generation: formData.get('generation'),
-      phone: formData.get('phone'),
+      phone: String(formData.get('phone') || '').trim().substring(0, 50),
       division: formData.get('division'),
       status: formData.get('status')
     })
@@ -42,6 +51,7 @@ export async function editAnggota(id: string, formData: FormData) {
 }
 
 export async function hapusAnggota(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
 
   const { error } = await supabase.from('members').delete().eq('id', id)
@@ -51,6 +61,7 @@ export async function hapusAnggota(id: string) {
 }
 
 export async function importAnggotaBatch(data: any[]) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   // Format data to match DB column names

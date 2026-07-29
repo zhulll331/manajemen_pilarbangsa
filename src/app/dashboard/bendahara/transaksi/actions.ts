@@ -2,16 +2,21 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahTransaksi(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   const folder_id = formData.get('folder_id') as string || null;
+
+  const amount = Number(formData.get('amount'));
+  if (amount <= 0) throw new Error("Nominal transaksi harus lebih dari 0");
 
   const payloadAll = {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
-    amount: Number(formData.get('amount')),
+    amount,
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
@@ -23,7 +28,7 @@ export async function tambahTransaksi(formData: FormData) {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
-    amount: Number(formData.get('amount')),
+    amount,
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
@@ -40,6 +45,7 @@ export async function tambahTransaksi(formData: FormData) {
   revalidatePath('/dashboard', 'layout')
 }
 export async function tambahTransaksiMassal(transactionsData: any[]) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   // Format data for insertion
@@ -73,14 +79,18 @@ export async function tambahTransaksiMassal(transactionsData: any[]) {
 }
 
 export async function editTransaksi(id: string, formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   const folder_id = formData.get('folder_id') as string || null;
+
+  const amount = Number(formData.get('amount'));
+  if (amount <= 0) throw new Error("Nominal transaksi harus lebih dari 0");
 
   const payloadAll = {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
-    amount: Number(formData.get('amount')),
+    amount,
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
@@ -92,7 +102,7 @@ export async function editTransaksi(id: string, formData: FormData) {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
-    amount: Number(formData.get('amount')),
+    amount,
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
@@ -110,6 +120,7 @@ export async function editTransaksi(id: string, formData: FormData) {
 }
 
 export async function hapusTransaksi(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const { error } = await supabase.from('finance_transactions').delete().eq('id', id)
@@ -119,6 +130,7 @@ export async function hapusTransaksi(id: string) {
 }
 
 export async function parseTransaksiHarian(transaksiText: string) {
+  await requireAuthUser();
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("Kunci API Gemini tidak ditemukan.");
@@ -165,6 +177,7 @@ ${transaksiText}
 }
 
 export async function parseBatchTransaksiNemotron(transaksiText: string) {
+  await requireAuthUser();
   const apiKey = process.env.NEMOTRON_API_KEY || process.env.NVIDIA_API_KEY || process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error("Kunci API (NEMOTRON_API_KEY / NVIDIA_API_KEY) tidak ditemukan di .env.local");

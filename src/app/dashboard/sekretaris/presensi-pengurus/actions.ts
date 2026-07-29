@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 // Helper: tunggu beberapa milidetik
 function sleep(ms: number) {
@@ -10,6 +11,7 @@ function sleep(ms: number) {
 
 // Keep old actions if needed, or remove them. We'll replace with simpanPresensiMassal.
 export async function simpanPresensiMassal(agenda_id: string, presensiData: { member_id: string, status: string }[]) {
+  await requireAuthUser();
   if (!agenda_id) throw new Error("Agenda belum dipilih")
 
   const MAX_RETRIES = 3;
@@ -61,10 +63,12 @@ export async function simpanPresensiMassal(agenda_id: string, presensiData: { me
 
 
 export async function isGeminiConfigured() {
+  await requireAuthUser();
   return !!process.env.GEMINI_API_KEY;
 }
 
 export async function parsePresensiAI(rawText: string, members: { id: string, name: string }[]) {
+  await requireAuthUser();
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("API Key Gemini tidak ditemukan. Hubungi admin.");
 
@@ -120,3 +124,4 @@ Instruksi:
     throw new Error(error.message || "Gagal memproses dengan AI.");
   }
 }
+

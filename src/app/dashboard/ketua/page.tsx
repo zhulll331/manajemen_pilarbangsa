@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import DashboardKetuaClient from "./DashboardKetuaClient";
+import { aggregateFinancialData } from "@/utils/finance";
 
 export default async function DashboardKetua() {
   const supabase = await createClient();
@@ -24,20 +25,9 @@ export default async function DashboardKetua() {
 
   // Saldo Kas & Finance Trend
   const { data: transactions } = await supabase.from("finance_transactions").select("type, amount, transaction_date");
-  let saldoKas = 0;
+  const { data: dues } = await supabase.from("dues").select("amount, status, payment_date").eq("status", "Lunas");
   
-  if (transactions) {
-    transactions.forEach((t: any) => {
-      saldoKas += t.type === "Pemasukan" ? t.amount : -t.amount;
-    });
-  }
-
-  const { data: paidDues } = await supabase.from("dues").select("amount").eq("status", "Lunas");
-  if (paidDues) {
-    paidDues.forEach((d: any) => {
-      saldoKas += d.amount;
-    });
-  }
+  const { saldoKas } = aggregateFinancialData(transactions || [], dues || []);
 
   // Program per divisi (for chart)
   const { data: programs } = await supabase.from("programs").select("division, status");

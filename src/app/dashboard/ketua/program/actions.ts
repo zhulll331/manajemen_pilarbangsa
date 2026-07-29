@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahProgram(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const startDate = formData.get('start_date');
@@ -24,6 +26,7 @@ export async function tambahProgram(formData: FormData) {
 }
 
 export async function editProgram(id: string, formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const startDate = formData.get('start_date');
@@ -46,6 +49,7 @@ export async function editProgram(id: string, formData: FormData) {
 }
 
 export async function hapusProgram(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const { error } = await supabase.from('programs').delete().eq('id', id)
@@ -68,6 +72,7 @@ function parseExcelDate(dateValue: any): string | null {
 }
 
 export async function importProgramBatch(data: any[]) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const formattedData = data.map(item => ({
@@ -91,6 +96,7 @@ export async function importProgramBatch(data: any[]) {
 }
 
 export async function parseProgramKerja(ideText: string) {
+  await requireAuthUser();
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("Kunci API Gemini tidak ditemukan.");

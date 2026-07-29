@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahSurat(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
 
   const file_url = formData.get('file_url') as string || null;
@@ -24,6 +26,7 @@ export async function tambahSurat(formData: FormData) {
 }
 
 export async function editSurat(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   const id = formData.get('id') as string
 
@@ -45,8 +48,10 @@ export async function editSurat(formData: FormData) {
 }
 
 export async function hapusSurat(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
   const { error } = await supabase.from('letters').delete().eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
 }
+

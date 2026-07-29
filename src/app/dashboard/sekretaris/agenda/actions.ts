@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { requireAuthUser } from '@/utils/auth-guard'
 
 export async function tambahAgenda(formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const agendaDate = formData.get('date');
@@ -40,6 +42,7 @@ export async function tambahAgenda(formData: FormData) {
 }
 
 export async function editAgenda(id: string, formData: FormData) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const agendaDate = formData.get('date');
@@ -76,6 +79,7 @@ export async function editAgenda(id: string, formData: FormData) {
 }
 
 export async function hapusAgenda(id: string) {
+  await requireAuthUser();
   const supabase = await createClient()
   
   const { error } = await supabase.from('agendas').delete().eq('id', id)
@@ -83,3 +87,4 @@ export async function hapusAgenda(id: string) {
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
 }
+

@@ -14,7 +14,7 @@ export default async function IuranPage() {
   // Fetch active members for dropdown
   const { data: members } = await supabase
     .from("members")
-    .select("id, name")
+    .select("id, name, status")
     .order("name", { ascending: true });
 
   return (

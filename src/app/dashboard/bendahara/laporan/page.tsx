@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import LaporanClient from "./LaporanClient";
-
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+import { aggregateFinancialData } from "@/utils/finance";
 
 export default async function LaporanPage() {
   const supabase = await createClient();
@@ -11,37 +10,10 @@ export default async function LaporanPage() {
     .from("finance_transactions")
     .select("*, programs(title)");
 
+  // Fetch dues
+  const { data: dues } = await supabase.from("dues").select("amount, status, payment_date").eq("status", "Lunas");
 
-
-  let totalPemasukan = 0;
-  let totalPengeluaran = 0;
-
-  // Monthly aggregation including dues
-  const monthlyMap: Record<string, { pemasukan: number; pengeluaran: number; year: number; month: string }> = {};
-
-  if (transactions) {
-    transactions.forEach((t) => {
-      if (t.type === "Pemasukan") totalPemasukan += t.amount;
-      else totalPengeluaran += t.amount;
-
-      const date = new Date(t.transaction_date);
-      const year = date.getFullYear();
-      const monthIdx = date.getMonth();
-      const monthName = MONTH_NAMES[monthIdx];
-      const monthKey = `${year}-${String(monthIdx + 1).padStart(2, "0")}`;
-      
-      if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { pemasukan: 0, pengeluaran: 0, year, month: monthName };
-      
-      if (t.type === "Pemasukan") monthlyMap[monthKey].pemasukan += t.amount;
-      else monthlyMap[monthKey].pengeluaran += t.amount;
-    });
-  }
-
-
-
-  const saldoKas = totalPemasukan - totalPengeluaran;
-
-  const monthlyData = Object.values(monthlyMap);
+  const { totalPemasukan, totalPengeluaran, saldoKas, monthlyData } = aggregateFinancialData(transactions || [], dues || []);
 
   return (
     <div>
@@ -58,6 +30,7 @@ export default async function LaporanPage() {
 
       <LaporanClient 
         transactions={transactions || []}
+        dues={dues || []}
         totalPemasukan={totalPemasukan}
         totalPengeluaran={totalPengeluaran}
         saldoKas={saldoKas}

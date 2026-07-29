@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDriveClient } from '@/utils/drive';
 import { Readable } from 'stream';
+import { requireAuthUser } from '@/utils/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAuthUser();
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const folderId = formData.get('folderId') as string | null;

@@ -4,6 +4,21 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, Clock, CalendarPlus, Flag, AlertCircle, RefreshCw } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 
+// Konfigurasi Periode Organisasi — sesuaikan dengan konstanta di IuranClient.tsx
+const PERIOD_START_MONTH = 7 // 7 = Juli (bulan mulai periode organisasi)
+
+function getActivePeriod(): { startYear: number; endYear: number; label: string } {
+  const now = new Date()
+  const currentMonth = now.getMonth() + 1 // 1-indexed
+  const currentYear = now.getFullYear()
+  const startYear = currentMonth >= PERIOD_START_MONTH ? currentYear : currentYear - 1
+  return {
+    startYear,
+    endYear: startYear + 1,
+    label: `${startYear}-${startYear + 1}`,
+  }
+}
+
 const divisionsList = [
   'Semua',
   'Humas & Kerjasama',
@@ -74,14 +89,23 @@ export function TimelineRoadmap() {
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  const { startYear, endYear, label: periodLabel } = getActivePeriod()
+
   const supabase = createClient()
 
   useEffect(() => {
     async function fetchLivePrograms() {
       setLoading(true)
+      // Filter program yang relevan untuk periode aktif (startYear Jul — endYear Jun)
+      const periodStart = `${startYear}-${String(PERIOD_START_MONTH).padStart(2, '0')}-01`
+      const endMonth = PERIOD_START_MONTH === 1 ? 12 : PERIOD_START_MONTH - 1
+      const periodEnd = `${endYear}-${String(endMonth).padStart(2, '0')}-${new Date(endYear, endMonth, 0).getDate()}`
+
       const { data, error } = await supabase
         .from('programs')
         .select('*')
+        .gte('start_date', periodStart)
+        .lte('start_date', periodEnd)
         .order('start_date', { ascending: true })
 
       if (!error && data && data.length > 0) {
@@ -141,7 +165,7 @@ export function TimelineRoadmap() {
         </div>
 
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
-          Perjalanan Kami: Periode 2026-2027
+          Perjalanan Kami: Periode {periodLabel}
         </h2>
 
         <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">

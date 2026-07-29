@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDriveClient } from '@/utils/drive';
+import { requireAuthUser } from '@/utils/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAuthUser();
     const { folderName, parentFolderName } = await request.json();
     if (!folderName) {
       return NextResponse.json({ error: 'folderName is required' }, { status: 400 });
@@ -17,8 +19,9 @@ export async function POST(request: NextRequest) {
 
     // 1. Jika ada parentFolderName (misal: "Sekretaris", "Bendahara", "Divisi - Humas & Kerjasama"), cari atau buat folder induk tersebut dulu
     if (parentFolderName) {
+      const safeParentFolderName = String(parentFolderName).replace(/'/g, "\\'");
       const pSearchRes = await drive.files.list({
-        q: `name = '${parentFolderName}' and '${targetParentFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+        q: `name = '${safeParentFolderName}' and '${targetParentFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
         fields: 'files(id, name)',
         supportsAllDrives: true,
         includeItemsFromAllDrives: true,
@@ -44,8 +47,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Cek apakah folder target (misal: "Arsip - SK", "Bukti Kas Pemasukan", "Proker - ...") sudah ada di dalam targetParentFolderId
+    const safeFolderName = String(folderName).replace(/'/g, "\\'");
     const searchResponse = await drive.files.list({
-      q: `name = '${folderName}' and '${targetParentFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+      q: `name = '${safeFolderName}' and '${targetParentFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
       fields: 'files(id, name)',
       supportsAllDrives: true,
       includeItemsFromAllDrives: true,

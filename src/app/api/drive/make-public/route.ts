@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDriveClient } from '@/utils/drive';
+import { requireAuthUser } from '@/utils/auth-guard';
 
 /**
  * Menjadikan file Google Drive publik setelah upload langsung dari browser.
  */
 export async function POST(request: NextRequest) {
   try {
+    await requireAuthUser();
     const { fileId } = await request.json();
 
     if (!fileId) {

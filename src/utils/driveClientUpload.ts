@@ -61,7 +61,6 @@ export async function uploadFileToDrive(
     });
   } catch {
     // CORS error diharapkan terjadi — abaikan saja, file sudah terupload
-    console.log('[driveUpload] CORS error (diharapkan) — file sudah terupload, memverifikasi...');
   }
 
   // === Langkah 3: Verifikasi upload lewat server kita ===

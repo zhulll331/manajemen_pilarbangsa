@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { requireAuthUser } from '@/utils/auth-guard';
 
 export async function GET() {
   try {
+    await requireAuthUser();
     const oauth2Client = new google.auth.OAuth2(
       process.env.DRIVE_CLIENT_ID,
       process.env.DRIVE_CLIENT_SECRET,
