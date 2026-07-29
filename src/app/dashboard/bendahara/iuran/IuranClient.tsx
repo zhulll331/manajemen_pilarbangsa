@@ -393,9 +393,12 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
       key: pm.key,
       label: `${pm.label.substring(0, 3)} ${pm.year.toString().substring(2)}`,
       render: (row: any) => (
-        <span className="flex justify-center">
+        <span 
+          className="flex justify-center"
+          title={row[pm.key].status === 'Lunas' ? `Lunas Rp${row[pm.key].amount?.toLocaleString('id-ID')}` : undefined}
+        >
           {row[pm.key].status === 'Lunas' ? (
-             <CheckCircle size={16} className="text-green-500" title={`Lunas Rp${row[pm.key].amount?.toLocaleString('id-ID')}`} />
+             <CheckCircle size={16} className="text-green-500" />
           ) : (
              <span className="text-gray-300">-</span>
           )}
