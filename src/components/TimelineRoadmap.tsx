@@ -5,7 +5,7 @@ import { Calendar, Clock, CalendarPlus, Flag, AlertCircle, RefreshCw } from 'luc
 import { createClient } from '@/utils/supabase/client'
 
 // Konfigurasi Periode Organisasi — sesuaikan dengan konstanta di IuranClient.tsx
-const PERIOD_START_MONTH = 7 // 7 = Juli (bulan mulai periode organisasi)
+const PERIOD_START_MONTH: number = 7 // 7 = Juli (bulan mulai periode organisasi)
 
 function getActivePeriod(): { startYear: number; endYear: number; label: string } {
   const now = new Date()
