@@ -132,7 +132,38 @@ Instruksi:
     const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!responseText) throw new Error("Respons AI kosong.");
 
-    return JSON.parse(responseText.trim());
+    let cleanText = responseText.trim();
+    
+    // Hapus code block markdown jika ada (```json atau ```)
+    if (cleanText.startsWith("```json")) {
+      cleanText = cleanText.replace(/^```json/, "").replace(/```$/, "").trim();
+    } else if (cleanText.startsWith("```")) {
+      cleanText = cleanText.replace(/^```/, "").replace(/```$/, "").trim();
+    }
+    
+    // Strategi paling tangguh: ekstrak objek JSON pertama yang valid 
+    // menggunakan pencocokan kurung kurawal { } secara manual.
+    // Ini menangani kasus di mana Gemini menambahkan teks tambahan SETELAH JSON.
+    const firstBrace = cleanText.indexOf('{');
+    if (firstBrace === -1) throw new Error("Tidak ditemukan objek JSON dalam respons AI.");
+    
+    let depth = 0;
+    let endIndex = -1;
+    for (let i = firstBrace; i < cleanText.length; i++) {
+      if (cleanText[i] === '{') depth++;
+      else if (cleanText[i] === '}') {
+        depth--;
+        if (depth === 0) {
+          endIndex = i;
+          break;
+        }
+      }
+    }
+    
+    if (endIndex === -1) throw new Error("JSON tidak lengkap dalam respons AI.");
+    
+    const jsonOnly = cleanText.slice(firstBrace, endIndex + 1);
+    return JSON.parse(jsonOnly);
   } catch (error: any) {
     throw new Error(error.message || "Gagal memproses dengan AI.");
   }

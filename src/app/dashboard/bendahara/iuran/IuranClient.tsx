@@ -131,8 +131,6 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
 
   const [showAI, setShowAI] = useState(false);
   const [aiText, setAiText] = useState("");
-  const [aiStartMonth, setAiStartMonth] = useState(new Date().getMonth() + 1);
-  const [aiStartYear, setAiStartYear] = useState(CURRENT_YEAR);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [hasGemini, setHasGemini] = useState(false);
   const [unmatchedNames, setUnmatchedNames] = useState<string[]>([]);
@@ -206,42 +204,73 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
       
       matchedData.forEach((m: any) => {
         let remaining = Number(m.total_amount) || 0;
-        let currentMonth = aiStartMonth;
-        let currentYear = aiStartYear;
         
-        const details = [];
-        const entries = [];
+        // Kumpulkan semua bulan yang belum lunas dalam periode berjalan
+        const unpaidMonths: {month: number, year: number}[] = [];
+        for (const pm of periodMonths) {
+          const isPaid = dues.some(d => d.member_id === m.member_id && d.month === pm.month && d.year === pm.year && d.status === 'Lunas');
+          if (!isPaid) {
+            unpaidMonths.push({ month: pm.month, year: pm.year });
+          }
+        }
         
+        let nextUnpaidIndex = 0;
+        const details: string[] = [];
+        const entries: any[] = [];
+        
+        // Jika semuanya Lunas di periode ini, fallback ke bulan pertama periode (atau lanjut berurutan)
+        let lastMonth = periodMonths[0].month;
+        let lastYear = periodMonths[0].year;
+        // Adjust if we fallback to before periodMonths[0] so that +1 starts at periodMonths[0]
+        lastMonth -= 1;
+        if (lastMonth < 1) {
+          lastMonth = 12;
+          lastYear -= 1;
+        }
+
         while (remaining > 0) {
+          let targetMonth: number;
+          let targetYear: number;
+
+          if (nextUnpaidIndex < unpaidMonths.length) {
+            targetMonth = unpaidMonths[nextUnpaidIndex].month;
+            targetYear = unpaidMonths[nextUnpaidIndex].year;
+            nextUnpaidIndex++;
+          } else {
+            // Jika melebihi daftar belum lunas, lanjutkan secara berurutan
+            targetMonth = lastMonth + 1;
+            targetYear = lastYear;
+            if (targetMonth > 12) {
+              targetMonth = 1;
+              targetYear++;
+            }
+          }
+          
+          lastMonth = targetMonth;
+          lastYear = targetYear;
+
           if (remaining >= 5000) {
             entries.push({
               member_id: m.member_id,
-              month: currentMonth,
-              year: currentYear,
+              month: targetMonth,
+              year: targetYear,
               amount: 5000,
               status: "Lunas",
               payment_date: new Date().toISOString().split('T')[0]
             });
-            details.push(`${MONTHS.find(mn => mn.value === currentMonth)?.label} ${currentYear} (Lunas)`);
+            details.push(`${MONTHS.find(mn => mn.value === targetMonth)?.label} ${targetYear} (Lunas)`);
             remaining -= 5000;
           } else {
-            // less than 5000
             entries.push({
               member_id: m.member_id,
-              month: currentMonth,
-              year: currentYear,
+              month: targetMonth,
+              year: targetYear,
               amount: remaining,
               status: "Belum Lunas",
               payment_date: new Date().toISOString().split('T')[0]
             });
-            details.push(`${MONTHS.find(mn => mn.value === currentMonth)?.label} ${currentYear} (Sisa ${remaining})`);
+            details.push(`${MONTHS.find(mn => mn.value === targetMonth)?.label} ${targetYear} (Sisa ${remaining})`);
             remaining = 0;
-          }
-          
-          currentMonth++;
-          if (currentMonth > 12) {
-            currentMonth = 1;
-            currentYear++;
           }
         }
         
@@ -492,26 +521,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
                 Tempelkan teks laporan bayar kas (misal dari WhatsApp) di bawah ini. AI akan secara otomatis memecah nominal uang besar menjadi beberapa bulan berturut-turut.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 uppercase">Mulai Dari Bulan</label>
-                  <select 
-                    value={aiStartMonth}
-                    onChange={e => setAiStartMonth(Number(e.target.value))}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50"
-                  >
-                    {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 uppercase">Tahun</label>
-                  <input 
-                    type="number"
-                    value={aiStartYear}
-                    onChange={e => setAiStartYear(Number(e.target.value))}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50"
-                  />
-                </div>
+              <div className="mb-3">
               </div>
 
               <textarea
