@@ -20,6 +20,7 @@ interface ProgramItem {
   gallery_drive_url?: string
   sk_url?: string
   laporan_url?: string
+  requires_documents?: boolean
 }
 
 // Fungsi pembantu konversi URL Google Drive ke format direct render uc?export=view&id=ID
@@ -109,6 +110,7 @@ export default function KelolaProkerPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [filterDivision, setFilterDivision] = useState('Semua Divisi')
+  const [requiresDocuments, setRequiresDocuments] = useState(true)
 
   // Form States
   const [title, setTitle] = useState('')
@@ -205,6 +207,7 @@ export default function KelolaProkerPage() {
     setUploadingFile(false)
     setIsEditing(false)
     setCurrentEditId(null)
+    setRequiresDocuments(true)
   }
 
   function handleEdit(p: ProgramItem) {
@@ -223,6 +226,7 @@ export default function KelolaProkerPage() {
     setUploadingFile(false)
     setCurrentEditId(p.id)
     setIsEditing(true)
+    setRequiresDocuments(p.requires_documents !== false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -341,10 +345,11 @@ export default function KelolaProkerPage() {
         person_in_charge: `Divisi ${divisionName}`,
         status,
         start_date: startDate || null,
-        end_date: endDate || null
+        end_date: endDate || null,
+        requires_documents: requiresDocuments
       }
 
-      if (status === 'Selesai' && !finalLaporanUrl) {
+      if (requiresDocuments && status === 'Selesai' && !finalLaporanUrl) {
         setErrorMessage('Tidak bisa menyimpan status Selesai. File Laporan LPJ wajib diunggah!');
         setUploadingFile(false);
         return;
@@ -559,6 +564,24 @@ export default function KelolaProkerPage() {
                 </select>
               </div>
 
+              <div className="md:col-span-2">
+                <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                  <input 
+                    type="checkbox" 
+                    id="requires_documents"
+                    checked={!requiresDocuments}
+                    onChange={(e) => setRequiresDocuments(!e.target.checked)}
+                    className="mt-1 w-4 h-4 text-amber-600 bg-white border-amber-300 rounded focus:ring-amber-500 cursor-pointer"
+                  />
+                  <label htmlFor="requires_documents" className="text-sm font-bold text-amber-900 cursor-pointer flex-1">
+                    Kegiatan ini <strong>tidak</strong> memerlukan SK & Laporan
+                    <span className="block font-normal text-xs text-amber-700 mt-0.5">
+                      Contoh: rapat rutin, diskusi internal, koordinasi antar divisi
+                    </span>
+                  </label>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="block text-sm font-bold text-gray-700">Tanggal Mulai</label>
                 <input
@@ -582,9 +605,10 @@ export default function KelolaProkerPage() {
           </div>
 
           {/* Bagian 2: Kelengkapan Administrasi Wajib Divisi (SK & Laporan) */}
-          <div className="space-y-6 bg-blue-50/40 border border-blue-100 rounded-3xl p-6 sm:p-8">
-            <div className="flex items-center space-x-3 border-b border-blue-200 pb-4">
-              <div className="p-2.5 bg-blue-600 text-white rounded-2xl shadow-md">
+          {requiresDocuments && (
+            <div className="space-y-6 bg-blue-50/40 border border-blue-100 rounded-3xl p-6 sm:p-8">
+              <div className="flex items-center space-x-3 border-b border-blue-200 pb-4">
+                <div className="p-2.5 bg-blue-600 text-white rounded-2xl shadow-md">
                 <FileCheck className="w-6 h-6" />
               </div>
               <div>
@@ -673,6 +697,7 @@ export default function KelolaProkerPage() {
               </div>
             </div>
           </div>
+          )}
 
           {/* Bagian 3: Media & Dokumentasi Galeri */}
           <div className="space-y-6">
@@ -824,7 +849,9 @@ export default function KelolaProkerPage() {
                     
                     {/* SK Sebelum Kegiatan */}
                     <td className="py-4 px-4">
-                      {p.sk_url ? (
+                      {p.requires_documents === false ? (
+                        <span className="text-gray-400 font-medium text-xs">—</span>
+                      ) : p.sk_url ? (
                         <a href={p.sk_url} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-bold hover:underline shadow-sm">
                           <FileCheck size={14} className="text-green-600" />
                           <span>Lihat SK</span>
@@ -839,7 +866,9 @@ export default function KelolaProkerPage() {
 
                     {/* Laporan Setelah Kegiatan */}
                     <td className="py-4 px-4">
-                      {p.laporan_url ? (
+                      {p.requires_documents === false ? (
+                        <span className="text-gray-400 font-medium text-xs">—</span>
+                      ) : p.laporan_url ? (
                         <a href={p.laporan_url} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-bold hover:underline shadow-sm">
                           <FileText size={14} className="text-green-600" />
                           <span>Lihat Laporan</span>
