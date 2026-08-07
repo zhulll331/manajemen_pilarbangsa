@@ -4,20 +4,9 @@ import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
+import Image from 'next/image'
 
-const fallbackSlides = [
-  {
-    id: 1,
-    title: "Pilar Bangsa Digital Office",
-    subtitle: "Wadah Transformasi & Kolaborasi Mahasiswa Universitas",
-    description: "Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel berbasis sistem digital terpadu.",
-    image_url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
-    badge: "Transformasi Digital",
-    accent_color: "#E31837" // Merah
-  }
-]
-
-function getCleanImageUrl(url: string, defaultImg: string) {
+function getCleanImageUrl(url: string, defaultImg: string = "") {
   if (!url) return defaultImg
   if (url.includes('drive.google.com')) {
     const match = url.match(/id=([^&]+)/) || url.match(/d\/([a-zA-Z0-9_-]+)/)
@@ -31,7 +20,8 @@ function getCleanImageUrl(url: string, defaultImg: string) {
 export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
-  const [slides, setSlides] = useState<any[]>(fallbackSlides)
+  const [slides, setSlides] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createClient()
 
@@ -45,6 +35,7 @@ export function HeroSlider() {
       if (!error && data && data.length > 0) {
         setSlides(data)
       }
+      setIsLoading(false)
     }
 
     fetchBanners()
@@ -68,6 +59,14 @@ export function HeroSlider() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
   }
 
+  if (isLoading) {
+    return (
+      <div className="relative w-full h-[550px] md:h-[650px] overflow-hidden rounded-3xl shadow-2xl bg-gray-100 animate-pulse my-8 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
   if (!slides || slides.length === 0) return null;
 
   return (
@@ -86,10 +85,13 @@ export function HeroSlider() {
         >
           {/* Background Image with Overlay */}
           <div className="absolute inset-0 bg-black/60 z-10" />
-          <img
-            src={getCleanImageUrl(slide.image_url, fallbackSlides[0].image_url)}
+          <Image
+            src={getCleanImageUrl(slide.image_url)}
             alt={slide.title}
-            className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out group-hover:scale-100"
+            fill
+            priority={index === 0}
+            sizes="100vw"
+            className="object-cover object-center scale-105 transition-transform duration-1000 ease-out group-hover:scale-100"
           />
 
           {/* Content */}
