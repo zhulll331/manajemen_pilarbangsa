@@ -15,12 +15,18 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              // 🔑 Hapus maxAge & expires agar menjadi session cookie.
+              // Cookie akan otomatis dihapus saat browser ditutup.
+              maxAge: undefined,
+              expires: undefined,
+            })
           )
         },
       },
@@ -96,27 +102,11 @@ export async function proxy(request: NextRequest) {
       url.pathname = '/dashboard/humas/berita'
       return NextResponse.redirect(url)
     }
-  } else if (pathname === '/login' && user && request.method !== 'POST') {
-    // Jika sudah login tapi buka halaman login (via GET), redirect ke dashboardnya
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-      
-    let userRole = profile?.role
-    const email = user.email?.toLowerCase() || ''
-
-    if (email.includes('humas') || userRole === 'humas') {
-      userRole = 'humas'
-    } else if (!userRole) {
-      userRole = 'ketua'
-    }
-
-    const url = request.nextUrl.clone()
-    url.pathname = `/dashboard/${userRole}`
-    return NextResponse.redirect(url)
   }
+
+  // Jika sudah login dan mencoba buka /login, BIARKAN mereka melihat form login.
+  // (tidak ada auto-redirect agar pengguna bisa ganti akun atau login ulang)
+
 
   return supabaseResponse
 }
