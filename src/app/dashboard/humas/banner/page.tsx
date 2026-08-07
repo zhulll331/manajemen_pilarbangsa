@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Image as ImageIcon, Save, RefreshCw, CheckCircle2, Upload, AlertCircle, Trash2, Plus } from 'lucide-react'
-import { uploadFileToDrive } from '@/utils/driveClientUpload'
+import { compressImageIfNeeded } from '@/utils/compressImage'
 
 function getCleanImageUrl(url: string, defaultImg: string) {
   if (!url) return defaultImg
@@ -64,14 +64,25 @@ export default function BannerManagementPage() {
       const fileToUpload = selectedFiles[id]
 
       if (fileToUpload) {
-        // Upload langsung dari browser ke Google Drive (melewati Vercel)
-        const { url: uploadedUrl } = await uploadFileToDrive(fileToUpload);
-
-        if (!uploadedUrl) {
-          throw new Error('Gagal mengunggah gambar ke Google Drive')
+        // 1. Kompres gambar (max 1MB, max 1920px)
+        const compressed = await compressImageIfNeeded(fileToUpload, 1, 1920)
+        
+        // 2. Buat nama file unik
+        const ext = compressed.type === 'image/png' ? 'png' : 'jpg'
+        const fileName = `banner-${currentSlide.id}-${Date.now()}.${ext}`
+        
+        // 3. Upload ke Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from('banner-images')
+          .upload(fileName, compressed, { upsert: true, contentType: compressed.type })
+        
+        if (uploadError) {
+          throw new Error('Gagal mengunggah gambar ke Supabase: ' + uploadError.message)
         }
-
-        finalImageUrl = uploadedUrl
+        
+        // 4. Ambil URL publik
+        const { data: publicUrlData } = supabase.storage.from('banner-images').getPublicUrl(fileName)
+        finalImageUrl = publicUrlData.publicUrl
       }
 
       // Update Supabase
@@ -96,7 +107,7 @@ export default function BannerManagementPage() {
       setSelectedFiles(prev => ({ ...prev, [id]: null }))
       setNotification({
         type: 'success',
-        message: `Banner berhasil diperbarui di Google Drive dan Supabase!`
+        message: `Banner berhasil diperbarui di Supabase Storage!`
       })
     } catch (error: any) {
       setNotification({
@@ -117,7 +128,7 @@ export default function BannerManagementPage() {
          title: "Judul Baru",
          subtitle: "Sub Judul",
          description: "Deskripsi",
-         image_url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+         image_url: "",
          badge: "Baru",
          accent_color: "#E31837"
        }
@@ -135,6 +146,16 @@ export default function BannerManagementPage() {
   const handleDeleteBanner = async (id: number) => {
     if (!confirm('Apakah Anda yakin ingin menghapus banner ini?')) return;
     try {
+      // Cari nama file jika url-nya dari supabase
+      const currentSlide = slides.find(s => s.id === id);
+      if (currentSlide && currentSlide.image_url && currentSlide.image_url.includes('.supabase.co/storage/v1/object/public/banner-images/')) {
+        const parts = currentSlide.image_url.split('/');
+        const fileName = parts[parts.length - 1];
+        if (fileName) {
+          await supabase.storage.from('banner-images').remove([fileName]);
+        }
+      }
+
       const { error } = await supabase.from('banners').delete().eq('id', id);
       if (error) throw error;
       setSlides(prev => prev.filter(s => s.id !== id));
@@ -254,7 +275,7 @@ export default function BannerManagementPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ganti Gambar Latar (Otomatis Upload ke Google Drive)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ganti Gambar Latar (Otomatis Upload ke Supabase Storage)</label>
               <div className="flex items-center gap-3">
                 <input
                   type="file"
