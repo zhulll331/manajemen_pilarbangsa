@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Plus, Trash2, Save, X, Sparkles, Mic, Square } from "lucide-react";
+import { Plus, Trash2, Save, X, Sparkles, Mic, Square, Wallet } from "lucide-react";
 import { uploadFileToDrive } from "@/utils/driveClientUpload";
 import { tambahTransaksiMassal, parseBatchTransaksiNemotron } from "./actions";
 
@@ -10,9 +10,10 @@ interface TransaksiBatchModalProps {
   onClose: () => void;
   programs: any[];
   onSuccess: () => void;
+  currentSaldo?: number;
 }
 
-export function TransaksiBatchModal({ isOpen, onClose, programs, onSuccess }: TransaksiBatchModalProps) {
+export function TransaksiBatchModal({ isOpen, onClose, programs, onSuccess, currentSaldo = 0 }: TransaksiBatchModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [programId, setProgramId] = useState("");
@@ -212,6 +213,53 @@ export function TransaksiBatchModal({ isOpen, onClose, programs, onSuccess }: Tr
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+          {/* Info Saldo Kas Saat Ini & Simulasi */}
+          <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-blue-100 text-blue-700 rounded-lg">
+                <Wallet size={20} />
+              </div>
+              <div>
+                <p className="text-xs text-blue-600 font-medium">Saldo Kas Sebelum Input Ini</p>
+                <p className="text-base font-bold text-blue-950">
+                  Rp {currentSaldo.toLocaleString('id-ID')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 text-xs">
+              <div>
+                <p className="text-gray-500 font-medium">Total Dampak Transaksi</p>
+                {(() => {
+                  const diff = rows.reduce((acc, r) => {
+                    const amt = Number(r.amount || 0);
+                    return r.type === "Pemasukan" ? acc + amt : acc - amt;
+                  }, 0);
+                  return (
+                    <p className={`font-bold text-sm ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {diff >= 0 ? '+' : '-'} Rp {Math.abs(diff).toLocaleString('id-ID')}
+                    </p>
+                  );
+                })()}
+              </div>
+              <div className="border-l pl-4">
+                <p className="text-gray-500 font-medium">Estimasi Saldo Baru</p>
+                {(() => {
+                  const diff = rows.reduce((acc, r) => {
+                    const amt = Number(r.amount || 0);
+                    return r.type === "Pemasukan" ? acc + amt : acc - amt;
+                  }, 0);
+                  const newSaldo = currentSaldo + diff;
+                  return (
+                    <p className={`font-bold text-sm ${newSaldo >= 0 ? 'text-blue-950' : 'text-red-600'}`}>
+                      Rp {newSaldo.toLocaleString('id-ID')}
+                    </p>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+
           <div className="mb-6 flex justify-end">
             <button
               type="button"

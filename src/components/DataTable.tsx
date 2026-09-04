@@ -7,6 +7,7 @@ export interface Column<T> {
   key: keyof T | string;
   label: string;
   render?: (item: T) => React.ReactNode;
+  align?: 'left' | 'center' | 'right';
 }
 
 interface DataTableProps<T> {
@@ -32,9 +33,9 @@ export function DataTable<T extends { id: string }>({
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
         <FileText size={48} className="mb-4 opacity-50" />
-        <p className="text-sm">{emptyMessage}</p>
+        <p className="text-sm font-medium">{emptyMessage}</p>
       </div>
     );
   }
@@ -44,46 +45,41 @@ export function DataTable<T extends { id: string }>({
   const currentData = pagination ? data.slice(startIndex, startIndex + pageSize) : data;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm text-gray-600">
-        <thead className="bg-gray-50 text-gray-700">
-          <tr>
-            {columns.map((col, i) => (
-              <th
-                key={String(col.key)}
-                className={`py-3 px-4 font-medium ${
-                  i === 0 ? "rounded-tl-lg rounded-bl-lg" : ""
-                } ${
-                  i === columns.length - 1 && !onEdit && !onDelete
-                    ? "rounded-tr-lg rounded-br-lg"
-                    : ""
-                }`}
-              >
-                {col.label}
-              </th>
-            ))}
-            {(onEdit || onDelete) && (
-              <th className="py-3 px-4 font-medium rounded-tr-lg rounded-br-lg text-center w-24">
-                Aksi
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {currentData.map((item, rowIndex) => (
-            <tr
-              key={item.id}
-              className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-            >
-              {columns.map((col) => (
-                <td key={String(col.key)} className="py-3 px-4">
-                  {col.render
-                    ? col.render(item)
-                    : String((item as Record<string, unknown>)[col.key as string] ?? "-")}
-                </td>
+    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm text-gray-600">
+          <thead className="bg-gray-50/90 border-b border-gray-200/70 text-gray-700">
+            <tr>
+              {columns.map((col, i) => (
+                <th
+                  key={String(col.key)}
+                  className={`py-3.5 px-4 font-semibold text-xs tracking-wider text-gray-600 uppercase whitespace-nowrap text-${col.align || 'left'}`}
+                >
+                  {col.label}
+                </th>
               ))}
               {(onEdit || onDelete) && (
-                <td className="py-3 px-4">
+                <th className="py-3.5 px-4 font-semibold text-xs tracking-wider text-gray-600 uppercase text-center w-24 whitespace-nowrap">
+                  Aksi
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {currentData.map((item, rowIndex) => (
+              <tr
+                key={item.id}
+                className="hover:bg-blue-50/40 transition-colors"
+              >
+                {columns.map((col) => (
+                  <td key={String(col.key)} className={`py-3.5 px-4 align-middle text-${col.align || 'left'}`}>
+                    {col.render
+                      ? col.render(item)
+                      : String((item as Record<string, unknown>)[col.key as string] ?? "-")}
+                  </td>
+                ))}
+              {(onEdit || onDelete) && (
+                <td className="py-3.5 px-4 align-middle">
                   <div className="flex items-center justify-center gap-1">
                     {onEdit && (
                       <button
@@ -110,36 +106,37 @@ export function DataTable<T extends { id: string }>({
           ))}
         </tbody>
       </table>
-
-      {/* Pagination Controls */}
-      {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
-          <span className="text-sm text-gray-500">
-            Menampilkan <span className="font-medium">{startIndex + 1}</span> hingga{" "}
-            <span className="font-medium">{Math.min(startIndex + pageSize, data.length)}</span> dari{" "}
-            <span className="font-medium">{data.length}</span> data
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <span className="text-sm font-medium text-gray-700 px-2">
-              Halaman {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+    {/* Pagination Controls */}
+    {pagination && totalPages > 1 && (
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
+        <span className="text-sm text-gray-500">
+          Menampilkan <span className="font-medium">{startIndex + 1}</span> hingga{" "}
+          <span className="font-medium">{Math.min(startIndex + pageSize, data.length)}</span> dari{" "}
+          <span className="font-medium">{data.length}</span> data
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-sm font-medium text-gray-700 px-2">
+            Halaman {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Plus, ArrowDownCircle, ArrowUpCircle, ExternalLink, Download, Sparkles, Mic, Square, Layers } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Plus, ArrowDownCircle, ArrowUpCircle, ExternalLink, Download, Sparkles, Mic, Square, Layers, Wallet, Eye } from "lucide-react";
 import * as XLSX from "xlsx";
 import { uploadFileToDrive } from "@/utils/driveClientUpload";
 import { DataModal } from "@/components/DataModal";
@@ -11,8 +11,9 @@ import { tambahTransaksi, editTransaksi, hapusTransaksi, parseTransaksiHarian } 
 import { TransaksiBatchModal } from "./TransaksiBatchModal";
 
 
-export default function TransaksiClient({ transactions, programs = [] }: { transactions: any[], programs?: any[] }) {
+export default function TransaksiClient({ transactions, programs = [], totalIuranDiterima = 0, duesTransactions = [] }: { transactions: any[], programs?: any[], totalIuranDiterima?: number, duesTransactions?: any[] }) {
   const [filter, setFilter] = useState("Semua");
+  const [groupProker, setGroupProker] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -20,6 +21,9 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<any[] | null>(null);
+  const [selectedGroupTitle, setSelectedGroupTitle] = useState<string>("");
+  const [selectedProofs, setSelectedProofs] = useState<{ title: string; urls: string[] } | null>(null);
 
   // AI & Voice State
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -40,11 +44,121 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
     program_id: ""
   });
 
-  const filteredData = filter === "Semua" 
-    ? transactions 
-    : transactions.filter((t) => t.type === filter);
+  // Gabungkan finance_transactions + dues (sebagai baris virtual) lalu hitung running balance
+  const { transactionsWithBalance, currentTotalSaldo } = useMemo(() => {
+    // Gabungkan semua baris: transaksi keuangan biasa + iuran (virtual)
+    const allRows = [...transactions, ...duesTransactions];
 
-  const totalFiltered = filteredData.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    // ── Sort kunci: transaction_date → created_at → id ──────────────────────
+    // Dipakai BALIK SEMPURNA untuk ASC (kalkulasi) dan DESC (tampilan)
+    // sehingga running_balance setiap baris selalu cocok posisi tampilannya.
+    const sortKey = (a: any, b: any, dir: 1 | -1) => {
+      const dateA = new Date(a.transaction_date).getTime();
+      const dateB = new Date(b.transaction_date).getTime();
+      if (dateA !== dateB) return dir * (dateA - dateB);
+      const createdA = new Date(a.created_at || 0).getTime();
+      const createdB = new Date(b.created_at || 0).getTime();
+      if (createdA !== createdB) return dir * (createdA - createdB);
+      // Tiebreaker: id — pastikan unik & deterministik
+      return dir * (a.id || "").localeCompare(b.id || "");
+    };
+
+    // Urutkan ASC (terlama → terbaru) untuk menghitung running balance
+    const sortedChronological = [...allRows].sort((a, b) => sortKey(a, b, 1));
+
+    // Hitung running balance mulai dari 0
+    let runningBalance = 0;
+    const balanceById = new Map<string, number>();
+    sortedChronological.forEach((t) => {
+      const amt = Number(t.amount || 0);
+      if (t.type === "Pemasukan") runningBalance += amt;
+      else runningBalance -= amt;
+      balanceById.set(t.id, runningBalance);
+    });
+
+    // Urutkan DESC (terbaru → terlama) untuk tampilan — KEBALIKAN sempurna dari ASC
+    const withBalanceAll = allRows.map((t) => ({
+      ...t,
+      running_balance: balanceById.get(t.id) ?? 0,
+    })).sort((a, b) => sortKey(a, b, -1)); // dir=-1 = DESC
+
+    return {
+      transactionsWithBalance: withBalanceAll,
+      currentTotalSaldo: runningBalance,
+    };
+  }, [transactions, duesTransactions]);
+
+
+
+  const filteredData = useMemo(() => {
+    return filter === "Semua" 
+      ? transactionsWithBalance 
+      : transactionsWithBalance.filter((t) => t.type === filter);
+  }, [filter, transactionsWithBalance]);
+
+  const totalFiltered = useMemo(() => {
+    return filteredData.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  }, [filteredData]);
+
+  // Grouping proker opsional — rapi tanpa membuat baris melar
+  const tableData = useMemo(() => {
+    if (!groupProker) return filteredData;
+
+    const grouped = new Map<string, any>();
+    const regularRows: any[] = [];
+
+    filteredData.forEach((t) => {
+      // Kelompokkan jika transaksi terhubung ke proker tertentu
+      if (t.program_id && t.programs?.title) {
+        const key = `${t.program_id}-${t.type}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            id: `grouped-${key}`,
+            transaction_date: t.transaction_date,
+            type: t.type,
+            category: t.category || "Proker",
+            programs: t.programs,
+            program_id: t.program_id,
+            amount: 0,
+            running_balance: t.running_balance,
+            description: `Total ${t.type} Proker: ${t.programs.title}`,
+            responsible_person: t.responsible_person || "Tim Proker",
+            proof_url: "",
+            _originalRows: [],
+            _isGroupedProker: true,
+          });
+        }
+        const g = grouped.get(key)!;
+        g.amount += Number(t.amount || 0);
+        g._originalRows.push(t);
+
+        // Ambil tanggal & saldo dari baris transaksi terbaru di dalam kelompok
+        if (new Date(t.transaction_date).getTime() >= new Date(g.transaction_date).getTime()) {
+          g.transaction_date = t.transaction_date;
+          g.running_balance = t.running_balance;
+          if (t.responsible_person) g.responsible_person = t.responsible_person;
+        }
+
+        // Kumpulkan semua link bukti unik tanpa duplikat
+        if (t.proof_url) {
+          const existing = g.proof_url ? g.proof_url.split(',') : [];
+          const news = t.proof_url.split(',').filter(Boolean);
+          g.proof_url = Array.from(new Set([...existing, ...news])).join(',');
+        }
+      } else {
+        regularRows.push(t);
+      }
+    });
+
+    const all = [...regularRows, ...Array.from(grouped.values())];
+
+    return all.sort((a, b) => {
+      const dateA = new Date(a.transaction_date).getTime();
+      const dateB = new Date(b.transaction_date).getTime();
+      if (dateA !== dateB) return dateB - dateA;
+      return (b.id || "").localeCompare(a.id || "");
+    });
+  }, [filteredData, groupProker]);
 
   const openAdd = () => {
     setSelectedData(null);
@@ -244,8 +358,10 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
       "Tanggal": d.transaction_date,
       "Tipe": d.type,
       "Kategori": d.category,
+      "Program Kerja": d.programs?.title || "-",
       "Keterangan": d.description || "-",
-      "Nominal": d.amount,
+      "Nominal (Rp)": d.amount,
+      "Saldo (Rp)": d.running_balance,
       "Penanggung Jawab": d.responsible_person,
       "Link Bukti": d.proof_url || "-"
     }));
@@ -255,7 +371,7 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
     XLSX.utils.book_append_sheet(workbook, worksheet, "Transaksi");
     
     const wscols = [
-      {wch: 5}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 15}, {wch: 25}, {wch: 40}
+      {wch: 5}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 15}, {wch: 18}, {wch: 25}, {wch: 40}
     ];
     worksheet['!cols'] = wscols;
 
@@ -280,23 +396,58 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
       key: "category", 
       label: "Kategori",
       render: (row: any) => (
-        <div className="flex flex-col">
-          <span>{row.category}</span>
+        <div className="flex flex-col gap-0.5">
+          <span className="font-medium text-gray-900">{row.category}</span>
           {row.programs?.title && (
-            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded w-max mt-1">
-              Proker: {row.programs.title}
+            <span className="text-[11px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-md w-max border border-blue-100 flex items-center gap-1">
+              <span>🎯</span> {row.programs.title}
             </span>
           )}
         </div>
       )
     },
-    { key: "description", label: "Keterangan" },
+    { 
+      key: "description", 
+      label: "Keterangan",
+      render: (row: any) => {
+        if (row._isGroupedProker) {
+          return (
+            <div className="flex flex-col">
+              <span className="font-semibold text-gray-800">
+                Total {row.type} Proker: {row.programs?.title}
+              </span>
+              <span className="text-xs text-purple-600 font-medium">
+                Dirangkum dari {row._originalRows.length} transaksi
+              </span>
+            </div>
+          );
+        }
+        return <span className="text-gray-700">{row.description || "-"}</span>;
+      }
+    },
     { 
       key: "amount", 
       label: "Nominal",
+      align: "right",
       render: (row: any) => (
-        <span className="font-medium whitespace-nowrap">
-          Rp {row.amount?.toLocaleString('id-ID')}
+        <span className={`font-semibold whitespace-nowrap ${
+          row.type === 'Pemasukan' ? 'text-green-600' : 'text-red-600'
+        }`}>
+          {row.type === 'Pemasukan' ? '+' : '-'} Rp {Number(row.amount || 0).toLocaleString('id-ID')}
+        </span>
+      )
+    },
+    { 
+      key: "running_balance", 
+      label: "Saldo",
+      align: "right",
+      render: (row: any) => (
+        <span className={`font-bold whitespace-nowrap px-2.5 py-1 rounded-lg text-xs inline-block ${
+          Number(row.running_balance || 0) >= 0 
+            ? 'bg-blue-50 text-blue-900 border border-blue-100' 
+            : 'bg-red-50 text-red-700 border border-red-100'
+        }`}>
+          Rp {Number(row.running_balance || 0).toLocaleString('id-ID')}
         </span>
       )
     },
@@ -305,89 +456,188 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
       key: "proof_url", 
       label: "Bukti", 
       render: (row: any) => {
-        if (!row.proof_url) return <span className="text-gray-400">-</span>;
+        if (!row.proof_url) return <span className="text-gray-400 text-xs">-</span>;
         const urls = row.proof_url.split(',').filter(Boolean);
+        if (urls.length === 0) return <span className="text-gray-400 text-xs">-</span>;
+        
+        if (urls.length === 1) {
+          return (
+            <a 
+              href={urls[0]} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/60 transition-colors whitespace-nowrap shadow-2xs"
+            >
+              <ExternalLink size={12} />
+              Bukti File
+            </a>
+          );
+        }
+
         return (
-          <div className="flex flex-col gap-1">
-            {urls.map((url: string, idx: number) => (
-              <a key={idx} href={url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs">
-                <ExternalLink size={12} /> Bukti {urls.length > 1 ? idx + 1 : ''}
-              </a>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setSelectedProofs({ 
+              title: row.programs?.title 
+                ? `Proker: ${row.programs.title}` 
+                : (row.description || row.category || "Transaksi"), 
+              urls 
+            })}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs whitespace-nowrap group"
+          >
+            <ExternalLink size={12} className="text-indigo-500 group-hover:scale-110 transition-transform" />
+            <span>{urls.length} Bukti</span>
+            <span className="text-[10px] bg-indigo-200/70 text-indigo-900 px-1.5 py-0.5 rounded-full font-bold">
+              Lihat
+            </span>
+          </button>
         );
       }
     },
     {
       key: "actions",
       label: "Aksi",
-      render: (row: any) => (
-        <div className="flex items-center gap-2">
-          <button onClick={() => openEdit(row)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded text-xs font-medium">Edit</button>
-          <button onClick={() => openDelete(row)} className="text-red-600 hover:bg-red-50 p-1.5 rounded text-xs font-medium">Hapus</button>
-        </div>
-      )
+      align: "center",
+      render: (row: any) => {
+        if (row._isDues) {
+          return (
+            <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-medium whitespace-nowrap">
+              📋 Iuran
+            </span>
+          );
+        }
+        if (row._isGroupedProker) {
+          return (
+            <div className="flex justify-center">
+              <button 
+                onClick={() => {
+                  setSelectedGroup(row._originalRows);
+                  setSelectedGroupTitle(row.programs?.title || "Program Kerja");
+                }} 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-all shadow-2xs whitespace-nowrap hover:shadow-xs"
+              >
+                <Eye size={13} className="text-purple-600" />
+                <span>Lihat Rincian</span>
+                <span className="bg-purple-200/80 text-purple-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold">
+                  {row._originalRows.length}
+                </span>
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <button onClick={() => openEdit(row)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded text-xs font-medium transition-colors">Edit</button>
+            <button onClick={() => openDelete(row)} className="text-red-600 hover:bg-red-50 p-1.5 rounded text-xs font-medium transition-colors">Hapus</button>
+          </div>
+        );
+      }
     }
+
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex gap-2">
-          {["Semua", "Pemasukan", "Pengeluaran"].map((f) => (
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex gap-1 bg-gray-100/80 p-1 rounded-xl ring-1 ring-gray-200/50">
+            {["Semua", "Pemasukan", "Pengeluaran"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  filter === f
+                    ? "bg-white text-[var(--color-primary)] shadow-sm ring-1 ring-gray-200/50"
+                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-200/50"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* Toggle Mode: Ringkas Proker vs Rinci Semua */}
+          <div className="flex items-center bg-gray-100/80 p-1 rounded-xl ring-1 ring-gray-200/50">
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === f
-                  ? "bg-[var(--color-primary)] text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100 border"
+              type="button"
+              onClick={() => setGroupProker(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                groupProker 
+                  ? "bg-white text-purple-700 shadow-sm ring-1 ring-gray-200/50" 
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-200/50"
               }`}
+              title="Rangkum pengeluaran setiap proker menjadi 1 baris"
             >
-              {f}
+              <Layers size={13} />
+              Ringkas Proker
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => setGroupProker(false)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                !groupProker 
+                  ? "bg-white text-blue-700 shadow-sm ring-1 ring-gray-200/50" 
+                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-200/50"
+              }`}
+              title="Tampilkan semua transaksi dirinci satu per satu"
+            >
+              Rinci Semua
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-4 w-full sm:w-auto">
+
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          <div className="text-xs px-3.5 py-2 bg-blue-50 border border-blue-200/80 rounded-xl whitespace-nowrap hidden sm:flex items-center gap-2 text-blue-800 shadow-xs shadow-blue-100/50">
+            <Wallet size={15} className="text-blue-600" />
+            <span className="text-blue-600 font-medium">Saldo Kas:</span>
+            <span className="font-bold text-blue-950">Rp {currentTotalSaldo.toLocaleString('id-ID')}</span>
+          </div>
           {filter !== "Semua" && (
-            <div className="text-sm px-4 py-2 bg-gray-50 border rounded-lg whitespace-nowrap hidden md:block">
-              Total {filter}: <span className="font-bold">Rp {totalFiltered.toLocaleString('id-ID')}</span>
+            <div className="text-xs px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl whitespace-nowrap hidden sm:block text-gray-700 shadow-xs">
+              Total {filter}: <span className="font-bold text-gray-900">Rp {totalFiltered.toLocaleString('id-ID')}</span>
             </div>
           )}
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <button
               onClick={handleExportExcel}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center"
+              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
             >
-              <Download size={20} />
+              <Download size={15} />
               Ekspor Excel
             </button>
             <button
               onClick={() => setIsBatchModalOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md shadow-purple-200"
+              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
             >
-              <Layers size={20} />
+              <Layers size={15} />
               Tambah Massal
             </button>
             <button
               onClick={openAdd}
-              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors w-full sm:w-auto justify-center shadow-md shadow-blue-200"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
             >
-              <Plus size={20} />
+              <Plus size={15} />
               Tambah Data
             </button>
           </div>
         </div>
       </div>
 
-      {filter !== "Semua" && (
-        <div className="text-sm px-4 py-3 bg-gray-50 border rounded-lg sm:hidden">
-          Total {filter}: <span className="font-bold">Rp {totalFiltered.toLocaleString('id-ID')}</span>
+      {/* Baris ringkasan di layar HP / mobile */}
+      <div className="flex flex-wrap gap-2 sm:hidden">
+        <div className="text-xs px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-1.5 text-blue-800 flex-1">
+          <Wallet size={14} className="text-blue-600" />
+          <span>Saldo Kas: <strong className="text-blue-950">Rp {currentTotalSaldo.toLocaleString('id-ID')}</strong></span>
         </div>
-      )}
+        {filter !== "Semua" && (
+          <div className="text-xs px-3 py-2 bg-gray-50 border rounded-lg flex items-center flex-1">
+            <span>Total {filter}: <strong>Rp {totalFiltered.toLocaleString('id-ID')}</strong></span>
+          </div>
+        )}
+      </div>
 
       <DataTable pagination pageSize={10} 
-        data={filteredData}
+        data={tableData}
         columns={columns}
         emptyMessage={`Belum ada data ${filter === 'Semua' ? 'transaksi' : filter.toLowerCase()}.`}
       />
@@ -466,6 +716,40 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
                 {errorMsg}
               </div>
             )}
+
+            {/* Info Saldo Kas & Estimasi Saldo Baru */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">
+                  <Wallet size={18} />
+                </div>
+                <div>
+                  <p className="text-xs text-blue-600 font-medium">Saldo Kas Sebelum Transaksi Ini</p>
+                  <p className="text-base font-bold text-blue-950">
+                    Rp {currentTotalSaldo.toLocaleString('id-ID')}
+                  </p>
+                </div>
+              </div>
+              {formDataState.amount && !isNaN(Number(formDataState.amount)) && Number(formDataState.amount) > 0 && (
+                <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto">
+                  <p className="text-xs text-gray-500 font-medium">
+                    Estimasi Saldo Setelah {formDataState.type}
+                  </p>
+                  <p className={`text-base font-bold ${
+                    (formDataState.type === 'Pemasukan' 
+                      ? currentTotalSaldo + Number(formDataState.amount) 
+                      : currentTotalSaldo - Number(formDataState.amount)) >= 0 
+                      ? 'text-green-700' : 'text-red-600'
+                  }`}>
+                    Rp {(
+                      formDataState.type === 'Pemasukan'
+                        ? currentTotalSaldo + Number(formDataState.amount)
+                        : currentTotalSaldo - Number(formDataState.amount)
+                    ).toLocaleString('id-ID')}
+                  </p>
+                </div>
+              )}
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -606,6 +890,154 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
         </div>
       </DataModal>
 
+      {/* Modal Daftar Bukti Transaksi */}
+      <DataModal
+        isOpen={!!selectedProofs}
+        onClose={() => setSelectedProofs(null)}
+        title={`Lampiran Bukti Transaksi (${selectedProofs?.urls.length || 0} File)`}
+      >
+        <div className="space-y-4">
+          <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-xl">
+            <p className="text-xs text-blue-600 font-medium">Keterangan Transaksi:</p>
+            <p className="text-sm font-semibold text-blue-950 mt-0.5">{selectedProofs?.title}</p>
+          </div>
+
+          <p className="text-xs text-gray-500">
+            Klik tombol di bawah untuk membuka dan mengunduh berkas bukti transaksi dari Google Drive:
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto p-1">
+            {selectedProofs?.urls.map((url, idx) => (
+              <a
+                key={idx}
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-white hover:bg-blue-50/60 hover:border-blue-300 transition-all group shadow-2xs"
+              >
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <div className="p-2 bg-blue-100/70 text-blue-700 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <ExternalLink size={14} />
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-gray-800 group-hover:text-blue-700">
+                      Bukti Transaksi #{idx + 1}
+                    </p>
+                    <p className="text-[11px] text-gray-400 truncate">Buka di Google Drive</p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-blue-600 group-hover:translate-x-0.5 transition-transform">
+                  ↗
+                </span>
+              </a>
+            ))}
+          </div>
+
+          <div className="flex justify-end pt-2 border-t">
+            <button
+              onClick={() => setSelectedProofs(null)}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </DataModal>
+
+      {/* Modal Rincian Proker */}
+      <DataModal
+        isOpen={!!selectedGroup}
+        onClose={() => setSelectedGroup(null)}
+        title={`Rincian Pengeluaran: ${selectedGroupTitle}`}
+      >
+        <div className="space-y-4">
+          {/* Ringkasan Header */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-purple-50/80 border border-purple-200/80 rounded-xl">
+            <div>
+              <p className="text-xs text-purple-700 font-medium">Total Pengeluaran Proker</p>
+              <p className="text-lg font-bold text-purple-950">
+                Rp {(selectedGroup || []).reduce((sum, t) => sum + Number(t.amount || 0), 0).toLocaleString('id-ID')}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-purple-700 font-medium">Jumlah Transaksi</p>
+              <p className="text-base font-bold text-purple-950">
+                {(selectedGroup || []).length} Transaksi
+              </p>
+            </div>
+          </div>
+
+          {/* Sub-Tabel Rincian */}
+          <div className="overflow-x-auto rounded-xl border border-gray-200 max-h-[50vh]">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 text-gray-700 font-semibold border-b sticky top-0">
+                <tr>
+                  <th className="p-3 whitespace-nowrap">Tanggal</th>
+                  <th className="p-3 whitespace-nowrap">Kategori</th>
+                  <th className="p-3">Keterangan</th>
+                  <th className="p-3 whitespace-nowrap">PJ</th>
+                  <th className="p-3 text-right whitespace-nowrap">Nominal</th>
+                  <th className="p-3 text-center whitespace-nowrap">Bukti</th>
+                  <th className="p-3 text-center whitespace-nowrap">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {selectedGroup?.map((t: any) => (
+                  <tr key={t.id} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="p-3 whitespace-nowrap text-gray-600">{t.transaction_date}</td>
+                    <td className="p-3 whitespace-nowrap font-medium text-gray-800">{t.category}</td>
+                    <td className="p-3 min-w-[180px] text-gray-700">{t.description || "-"}</td>
+                    <td className="p-3 whitespace-nowrap text-gray-600">{t.responsible_person || "-"}</td>
+                    <td className="p-3 whitespace-nowrap font-bold text-right text-rose-600">
+                      - Rp {Number(t.amount).toLocaleString('id-ID')}
+                    </td>
+                    <td className="p-3 text-center whitespace-nowrap">
+                      {t.proof_url ? (
+                        <a 
+                          href={t.proof_url.split(',')[0]} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-blue-600 hover:underline font-semibold"
+                        >
+                          Lihat
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => { setSelectedGroup(null); openEdit(t); }}
+                          className="px-2.5 py-1 text-blue-600 hover:bg-blue-50 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => { setSelectedGroup(null); openDelete(t); }}
+                          className="px-2.5 py-1 text-red-600 hover:bg-red-50 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex justify-end pt-2 border-t">
+            <button
+              onClick={() => setSelectedGroup(null)}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </DataModal>
+
       <DeleteConfirm
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
@@ -620,6 +1052,7 @@ export default function TransaksiClient({ transactions, programs = [] }: { trans
         onClose={() => setIsBatchModalOpen(false)}
         programs={programs}
         onSuccess={() => setIsBatchModalOpen(false)}
+        currentSaldo={currentTotalSaldo}
       />
     </div>
   );

@@ -7,118 +7,19 @@ import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable } from "@/components/DataTable";
 import { tambahIuran, editIuran, hapusIuran, tambahIuranMassal, parseIuranAI, tambahIuranMassalAI, isGeminiConfigured } from "./actions";
-
-const MONTHS = [
-  { value: 1, label: "Januari" },
-  { value: 2, label: "Februari" },
-  { value: 3, label: "Maret" },
-  { value: 4, label: "April" },
-  { value: 5, label: "Mei" },
-  { value: 6, label: "Juni" },
-  { value: 7, label: "Juli" },
-  { value: 8, label: "Agustus" },
-  { value: 9, label: "September" },
-  { value: 10, label: "Oktober" },
-  { value: 11, label: "November" },
-  { value: 12, label: "Desember" }
-];
-
-const CURRENT_YEAR = new Date().getFullYear();
-const PERIOD_START_MONTH = 7; // Configurable: 7 = Juli, 8 = Agustus, dst.
-const BASE_START_YEAR = 2025; // Tahun aplikasi mulai digunakan
-
-function generatePeriodOptions() {
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
-  
-  const activeStartYear = currentMonth >= PERIOD_START_MONTH ? currentYear : currentYear - 1;
-  const endYear = activeStartYear + 1; // Allow +1 year ahead for prep
-  
-  const years = [];
-  for (let y = BASE_START_YEAR; y <= endYear; y++) {
-    years.push(y);
-  }
-  return years;
-}
+import {
+  MONTHS,
+  CURRENT_YEAR,
+  getActivePeriodStartYear,
+  generatePeriodOptions,
+  getPeriodMonths,
+  formatMatrixData
+} from "@/utils/finance";
 
 const DYNAMIC_YEARS = generatePeriodOptions();
 
-function getPeriodMonths(startYear: number) {
-  const months = [];
-  let currentMonth = PERIOD_START_MONTH;
-  let currentYear = startYear;
-
-  for (let i = 0; i < 12; i++) {
-    months.push({
-      month: currentMonth,
-      year: currentYear,
-      label: MONTHS.find(m => m.value === currentMonth)?.label || "",
-      key: `period_${currentYear}_${currentMonth}`
-    });
-
-    currentMonth++;
-    if (currentMonth > 12) {
-      currentMonth = 1;
-      currentYear++;
-    }
-  }
-  return months;
-}
-
-function formatMatrixData(dues: any[], members: any[], startYear: number) {
-  const periodMonths = getPeriodMonths(startYear);
-  
-  const filteredDues = dues.filter(d => {
-    return periodMonths.some(pm => pm.month === d.month && pm.year === d.year);
-  });
-  
-  return members
-    .map(member => {
-      const memberDues = filteredDues.filter(d => d.member_id === member.id);
-      
-      const isActive = member.status === "Aktif" || member.status === "Pengurus Aktif";
-      const hasTransactionsInPeriod = memberDues.length > 0;
-      
-      if (!isActive && !hasTransactionsInPeriod) {
-        return null;
-      }
-      
-      const matrixRow: any = {
-        id: member.id, // for DataTable key
-        member_id: member.id,
-        member: member.name,
-        transactions: memberDues,
-        totalTerkumpul: 0,
-        tunggakan: 0,
-      };
-
-      const currentRealMonth = new Date().getMonth() + 1;
-      const currentRealYear = new Date().getFullYear();
-
-      for (const pm of periodMonths) {
-        const payment = memberDues.find(d => d.month === pm.month && d.year === pm.year && d.status === 'Lunas');
-        
-        // Tunggakan if the target period month is in the past or is the current month
-        const isPastOrCurrent = pm.year < currentRealYear || (pm.year === currentRealYear && pm.month <= currentRealMonth);
-
-        if (payment) {
-          matrixRow[pm.key] = { status: 'Lunas', amount: payment.amount };
-          matrixRow.totalTerkumpul += payment.amount || 0;
-        } else {
-          matrixRow[pm.key] = { status: 'Belum Lunas' };
-          if (isPastOrCurrent) {
-             matrixRow.tunggakan += 1;
-          }
-        }
-      }
-      
-      return matrixRow;
-    })
-    .filter(Boolean); // Remove nulls
-}
-
 export default function IuranClient({ dues, members }: { dues: any[], members: any[] }) {
-  const [filterYear, setFilterYear] = useState<number>(CURRENT_YEAR);
+  const [filterYear, setFilterYear] = useState<number>(getActivePeriodStartYear());
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMassalModalOpen, setIsMassalModalOpen] = useState(false);
@@ -154,6 +55,14 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
 
   const periodMonths = useMemo(() => getPeriodMonths(filterYear), [filterYear]);
   const matrixData = useMemo(() => formatMatrixData(dues, members, filterYear), [dues, members, filterYear]);
+
+  const summaryStats = useMemo(() => {
+    const totalAnggota = matrixData.length;
+    const lunasCount = matrixData.filter((r: any) => r.tunggakan === 0).length;
+    const belumLunasCount = matrixData.filter((r: any) => r.tunggakan > 0).length;
+    const totalTerkumpul = matrixData.reduce((acc: number, r: any) => acc + (r.totalTerkumpul || 0), 0);
+    return { totalAnggota, lunasCount, belumLunasCount, totalTerkumpul };
+  }, [matrixData]);
 
   const openAdd = () => {
     setSelectedData(null);
@@ -496,6 +405,49 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
             <Users size={20} />
             Catat Massal
           </button>
+        </div>
+      </div>
+
+      {/* Ringkasan Status Iuran Periode Ini */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-medium">Total Anggota</p>
+            <p className="text-lg font-bold text-gray-800">{summaryStats.totalAnggota} Org</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+          <div className="p-2.5 bg-green-50 text-green-600 rounded-lg">
+            <CheckCircle size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-medium">Sudah Lunas</p>
+            <p className="text-lg font-bold text-green-600">{summaryStats.lunasCount} Org</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-medium">Belum Lunas / Nunggak</p>
+            <p className="text-lg font-bold text-amber-600">{summaryStats.belumLunasCount} Org</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+            <Download size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-medium">Total Kas Terkumpul</p>
+            <p className="text-lg font-bold text-gray-800">Rp {summaryStats.totalTerkumpul.toLocaleString('id-ID')}</p>
+          </div>
         </div>
       </div>
 

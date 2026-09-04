@@ -19,16 +19,8 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    // Hanya tambahkan cache header untuk aset statis gambar publik, jangan sentuh /_next/static/ agar hot-reload dev tidak rusak
     return [
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
       {
         source: '/(.*).png',
         headers: [

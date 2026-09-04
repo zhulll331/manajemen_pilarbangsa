@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import DashboardBendaharaClient from "./DashboardBendaharaClient";
-import { aggregateFinancialData } from "@/utils/finance";
+import { aggregateFinancialData, calculateUnpaidMembersCount } from "@/utils/finance";
 
 export default async function DashboardBendahara() {
   const supabase = await createClient();
@@ -11,18 +11,25 @@ export default async function DashboardBendahara() {
     .select("*")
     .order("transaction_date", { ascending: false });
 
-  // Fetch dues
-  const { data: dues } = await supabase.from("dues").select("amount, status, payment_date").eq("status", "Lunas");
-
-  const { totalPemasukan, totalPengeluaran, saldoKas, monthlyData } = aggregateFinancialData(transactions || [], dues || []);
-
-  // Iuran belum lunas (distinct member count)
-  const { data: unpaidDues } = await supabase
+  // Fetch all dues records
+  const { data: dues } = await supabase
     .from("dues")
-    .select("member_id")
-    .eq("status", "Belum Lunas");
-  const uniqueUnpaid = new Set(unpaidDues?.map((d) => d.member_id));
-  const iuranBelumLunas = uniqueUnpaid.size;
+    .select("id, member_id, month, year, amount, status, payment_date");
+
+  // Fetch all members
+  const { data: members } = await supabase
+    .from("members")
+    .select("id, name, status");
+
+  const paidDues = (dues || []).filter((d) => d.status === "Lunas");
+
+  const { totalPemasukan, totalPengeluaran, saldoKas, monthlyData } = aggregateFinancialData(
+    transactions || [],
+    paidDues
+  );
+
+  // Iuran belum lunas (anggota aktif yang memiliki tunggakan pada periode berjalan)
+  const iuranBelumLunas = calculateUnpaidMembersCount(members || [], dues || []);
 
   // Recent transactions (top 5)
   const recentTransactions = (transactions || []).slice(0, 5).map((t) => ({

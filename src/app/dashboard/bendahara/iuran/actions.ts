@@ -173,27 +173,13 @@ export async function tambahIuranMassalAI(duesData: any[], totalAmount: number, 
   await requireAuthUser();
   const supabase = await createClient();
   
-  // 1. Insert dues
+  // Insert ke tabel dues saja — tabel dues adalah source of truth untuk iuran.
+  // Halaman Transaksi akan menampilkan dues sebagai baris virtual agar tidak terjadi double-counting.
   if (duesData.length > 0) {
     const { error: duesError } = await supabase.from('dues').insert(duesData);
     if (duesError) throw new Error("Gagal menyimpan iuran: " + duesError.message);
   }
 
-  // 2. Insert finance transaction
-  if (totalAmount > 0) {
-    const payloadTransaction = {
-      transaction_date: new Date().toISOString().split('T')[0],
-      type: 'Pemasukan',
-      category: 'Iuran',
-      amount: totalAmount,
-      description: description,
-      responsible_person: 'Bendahara (Via AI)',
-      proof_url: null
-    };
-
-    const { error: transError } = await supabase.from('finance_transactions').insert(payloadTransaction);
-    if (transError) throw new Error("Gagal mencatat transaksi keuangan: " + transError.message);
-  }
-
   revalidatePath('/dashboard', 'layout');
 }
+
