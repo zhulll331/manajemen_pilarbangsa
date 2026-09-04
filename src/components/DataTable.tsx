@@ -7,7 +7,7 @@ export interface Column<T> {
   key: keyof T | string;
   label: string;
   render?: (item: T) => React.ReactNode;
-  align?: 'left' | 'center' | 'right';
+  align?: 'left' | 'center' | 'right' | string;
 }
 
 interface DataTableProps<T> {
@@ -44,6 +44,12 @@ export function DataTable<T extends { id: string }>({
   const startIndex = (currentPage - 1) * pageSize;
   const currentData = pagination ? data.slice(startIndex, startIndex + pageSize) : data;
 
+  const getAlignClass = (align?: string) => {
+    if (align === 'right') return 'text-right';
+    if (align === 'center') return 'text-center';
+    return 'text-left';
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
@@ -53,7 +59,7 @@ export function DataTable<T extends { id: string }>({
               {columns.map((col, i) => (
                 <th
                   key={String(col.key)}
-                  className={`py-3.5 px-4 font-semibold text-xs tracking-wider text-gray-600 uppercase whitespace-nowrap text-${col.align || 'left'}`}
+                  className={`py-3.5 px-4 font-semibold text-xs tracking-wider text-gray-600 uppercase whitespace-nowrap ${getAlignClass(col.align)}`}
                 >
                   {col.label}
                 </th>
@@ -72,7 +78,7 @@ export function DataTable<T extends { id: string }>({
                 className="hover:bg-blue-50/40 transition-colors"
               >
                 {columns.map((col) => (
-                  <td key={String(col.key)} className={`py-3.5 px-4 align-middle text-${col.align || 'left'}`}>
+                  <td key={String(col.key)} className={`py-3.5 px-4 align-middle ${getAlignClass(col.align)}`}>
                     {col.render
                       ? col.render(item)
                       : String((item as Record<string, unknown>)[col.key as string] ?? "-")}

@@ -6,7 +6,7 @@ import * as XLSX from "xlsx";
 import { uploadFileToDrive } from "@/utils/driveClientUpload";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
-import { DataTable } from "@/components/DataTable";
+import { DataTable, Column } from "@/components/DataTable";
 import { tambahTransaksi, editTransaksi, hapusTransaksi, parseTransaksiHarian } from "./actions";
 import { TransaksiBatchModal } from "./TransaksiBatchModal";
 
@@ -378,7 +378,7 @@ export default function TransaksiClient({ transactions, programs = [], totalIura
     XLSX.writeFile(workbook, `Laporan_Transaksi_${filter}.xlsx`);
   };
 
-  const columns = [
+  const columns: Column<any>[] = [
     { key: "transaction_date", label: "Tanggal" },
     { 
       key: "type", 
