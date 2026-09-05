@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import { uploadFileToDrive } from "@/utils/driveClientUpload";
-import { Plus, FileText, Mail, MailOpen, Loader2, Sparkles } from "lucide-react";
+import { Plus, FileText, Mail, MailOpen, Loader2, Sparkles, ArrowUpDown } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
-import { useRef } from "react";
 import { DataTable, type Column } from "@/components/DataTable";
 import { getViewerUrl } from "@/utils/driveClientUpload";
 import { tambahSurat, editSurat, hapusSurat } from "./actions";
@@ -36,6 +35,58 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Range Number States
+  const [isRangeMode, setIsRangeMode] = useState(false);
+  const [letterNumberInput, setLetterNumberInput] = useState("");
+  const [rangeStart, setRangeStart] = useState("");
+  const [rangeEnd, setRangeEnd] = useState("");
+  const [rangeSuffix, setRangeSuffix] = useState("");
+
+  const generatedRangeNumber = useMemo(() => {
+    if (!rangeStart && !rangeEnd) return "";
+    const startFormatted = rangeStart ? rangeStart.padStart(3, "0") : "";
+    const endFormatted = rangeEnd ? rangeEnd.padStart(3, "0") : "";
+    let suffix = rangeSuffix.trim();
+    if (suffix && !suffix.startsWith("/")) {
+      suffix = "/" + suffix;
+    }
+    if (startFormatted && endFormatted) {
+      return `${startFormatted} - ${endFormatted}${suffix}`;
+    }
+    return `${startFormatted || endFormatted}${suffix}`;
+  }, [rangeStart, rangeEnd, rangeSuffix]);
+
+  const openAdd = () => {
+    setEditData(null);
+    setSelectedFile(null);
+    setLetterNumberInput("");
+    setRangeStart("");
+    setRangeEnd("");
+    setRangeSuffix("");
+    setIsRangeMode(false);
+    setShowModal(true);
+  };
+
+  const openEdit = (l: Letter) => {
+    setEditData(l);
+    setSelectedFile(null);
+    const num = l.letter_number || "";
+    setLetterNumberInput(num);
+    const match = num.match(/(\d+)\s*-\s*(\d+)(.*)/);
+    if (match) {
+      setRangeStart(match[1]);
+      setRangeEnd(match[2]);
+      setRangeSuffix(match[3] || "");
+      setIsRangeMode(true);
+    } else {
+      setRangeStart("");
+      setRangeEnd("");
+      setRangeSuffix("");
+      setIsRangeMode(false);
+    }
+    setShowModal(true);
+  };
+
   const handleExtract = async () => {
     if (!selectedFile) {
       alert("Pilih file terlebih dahulu sebelum melakukan ekstraksi otomatis!");
@@ -58,7 +109,11 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
       if (formRef.current) {
         const elements = formRef.current.elements as any;
         if (data.letter_type && elements.letter_type) elements.letter_type.value = data.letter_type;
-        if (data.letter_number && elements.letter_number) elements.letter_number.value = data.letter_number;
+        if (data.letter_number && elements.letter_number) {
+          elements.letter_number.value = data.letter_number;
+          setLetterNumberInput(data.letter_number);
+          setIsRangeMode(false);
+        }
         if (data.date && elements.date) elements.date.value = data.date;
         if (data.sender && elements.sender) elements.sender.value = data.sender;
         if (data.recipient && elements.recipient) elements.recipient.value = data.recipient;
@@ -74,12 +129,123 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
     }
   };
 
-  const filteredLetters = filter === "Semua"
-    ? letters
-    : letters.filter(l => l.letter_type === filter);
+  const [sortBy, setSortBy] = useState<"smart" | "nomor_desc" | "nomor_asc" | "date_desc" | "date_asc">("smart");
+
+  const getInitialNumber = (letterNum?: string | null): number | null => {
+    if (!letterNum) return null;
+    const match = letterNum.trim().match(/(?:^|No\.?\s*)(\d+)/i);
+    return match ? parseInt(match[1], 10) : null;
+  };
+
+  const isUkmLetter = (str?: string | null) => {
+    return str ? /UKM14/i.test(str) : false;
+  };
+
+  const filteredLetters = useMemo(() => {
+    return filter === "Semua"
+      ? letters
+      : letters.filter(l => l.letter_type === filter);
+  }, [letters, filter]);
+
+  const sortedLetters = useMemo(() => {
+    const list = [...filteredLetters];
+
+    if (sortBy === "smart") {
+      // Urutan cerdas: Surat berkodekan UKM14 (contoh: 012/UKM14/...) diurutkan sesuai nomor awalnya
+      const ukmDates = list
+        .filter(l => isUkmLetter(l.letter_number) && l.date)
+        .map(l => new Date(l.date).getTime());
+      const maxUkmDate = ukmDates.length > 0 ? Math.max(...ukmDates) : Date.now();
+
+      return list.sort((a, b) => {
+        const isUkmA = isUkmLetter(a.letter_number);
+        const isUkmB = isUkmLetter(b.letter_number);
+        const numA = getInitialNumber(a.letter_number);
+        const numB = getInitialNumber(b.letter_number);
+
+        let timeA = a.date ? new Date(a.date).getTime() : 0;
+        let timeB = b.date ? new Date(b.date).getTime() : 0;
+
+        if (isUkmA && numA !== null) {
+          timeA = maxUkmDate + (numA * 60 * 1000);
+        }
+        if (isUkmB && numB !== null) {
+          timeB = maxUkmDate + (numB * 60 * 1000);
+        }
+
+        if (timeA !== timeB) return timeB - timeA;
+        return (b.id || "").localeCompare(a.id || "");
+      });
+    }
+
+    if (sortBy === "nomor_desc") {
+      return list.sort((a, b) => {
+        const numA = getInitialNumber(a.letter_number);
+        const numB = getInitialNumber(b.letter_number);
+        if (numA !== null && numB !== null) {
+          if (numA !== numB) return numB - numA;
+        } else if (numA !== null) return -1;
+        else if (numB !== null) return 1;
+
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        if (dateA !== dateB) return dateB - dateA;
+        return (b.id || "").localeCompare(a.id || "");
+      });
+    }
+
+    if (sortBy === "nomor_asc") {
+      return list.sort((a, b) => {
+        const numA = getInitialNumber(a.letter_number);
+        const numB = getInitialNumber(b.letter_number);
+        if (numA !== null && numB !== null) {
+          if (numA !== numB) return numA - numB;
+        } else if (numA !== null) return -1;
+        else if (numB !== null) return 1;
+
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        if (dateA !== dateB) return dateA - dateB;
+        return (b.id || "").localeCompare(a.id || "");
+      });
+    }
+
+    if (sortBy === "date_desc") {
+      return list.sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        if (dateA !== dateB) return dateB - dateA;
+        return (b.id || "").localeCompare(a.id || "");
+      });
+    }
+
+    if (sortBy === "date_asc") {
+      return list.sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        if (dateA !== dateB) return dateA - dateB;
+        return (b.id || "").localeCompare(a.id || "");
+      });
+    }
+
+    return list;
+  }, [filteredLetters, sortBy]);
 
   const columns: Column<Letter>[] = [
-    { key: "letter_number", label: "No. Surat / Dokumen", render: (l) => <span className="font-medium text-gray-900 text-xs">{l.letter_number || "-"}</span> },
+    { 
+      key: "letter_number", 
+      label: "No. Surat / Dokumen", 
+      render: (l) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900 text-xs">{l.letter_number || "-"}</span>
+          {l.letter_number && l.letter_number.includes(" - ") && (
+            <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-0.5">
+              📜 Rentang Dokumen
+            </span>
+          )}
+        </div>
+      ) 
+    },
     {
       key: "letter_type",
       label: "Kategori",
@@ -204,7 +370,7 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
           </div>
         </div>
         <button
-          onClick={() => { setEditData(null); setSelectedFile(null); setShowModal(true); }}
+          onClick={openAdd}
           className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-sm w-full sm:w-auto"
         >
           <Plus size={18} />
@@ -212,33 +378,52 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
         </button>
       </div>
 
-      <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar gap-2">
-        <button
-          onClick={() => setFilter("Semua")}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-            filter === "Semua" ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-          }`}
-        >
-          Semua Data
-        </button>
-        {documentTypes.map(type => (
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar gap-2 w-full sm:w-auto">
           <button
-            key={type}
-            onClick={() => setFilter(type)}
+            onClick={() => setFilter("Semua")}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              filter === type ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+              filter === "Semua" ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             }`}
           >
-            {type}
+            Semua Data
           </button>
-        ))}
+          {documentTypes.map(type => (
+            <button
+              key={type}
+              onClick={() => setFilter(type)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                filter === type ? "bg-[var(--color-primary)] text-white shadow-sm" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        {/* Pengaturan Urutan */}
+        <div className="flex items-center gap-2 self-end sm:self-auto bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-2xs">
+          <ArrowUpDown size={14} className="text-gray-400 shrink-0" />
+          <span className="text-xs text-gray-500 font-medium whitespace-nowrap">Urutkan:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="text-xs font-semibold text-gray-700 bg-transparent outline-none cursor-pointer"
+          >
+            <option value="smart">Nomor Surat UKM (Sesuai Urutan)</option>
+            <option value="nomor_desc">Nomor Terbesar ke Terkecil (015 → 001)</option>
+            <option value="nomor_asc">Nomor Terkecil ke Terbesar (001 → 015)</option>
+            <option value="date_desc">Tanggal (Terbaru)</option>
+            <option value="date_asc">Tanggal (Terlama)</option>
+          </select>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <DataTable pagination pageSize={10}
           columns={columns}
-          data={filteredLetters}
-          onEdit={(l) => { setEditData(l); setSelectedFile(null); setShowModal(true); }}
+          data={sortedLetters}
+          onEdit={openEdit}
           onDelete={(l) => { setDeleteTarget(l); setShowDelete(true); }}
           emptyMessage="Belum ada data."
         />
@@ -280,10 +465,104 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">No. Surat / Dokumen (Opsional)</label>
-              <input name="letter_number" defaultValue={editData?.letter_number || ""}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition" />
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">No. Surat / Dokumen (Opsional)</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isRangeMode && !rangeSuffix) {
+                      setRangeSuffix("/UKM14/SRT/VIII/2026");
+                    }
+                    setIsRangeMode(!isRangeMode);
+                  }}
+                  className="text-xs text-[var(--color-primary)] font-semibold hover:underline flex items-center gap-1"
+                >
+                  {isRangeMode ? "Mode Manual" : "⚡ Mode Rentang Nomor"}
+                </button>
+              </div>
+
+              {!isRangeMode ? (
+                <input
+                  name="letter_number"
+                  value={letterNumberInput}
+                  onChange={(e) => setLetterNumberInput(e.target.value)}
+                  placeholder="Misal: 012/UKM14/AM/VIII/2026 atau 001 - 020"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition"
+                />
+              ) : (
+                <div className="p-3.5 bg-blue-50/60 border border-blue-200/80 rounded-xl space-y-2.5">
+                  <div className="flex items-center justify-between text-xs text-blue-800 font-semibold">
+                    <span>Rentang Nomor (Banyak Sertifikat/Surat)</span>
+                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100/70 px-2 py-0.5 rounded-full">
+                      1 Arsip Mewakili Banyak Nomor
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[11px] text-gray-600 font-medium">Nomor Awal:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Contoh: 1"
+                        value={rangeStart}
+                        onChange={(e) => setRangeStart(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-gray-600 font-medium">Nomor Akhir:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Contoh: 20"
+                        value={rangeEnd}
+                        onChange={(e) => setRangeEnd(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-600 font-medium">Format / Kode Surat (Opsional):</span>
+                    <input
+                      placeholder="Contoh: /UKM14/SRT/VIII/2026 (atau kosongkan)"
+                      value={rangeSuffix}
+                      onChange={(e) => setRangeSuffix(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setRangeSuffix("/UKM14/SRT/VIII/2026")}
+                        className="text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-0.5 rounded font-medium transition-colors"
+                      >
+                        + /UKM14/SRT/VIII/2026
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRangeSuffix("/UKM14/AM/VIII/2026")}
+                        className="text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-0.5 rounded font-medium transition-colors"
+                      >
+                        + /UKM14/AM/VIII/2026
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRangeSuffix("")}
+                        className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-0.5 rounded font-medium transition-colors"
+                      >
+                        Hanya Angka
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-white p-2.5 rounded-lg border border-blue-100 text-xs">
+                    <span className="text-gray-500">Hasil: </span>
+                    <strong className="text-blue-900 font-mono">
+                      {generatedRangeNumber || "Ketik nomor awal & akhir..."}
+                    </strong>
+                  </div>
+                  <input type="hidden" name="letter_number" value={generatedRangeNumber} />
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>

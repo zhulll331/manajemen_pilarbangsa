@@ -117,11 +117,15 @@ export default function DashboardSekretarisClient({
               <tbody>
                 {recentLetters.map((letter, i) => (
                   <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900 text-xs">{letter.letter_number}</td>
+                    <td className="py-3 px-4 font-medium text-gray-900 text-xs">{letter.letter_number || "-"}</td>
                     <td className="py-3 px-4 line-clamp-1">{letter.subject}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        letter.letter_type === "Masuk" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700"
+                        letter.letter_type === "Masuk" || letter.letter_type === "Surat Masuk"
+                          ? "bg-blue-100 text-blue-700" 
+                          : letter.letter_type === "Keluar" || letter.letter_type === "Surat Keluar"
+                          ? "bg-indigo-100 text-indigo-700"
+                          : "bg-gray-100 text-gray-700"
                       }`}>
                         {letter.letter_type}
                       </span>
