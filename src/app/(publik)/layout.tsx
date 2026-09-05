@@ -22,7 +22,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <Image 
-                  src="/logo-ukm.png" 
+                  src="/logo_pilar.svg" 
                   alt="Logo Pilar Bangsa" 
                   width={48} 
                   height={48} 
@@ -31,7 +31,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <Image 
-                  src="/logo-untag-fix.svg" 
+                  src="/logo_untag.svg" 
                   alt="Logo Universitas" 
                   width={48} 
                   height={48} 
@@ -112,7 +112,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 flex items-center justify-center">
                     <Image 
-                      src="/logo-ukm.png" 
+                      src="/logo_pilar.svg" 
                       alt="Logo Pilar Bangsa" 
                       width={48} 
                       height={48} 
@@ -121,7 +121,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                   </div>
                   <div className="w-12 h-12 flex items-center justify-center">
                     <Image 
-                      src="/logo-untag-fix.svg" 
+                      src="/logo_untag.svg" 
                       alt="Logo Universitas" 
                       width={48} 
                       height={48} 

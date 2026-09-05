@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { HeroSlider } from '@/components/HeroSlider'
 import { TimelineRoadmap } from '@/components/TimelineRoadmap'
-import { GeminiPromptBox } from '@/components/GeminiPromptBox'
+import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper'
 import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
 import { ArrowRight, Newspaper } from 'lucide-react'
@@ -137,7 +137,7 @@ export default async function BerandaPage() {
               Pilar Asisten AI didukung oleh model Google Gemini mutakhir untuk menjawab pertanyaan Anda berdasarkan dokumen AD/ART dan data real-time Supabase.
             </p>
           </div>
-          <GeminiPromptBox />
+          <GeminiPromptBoxWrapper />
         </section>
       </ScrollReveal>
       

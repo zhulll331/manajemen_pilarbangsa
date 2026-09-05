@@ -21,7 +21,7 @@ export const getViewerUrl = (url: string) => {
 export async function uploadFileToDrive(
   file: File,
   folderId?: string,
-  _onProgress?: (percent: number) => void
+  onProgress?: (percent: number) => void
 ): Promise<{ url: string; downloadUrl: string; fileId: string; name: string }> {
 
   // Kompres gambar sebelum upload (PDF/Docx tidak berubah)
@@ -47,21 +47,36 @@ export async function uploadFileToDrive(
   if (!uploadUrl) throw new Error('URL sesi upload tidak valid');
 
   // === Langkah 2: Upload langsung ke Google Drive dari browser ===
-  // CORS akan memblokir pembacaan respons, tapi file tetap terupload!
+  // Menggunakan XMLHttpRequest agar bisa memantau upload progress secara real-time
   const contentRange = `bytes 0-${fileToUpload.size - 1}/${fileToUpload.size}`;
 
-  try {
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': fileToUpload.type || 'application/octet-stream',
-        'Content-Range': contentRange,
-      },
-      body: fileToUpload,
-    });
-  } catch {
-    // CORS error diharapkan terjadi — abaikan saja, file sudah terupload
-  }
+  await new Promise<void>((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', uploadUrl);
+    xhr.setRequestHeader('Content-Type', fileToUpload.type || 'application/octet-stream');
+    xhr.setRequestHeader('Content-Range', contentRange);
+
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && e.total > 0) {
+          const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
+          onProgress(percent);
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (onProgress) onProgress(100);
+      resolve();
+    };
+    xhr.onerror = () => {
+      // CORS block pada endpoint upload Google Drive biasa terjadi pada browser langsung,
+      // tetapi bytes payload tetap diterima Google Drive. Langkah 3 verifikasi yang memastikan keberhasilannya.
+      if (onProgress) onProgress(100);
+      resolve();
+    };
+    xhr.send(fileToUpload);
+  });
 
   // === Langkah 3: Verifikasi upload lewat server kita ===
   // Tunggu sebentar agar Google Drive selesai memproses

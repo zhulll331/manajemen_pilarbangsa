@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { UploadQueueProvider } from "@/context/UploadQueueContext";
+import { UploadQueueWidget } from "./UploadQueueWidget";
 
 export function DashboardLayoutClient({
   children,
@@ -16,18 +18,21 @@ export function DashboardLayoutClient({
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-background)] overflow-hidden">
-      <Sidebar role={role} isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-        <Header 
-          role={role} 
-          name={name} 
-          onMenuClick={() => setSidebarOpen(true)} 
-        />
-        <main className="flex-1 p-4 md:p-8">
-          {children}
-        </main>
+    <UploadQueueProvider>
+      <div className="flex min-h-screen bg-[var(--color-background)] overflow-hidden">
+        <Sidebar role={role} isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+          <Header 
+            role={role} 
+            name={name} 
+            onMenuClick={() => setSidebarOpen(true)} 
+          />
+          <main className="flex-1 p-4 md:p-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+      <UploadQueueWidget />
+    </UploadQueueProvider>
   );
 }

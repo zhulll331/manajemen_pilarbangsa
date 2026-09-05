@@ -14,7 +14,8 @@ import {
   Archive,
   LogOut,
   UserCircle,
-  X
+  X,
+  Brain
 } from "lucide-react";
 import { logout } from "@/app/actions";
 
@@ -54,6 +55,7 @@ export function Sidebar({
         return [
           { href: "/dashboard/humas/proker", label: "Kelola Proker", icon: <ClipboardList size={20} /> },
           { href: "/dashboard/humas/berita", label: "Kelola Berita", icon: <FileText size={20} /> },
+          { href: "/dashboard/humas/knowledge", label: "Basis Pengetahuan AI", icon: <Brain size={20} /> },
           { href: "/dashboard/humas/banner", label: "Pengaturan Banner", icon: <FolderOpen size={20} /> },
           { href: "/dashboard/humas/pengaturan", label: "Kelola Tokoh & Pemimpin", icon: <Users size={20} /> },
           { href: "/dashboard/humas/arsip", label: "Arsip Publik", icon: <Archive size={20} /> },
@@ -85,10 +87,10 @@ export function Sidebar({
       }`}>
         <div className="p-6 flex items-center justify-center gap-3 border-b border-white/10 relative shrink-0">
           <div className="w-20 h-20 flex items-center justify-center">
-            <img src="/logo-ukm.png" alt="Logo Pilar Bangsa" className="w-full h-full object-contain drop-shadow-md" />
+            <img src="/logo_pilar.svg" alt="Logo Pilar Bangsa" className="w-full h-full object-contain drop-shadow-md" />
           </div>
           <div className="w-20 h-20 flex items-center justify-center">
-            <img src="/logo-untag-fix.svg" alt="Logo Universitas" className="w-full h-full object-contain drop-shadow-md scale-[1.25]" />
+            <img src="/logo_untag.svg" alt="Logo Universitas" className="w-full h-full object-contain drop-shadow-md scale-[1.25]" />
           </div>
           <button 
             className="md:hidden absolute right-4 text-white/80 hover:text-white p-2"

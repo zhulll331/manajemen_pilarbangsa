@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Plus, ArrowDownCircle, ArrowUpCircle, ExternalLink, Download, Sparkles, Mic, Square, Layers, Wallet, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, ArrowDownCircle, ArrowUpCircle, ExternalLink, Download, Sparkles, Mic, Square, Layers, Wallet, Eye, UploadCloud } from "lucide-react";
 import * as XLSX from "xlsx";
-import { uploadFileToDrive } from "@/utils/driveClientUpload";
+import { useUploadQueue } from "@/context/UploadQueueContext";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, Column } from "@/components/DataTable";
@@ -12,6 +13,9 @@ import { TransaksiBatchModal } from "./TransaksiBatchModal";
 
 
 export default function TransaksiClient({ transactions, programs = [], totalIuranDiterima = 0, duesTransactions = [] }: { transactions: any[], programs?: any[], totalIuranDiterima?: number, duesTransactions?: any[] }) {
+  const router = useRouter();
+  const { enqueueUpload, getJobByRecordId } = useUploadQueue();
+
   const [filter, setFilter] = useState("Semua");
   const [groupProker, setGroupProker] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,6 +28,17 @@ export default function TransaksiClient({ transactions, programs = [], totalIura
   const [selectedGroup, setSelectedGroup] = useState<any[] | null>(null);
   const [selectedGroupTitle, setSelectedGroupTitle] = useState<string>("");
   const [selectedProofs, setSelectedProofs] = useState<{ title: string; urls: string[] } | null>(null);
+
+  // Refetch server data saat upload background transaksi selesai
+  useEffect(() => {
+    const handleFinished = (e: any) => {
+      if (e.detail?.tableName === "finance_transactions") {
+        router.refresh();
+      }
+    };
+    window.addEventListener("upload-queue-finished", handleFinished);
+    return () => window.removeEventListener("upload-queue-finished", handleFinished);
+  }, [router]);
 
   // AI & Voice State
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -280,27 +295,6 @@ export default function TransaksiClient({ transactions, programs = [], totalIura
     let folderId = formDataState.folder_id || "";
 
     try {
-      if (!folderId || (selectedData && selectedData.type !== formDataState.type)) {
-        const res = await fetch('/api/drive/create-folder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ folderName, parentFolderName: 'Bendahara' })
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        if (data.folderId) folderId = data.folderId;
-      }
-
-      let proofUrls: string[] = formDataState.proof_url ? formDataState.proof_url.split(',').filter(Boolean) : [];
-      if (selectedFiles.length > 0) {
-        // Upload langsung dari browser ke Google Drive
-        for (const file of selectedFiles) {
-          const { url: fileUrl } = await uploadFileToDrive(file, folderId || undefined);
-          if (fileUrl) proofUrls.push(fileUrl);
-        }
-      }
-      const finalProofUrl = proofUrls.join(',');
-
       const formData = new FormData();
       formData.append("transaction_date", formDataState.transaction_date);
       formData.append("type", formDataState.type);
@@ -308,16 +302,43 @@ export default function TransaksiClient({ transactions, programs = [], totalIura
       formData.append("amount", formDataState.amount);
       formData.append("description", formDataState.description);
       formData.append("responsible_person", formDataState.responsible_person);
-      formData.append("proof_url", finalProofUrl);
+      formData.append("proof_url", formDataState.proof_url || "");
       formData.append("folder_id", folderId);
       formData.append("program_id", formDataState.program_id);
+
+      let targetRecordId = selectedData?.id;
 
       if (selectedData) {
         await editTransaksi(selectedData.id, formData);
       } else {
-        await tambahTransaksi(formData);
+        const res = await tambahTransaksi(formData);
+        targetRecordId = res?.id;
       }
+
+      const filesToUpload = [...selectedFiles];
+      const currentDesc = formDataState.description || formDataState.category || "Transaksi";
+      const currentType = formDataState.type;
+
+      // Tutup modal langsung seketika (< 1 detik)!
       setIsModalOpen(false);
+      setSelectedFiles([]);
+
+      // Jika ada file bukti yang dipilih, jalankan upload di latar belakang
+      if (filesToUpload.length > 0 && targetRecordId) {
+        for (const file of filesToUpload) {
+          enqueueUpload({
+            file,
+            title: `Bukti: ${currentDesc}`,
+            recordId: targetRecordId,
+            tableName: "finance_transactions",
+            fieldName: "proof_url",
+            append: true,
+            folderName: `Bukti Kas ${currentType}`,
+            parentFolderName: "Bendahara",
+            folderId: folderId || undefined,
+          });
+        }
+      }
     } catch (error: any) {
       setErrorMsg(error.message || "Terjadi kesalahan saat menyimpan data");
     } finally {
@@ -456,8 +477,21 @@ export default function TransaksiClient({ transactions, programs = [], totalIura
       key: "proof_url", 
       label: "Bukti", 
       render: (row: any) => {
-        if (!row.proof_url) return <span className="text-gray-400 text-xs">-</span>;
-        const urls = row.proof_url.split(',').filter(Boolean);
+        const job = getJobByRecordId(row.id, "proof_url");
+        if (job && (job.status === "pending" || job.status === "uploading")) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse whitespace-nowrap shadow-2xs">
+              <UploadCloud size={12} className="animate-bounce" />
+              <span>{job.progress > 0 ? `${job.progress}%` : "Mengunggah..."}</span>
+            </span>
+          );
+        }
+
+        let urls = row.proof_url ? row.proof_url.split(',').filter(Boolean) : [];
+        if (job && job.resultUrl && !urls.includes(job.resultUrl)) {
+          urls = [...urls, job.resultUrl];
+        }
+
         if (urls.length === 0) return <span className="text-gray-400 text-xs">-</span>;
         
         if (urls.length === 1) {

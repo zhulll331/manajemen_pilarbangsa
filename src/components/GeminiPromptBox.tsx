@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, Mic, Send, ChevronDown, Bot, User, FileText, Sparkles, Layers } from "lucide-react";
+import Image from "next/image";
+import { Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatMessage {
@@ -67,8 +68,15 @@ export function GeminiPromptBox() {
     const query = textToSend || inputText;
     if (!query.trim() || isLoading) return;
 
+    const userMessage = query.trim();
+    // Ambil 6 pesan terakhir untuk menjaga memori dan kontinuitas percakapan
+    const historyPayload = messages.slice(-6).map((m) => ({
+      role: m.sender === "user" ? "user" : "assistant",
+      content: m.text,
+    }));
+
     if (!textToSend) setInputText("");
-    setMessages((prev) => [...prev, { sender: "user", text: query.trim() }]);
+    setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
     setIsLoading(true);
 
     try {
@@ -76,7 +84,8 @@ export function GeminiPromptBox() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: query.trim(),
+          message: userMessage,
+          history: historyPayload,
           currentPath: window.location.pathname,
         }),
       });
@@ -119,12 +128,14 @@ export function GeminiPromptBox() {
                   msg.sender === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                    msg.sender === "user" ? "bg-blue-600 text-white" : "bg-[#008000] text-white"
-                  }`}
-                >
-                  {msg.sender === "user" ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
+                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 shadow-sm flex items-center justify-center bg-white border border-gray-100">
+                  <Image
+                    src={msg.sender === "user" ? "/logoikonai_user.svg" : "/logoikonai_chatbot.svg"}
+                    alt={msg.sender === "user" ? "User" : "Pilar Asisten"}
+                    width={36}
+                    height={36}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div
                   className={`max-w-[85%] px-5 py-4 rounded-3xl shadow-sm ${
@@ -147,8 +158,14 @@ export function GeminiPromptBox() {
 
             {isLoading && (
               <div className="flex gap-3.5 items-start">
-                <div className="w-9 h-9 rounded-full bg-[#008000] text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Bot className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 shadow-sm flex items-center justify-center bg-white border border-gray-100">
+                  <Image
+                    src="/logoikonai_chatbot.svg"
+                    alt="Pilar Asisten"
+                    width={36}
+                    height={36}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="bg-gray-50 text-gray-800 border border-gray-200/60 px-6 py-4 rounded-3xl rounded-bl-none shadow-sm flex items-center space-x-2">
                   <div className="w-2.5 h-2.5 bg-green-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>

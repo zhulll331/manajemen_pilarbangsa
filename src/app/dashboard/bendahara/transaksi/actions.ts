@@ -35,14 +35,16 @@ export async function tambahTransaksi(formData: FormData) {
     program_id: formData.get('program_id') || null
   };
 
-  let { error } = await supabase.from('finance_transactions').insert(payloadAll)
+  let { data, error } = await supabase.from('finance_transactions').insert(payloadAll).select('id').single()
   if (error && error.message.includes('folder_id')) {
-    const { error: fallbackError } = await supabase.from('finance_transactions').insert(payloadFallback)
+    const { data: fallbackData, error: fallbackError } = await supabase.from('finance_transactions').insert(payloadFallback).select('id').single()
     error = fallbackError
+    data = fallbackData
   }
 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
+  return { id: data?.id }
 }
 export async function tambahTransaksiMassal(transactionsData: any[]) {
   await requireAuthUser();
@@ -62,7 +64,7 @@ export async function tambahTransaksiMassal(transactionsData: any[]) {
   }));
 
   // Coba insert langsung dengan folder_id.
-  let { error } = await supabase.from('finance_transactions').insert(payload)
+  let { data, error } = await supabase.from('finance_transactions').insert(payload).select('id')
   
   if (error && error.message.includes('folder_id')) {
     // Jika folder_id tidak valid di schema database, hapus atributnya sebagai fallback
@@ -70,12 +72,14 @@ export async function tambahTransaksiMassal(transactionsData: any[]) {
       const { folder_id, ...rest } = p;
       return rest;
     });
-    const { error: fallbackError } = await supabase.from('finance_transactions').insert(payloadFallback)
+    const { data: fallbackData, error: fallbackError } = await supabase.from('finance_transactions').insert(payloadFallback).select('id')
     error = fallbackError
+    data = fallbackData
   }
 
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard', 'layout')
+  return { data }
 }
 
 export async function editTransaksi(id: string, formData: FormData) {

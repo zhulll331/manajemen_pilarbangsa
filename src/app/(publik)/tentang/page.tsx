@@ -104,7 +104,7 @@ export default async function TentangPage() {
           <div className="text-center max-w-4xl mx-auto space-y-4">
             <div className="flex justify-center mb-8">
               <Image 
-                src="/logo-ukm.png" 
+                src="/logo_pilar.svg" 
                 alt="Logo UKM Pilar Bangsa" 
                 width={160} 
                 height={160} 

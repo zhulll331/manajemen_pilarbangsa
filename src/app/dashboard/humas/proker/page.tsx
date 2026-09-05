@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { Plus, CheckCircle2, Clock, PlayCircle, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, AlertCircle, FileCheck, FileText, Upload, Image as ImageIcon } from 'lucide-react'
+import { Plus, CheckCircle2, Clock, PlayCircle, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, AlertCircle, FileCheck, FileText, Upload, Image as ImageIcon, UploadCloud } from 'lucide-react'
 import { uploadFileToDrive } from '@/utils/driveClientUpload'
+import { useUploadQueue } from '@/context/UploadQueueContext'
 import { StorageWidget } from '@/components/StorageWidget'
 
 interface ProgramItem {
@@ -131,10 +132,22 @@ export default function KelolaProkerPage() {
 
   const [uploadingFile, setUploadingFile] = useState(false)
 
+  const { enqueueUpload, getJobByRecordId } = useUploadQueue()
   const supabase = createClient()
 
   useEffect(() => {
     fetchData()
+  }, [])
+
+  // Refetch data jika ada upload background proker yang selesai
+  useEffect(() => {
+    const handleFinished = (e: any) => {
+      if (e.detail?.tableName === 'programs') {
+        fetchData()
+      }
+    }
+    window.addEventListener('upload-queue-finished', handleFinished)
+    return () => window.removeEventListener('upload-queue-finished', handleFinished)
   }, [])
 
   async function fetchData() {
@@ -270,75 +283,47 @@ export default function KelolaProkerPage() {
     let currentCoverUrl = coverUrl
 
     try {
-      // 1. Buat folder Proker di dalam folder Divisi masing-masing
+      // 1. Buat folder Proker di background atau ambil yang sudah ada
       if (!currentFolderId) {
-        const res = await fetch('/api/drive/create-folder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ folderName: `Proker - ${title}`, parentFolderName: `Divisi - ${divisionName}` })
-        })
-        const data = await res.json()
-        if (data.error) throw new Error(data.error)
-        if (data.folderId) {
-          currentFolderId = `https://drive.google.com/drive/folders/${data.folderId}`
-          setFolderUrl(currentFolderId)
+        try {
+          const res = await fetch('/api/drive/create-folder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folderName: `Proker - ${title}`, parentFolderName: `Divisi - ${divisionName}` })
+          })
+          const data = await res.json()
+          if (data.folderId) {
+            currentFolderId = `https://drive.google.com/drive/folders/${data.folderId}`
+            setFolderUrl(currentFolderId)
+          }
+        } catch (e) {
+          console.error('Gagal create folder otomatis:', e)
         }
       } else if (currentEditId && currentFolderId) {
         const match = currentFolderId.match(/folders\/([a-zA-Z0-9_-]+)/) || [null, currentFolderId]
         const fId = match[1] || currentFolderId
         if (fId && !fId.includes('http')) {
-          await fetch('/api/drive/rename-folder', {
+          fetch('/api/drive/rename-folder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ folderId: fId, newName: `Proker - ${title}` })
-          })
+          }).catch(console.error)
         }
       }
 
       const fMatch = currentFolderId.match(/folders\/([a-zA-Z0-9_-]+)/) || [null, currentFolderId]
       const prokerFolderId = fMatch[1] || currentFolderId
 
-      // 2. Upload Foto Pratinjau Utama
-      if (selectedFile) {
-        // Upload langsung dari browser ke Google Drive (melewati Vercel)
-        const { url: coverUrl2 } = await uploadFileToDrive(
-          selectedFile,
-          prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined
-        )
-        currentCoverUrl = coverUrl2
-        setCoverUrl(coverUrl2)
-      }
-
-      // 3. Upload File SK Sebelum Kegiatan
-      if (selectedSkFile) {
-        const { url: skUrl2 } = await uploadFileToDrive(
-          selectedSkFile,
-          prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined
-        )
-        finalSkUrl = skUrl2
-        setSkUrl(skUrl2)
-      }
-
-      // 4. Upload File Laporan Setelah Kegiatan
-      if (selectedLaporanFile) {
-        const { url: lapUrl2 } = await uploadFileToDrive(
-          selectedLaporanFile,
-          prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined
-        )
-        finalLaporanUrl = lapUrl2
-        setLaporanUrl(lapUrl2)
-      }
-
       const directCoverUrl = convertGoogleDriveUrl(currentCoverUrl)
 
       const cleanDesc = description
         .replace(/(\r?\n)*---+(\r?\n)*\[COVER_URL\]:[\s\S]*$/, '')
-        .replace(/(\r?\n)*---+(\r?\n)*\[SK_URL\]:[\s\S]*$/, '');
+        .replace(/(\r?\n)*---+(\r?\n)*\[SK_URL\]:[\s\S]*$/, '')
 
-      const metaTags = `\n\n---\n[COVER_URL]: ${directCoverUrl || ''}\n[GALLERY_URL]: ${currentFolderId || ''}\n[SK_URL]: ${finalSkUrl || ''}\n[LAPORAN_URL]: ${finalLaporanUrl || ''}`;
-      const combinedDescription = cleanDesc + metaTags;
+      const metaTags = `\n\n---\n[COVER_URL]: ${directCoverUrl || ''}\n[GALLERY_URL]: ${currentFolderId || ''}\n[SK_URL]: ${finalSkUrl || ''}\n[LAPORAN_URL]: ${finalLaporanUrl || ''}`
+      const combinedDescription = cleanDesc + metaTags
 
-      const payloadStrict = {
+      const payloadStrict: any = {
         title,
         description: combinedDescription,
         division: divisionName,
@@ -346,40 +331,88 @@ export default function KelolaProkerPage() {
         status,
         start_date: startDate || null,
         end_date: endDate || null,
-        requires_documents: requiresDocuments
+        requires_documents: requiresDocuments,
+        cover_image_url: directCoverUrl || null,
+        gallery_drive_url: currentFolderId || null,
+        sk_url: finalSkUrl || null,
+        laporan_url: finalLaporanUrl || null,
       }
 
-      if (requiresDocuments && status === 'Selesai' && !finalLaporanUrl) {
-        setErrorMessage('Tidak bisa menyimpan status Selesai. File Laporan LPJ wajib diunggah!');
-        setUploadingFile(false);
-        return;
+      if (requiresDocuments && status === 'Selesai' && !finalLaporanUrl && !selectedLaporanFile) {
+        setErrorMessage('Tidak bisa menyimpan status Selesai. File Laporan LPJ wajib diunggah!')
+        setUploadingFile(false)
+        return
       }
 
+      let targetId = currentEditId
       if (currentEditId) {
         const { error } = await supabase
           .from('programs')
           .update(payloadStrict)
           .eq('id', currentEditId)
 
-        if (error) {
-          setErrorMessage('Gagal memperbarui program kerja: ' + error.message)
-        } else {
-          setSuccessMessage('Program kerja dan berkas administrasi berhasil diperbarui!')
-          resetForm()
-          fetchData()
-        }
+        if (error) throw new Error('Gagal memperbarui program kerja: ' + error.message)
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('programs')
           .insert([payloadStrict])
+          .select('id')
+          .single()
 
-        if (error) {
-          setErrorMessage('Gagal menambahkan program kerja: ' + error.message)
-        } else {
-          setSuccessMessage('Program kerja baru beserta berkas administrasi berhasil ditambahkan!')
-          resetForm()
-          fetchData()
-        }
+        if (error) throw new Error('Gagal menambahkan program kerja: ' + error.message)
+        targetId = data.id
+      }
+
+      // Simpan referensi file sebelum reset form
+      const fileToUpload = selectedFile
+      const skFileToUpload = selectedSkFile
+      const lapFileToUpload = selectedLaporanFile
+      const currentTitle = title
+      const currentDiv = divisionName
+
+      // Form langsung di-reset dan data dimuat seketika (< 1 detik)!
+      setSuccessMessage(currentEditId ? 'Program kerja berhasil diperbarui!' : 'Program kerja baru berhasil ditambahkan!')
+      resetForm()
+      fetchData()
+
+      // Jalankan upload file di antrean latar belakang
+      if (fileToUpload && targetId) {
+        enqueueUpload({
+          file: fileToUpload,
+          title: `Cover: ${currentTitle}`,
+          recordId: targetId,
+          tableName: 'programs',
+          fieldName: 'cover_url',
+          folderName: `Proker - ${currentTitle}`,
+          parentFolderName: `Divisi - ${currentDiv}`,
+          folderId: prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined,
+        })
+      }
+
+      if (skFileToUpload && targetId) {
+        enqueueUpload({
+          file: skFileToUpload,
+          title: `SK: ${currentTitle}`,
+          recordId: targetId,
+          tableName: 'programs',
+          fieldName: 'sk_url',
+          folderName: `Proker - ${currentTitle}`,
+          parentFolderName: `Divisi - ${currentDiv}`,
+          folderId: prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined,
+        })
+      }
+
+      if (lapFileToUpload && targetId) {
+        enqueueUpload({
+          file: lapFileToUpload,
+          title: `Laporan: ${currentTitle}`,
+          recordId: targetId,
+          tableName: 'programs',
+          fieldName: 'laporan_url',
+          folderName: `Proker - ${currentTitle}`,
+          parentFolderName: `Divisi - ${currentDiv}`,
+          folderId: prokerFolderId && !prokerFolderId.includes('http') ? prokerFolderId : undefined,
+        })
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Terjadi kesalahan sistem')
@@ -849,41 +882,76 @@ export default function KelolaProkerPage() {
                     
                     {/* SK Sebelum Kegiatan */}
                     <td className="py-4 px-4">
-                      {p.requires_documents === false ? (
-                        <span className="text-gray-400 font-medium text-xs">—</span>
-                      ) : p.sk_url ? (
-                        <a href={p.sk_url} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-bold hover:underline shadow-sm">
-                          <FileCheck size={14} className="text-green-600" />
-                          <span>Lihat SK</span>
-                        </a>
-                      ) : (
-                        <span className="inline-flex items-center space-x-1 px-3 py-1 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-xl text-xs font-bold shadow-sm">
-                          <AlertCircle size={14} className="text-yellow-600" />
-                          <span>Wajib Upload SK</span>
-                        </span>
-                      )}
+                      {(() => {
+                        if (p.requires_documents === false) {
+                          return <span className="text-gray-400 font-medium text-xs">—</span>
+                        }
+                        const skJob = getJobByRecordId(p.id, 'sk_url');
+                        if (skJob && (skJob.status === 'pending' || skJob.status === 'uploading')) {
+                          return (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold animate-pulse shadow-sm">
+                              <UploadCloud size={13} className="animate-bounce" />
+                              <span>{skJob.progress > 0 ? `${skJob.progress}%` : "Mengunggah SK..."}</span>
+                            </span>
+                          )
+                        }
+                        const effectiveSk = skJob?.resultUrl || p.sk_url;
+                        if (effectiveSk) {
+                          return (
+                            <a href={effectiveSk} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-bold hover:underline shadow-sm">
+                              <FileCheck size={14} className="text-green-600" />
+                              <span>Lihat SK</span>
+                            </a>
+                          )
+                        }
+                        return (
+                          <span className="inline-flex items-center space-x-1 px-3 py-1 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-xl text-xs font-bold shadow-sm">
+                            <AlertCircle size={14} className="text-yellow-600" />
+                            <span>Wajib Upload SK</span>
+                          </span>
+                        )
+                      })()}
                     </td>
 
                     {/* Laporan Setelah Kegiatan */}
                     <td className="py-4 px-4">
-                      {p.requires_documents === false ? (
-                        <span className="text-gray-400 font-medium text-xs">—</span>
-                      ) : p.laporan_url ? (
-                        <a href={p.laporan_url} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-bold hover:underline shadow-sm">
-                          <FileText size={14} className="text-green-600" />
-                          <span>Lihat Laporan</span>
-                        </a>
-                      ) : p.status === 'Selesai' ? (
-                        <span className="inline-flex items-center space-x-1 px-3 py-1 bg-red-50 text-[#E31837] border border-red-200 rounded-xl text-xs font-bold shadow-sm animate-pulse">
-                          <AlertCircle size={14} className="text-[#E31837]" />
-                          <span>Wajib Upload Laporan!</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center space-x-1 px-3 py-1 bg-gray-50 text-gray-500 border border-gray-200 rounded-xl text-xs font-medium shadow-sm">
-                          <Clock size={14} className="text-gray-400" />
-                          <span>Menunggu Selesai</span>
-                        </span>
-                      )}
+                      {(() => {
+                        if (p.requires_documents === false) {
+                          return <span className="text-gray-400 font-medium text-xs">—</span>
+                        }
+                        const lapJob = getJobByRecordId(p.id, 'laporan_url');
+                        if (lapJob && (lapJob.status === 'pending' || lapJob.status === 'uploading')) {
+                          return (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold animate-pulse shadow-sm">
+                              <UploadCloud size={13} className="animate-bounce" />
+                              <span>{lapJob.progress > 0 ? `${lapJob.progress}%` : "Mengunggah Laporan..."}</span>
+                            </span>
+                          )
+                        }
+                        const effectiveLap = lapJob?.resultUrl || p.laporan_url;
+                        if (effectiveLap) {
+                          return (
+                            <a href={effectiveLap} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-xl text-xs font-bold hover:underline shadow-sm">
+                              <FileText size={14} className="text-green-600" />
+                              <span>Lihat Laporan</span>
+                            </a>
+                          )
+                        }
+                        if (p.status === 'Selesai') {
+                          return (
+                            <span className="inline-flex items-center space-x-1 px-3 py-1 bg-red-50 text-[#E31837] border border-red-200 rounded-xl text-xs font-bold shadow-sm animate-pulse">
+                              <AlertCircle size={14} className="text-[#E31837]" />
+                              <span>Wajib Upload Laporan!</span>
+                            </span>
+                          )
+                        }
+                        return (
+                          <span className="inline-flex items-center space-x-1 px-3 py-1 bg-gray-50 text-gray-500 border border-gray-200 rounded-xl text-xs font-medium shadow-sm">
+                            <Clock size={14} className="text-gray-400" />
+                            <span>Menunggu Selesai</span>
+                          </span>
+                        )
+                      })()}
                     </td>
 
                     <td className="py-4 px-4">

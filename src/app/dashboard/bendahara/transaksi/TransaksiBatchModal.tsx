@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Plus, Trash2, Save, X, Sparkles, Mic, Square, Wallet } from "lucide-react";
-import { uploadFileToDrive } from "@/utils/driveClientUpload";
+import { useUploadQueue } from "@/context/UploadQueueContext";
 import { tambahTransaksiMassal, parseBatchTransaksiNemotron } from "./actions";
 
 interface TransaksiBatchModalProps {
@@ -14,6 +14,7 @@ interface TransaksiBatchModalProps {
 }
 
 export function TransaksiBatchModal({ isOpen, onClose, programs, onSuccess, currentSaldo = 0 }: TransaksiBatchModalProps) {
+  const { enqueueUpload } = useUploadQueue();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [programId, setProgramId] = useState("");
@@ -146,52 +147,52 @@ export function TransaksiBatchModal({ isOpen, onClose, programs, onSuccess, curr
     setErrorMsg("");
 
     try {
-      const folderName = `Bukti Kas Batch`;
-      
-      // Let's create a single folder for this batch or just use "Bendahara"
-      const res = await fetch('/api/drive/create-folder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folderName, parentFolderName: 'Bendahara' })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      const folderId = data.folderId;
+      const finalData = rows.map((row) => ({
+        transaction_date: transactionDate,
+        type: row.type,
+        category: row.category,
+        amount: row.amount,
+        description: row.description,
+        responsible_person: row.responsible_person,
+        proof_url: row.proof_url || "",
+        folder_id: null,
+        program_id: programId || null,
+      }));
 
-      const finalData = [];
+      const res = await tambahTransaksiMassal(finalData);
+      const insertedRows = res?.data || [];
 
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        let proofUrls: string[] = row.proof_url ? row.proof_url.split(',').filter(Boolean) : [];
-        
-        const files = rowFiles[i] || [];
-        if (files.length > 0) {
-          for (const file of files) {
-            const { url: fileUrl } = await uploadFileToDrive(file, folderId);
-            if (fileUrl) proofUrls.push(fileUrl);
-          }
-        }
+      // Simpan salinan file dan data baris sebelum modal di-reset
+      const savedRowFiles = { ...rowFiles };
+      const savedRows = [...rows];
 
-        finalData.push({
-          transaction_date: transactionDate,
-          type: row.type,
-          category: row.category,
-          amount: row.amount,
-          description: row.description,
-          responsible_person: row.responsible_person,
-          proof_url: proofUrls.join(','),
-          folder_id: folderId,
-          program_id: programId || null
-        });
-      }
-
-      await tambahTransaksiMassal(finalData);
-      
+      // Tutup modal langsung seketika (< 1 detik)!
       setRows([{ ...emptyRow }]);
       setRowFiles({});
       setProgramId("");
       onSuccess();
       onClose();
+
+      // Enqueue upload latar belakang untuk baris yang memiliki file bukti
+      for (let i = 0; i < savedRows.length; i++) {
+        const recordId = insertedRows[i]?.id;
+        const files = savedRowFiles[i] || [];
+        if (recordId && files.length > 0) {
+          const rowDesc = savedRows[i].description || savedRows[i].category || "Transaksi Proker";
+          for (const file of files) {
+            enqueueUpload({
+              file,
+              title: `Bukti: ${rowDesc}`,
+              recordId,
+              tableName: "finance_transactions",
+              fieldName: "proof_url",
+              append: true,
+              folderName: "Bukti Kas Batch",
+              parentFolderName: "Bendahara",
+            });
+          }
+        }
+      }
     } catch (error: any) {
       setErrorMsg(error.message || "Terjadi kesalahan saat menyimpan data massal.");
     } finally {

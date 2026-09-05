@@ -20,7 +20,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
             </div>
             <div className="bg-white p-3 rounded-full shadow-md w-20 h-20 flex items-center justify-center relative overflow-hidden">
               <Image 
-                src="/logo-untag-fix.svg" 
+                src="/logo_untag.svg" 
                 alt="Logo Universitas" 
                 fill
                 className="object-contain p-2"

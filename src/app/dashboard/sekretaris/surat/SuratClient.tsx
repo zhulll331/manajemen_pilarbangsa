@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
-import { uploadFileToDrive } from "@/utils/driveClientUpload";
-import { Plus, FileText, Mail, MailOpen, Loader2, Sparkles, ArrowUpDown } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUploadQueue } from "@/context/UploadQueueContext";
+import { Plus, FileText, Mail, MailOpen, Loader2, Sparkles, ArrowUpDown, UploadCloud } from "lucide-react";
 import { DataModal } from "@/components/DataModal";
 import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
@@ -25,6 +26,9 @@ const letterStatuses = ["Diterima", "Diproses", "Terkirim", "Selesai", "Diarsipk
 const documentTypes = ["Surat Masuk", "Surat Keluar", "Proposal", "LPJ", "SK", "Dokumentasi", "Lainnya"];
 
 export default function SuratClient({ letters }: { letters: Letter[] }) {
+  const router = useRouter();
+  const { enqueueUpload, getJobByRecordId } = useUploadQueue();
+
   const [showModal, setShowModal] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [editData, setEditData] = useState<Letter | null>(null);
@@ -34,6 +38,17 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
   const [filter, setFilter] = useState<string>("Semua");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Revalidasi server data ketika upload latar belakang selesai
+  useEffect(() => {
+    const handleFinished = (e: any) => {
+      if (e.detail?.tableName === "letters") {
+        router.refresh();
+      }
+    };
+    window.addEventListener("upload-queue-finished", handleFinished);
+    return () => window.removeEventListener("upload-queue-finished", handleFinished);
+  }, [router]);
 
   // Range Number States
   const [isRangeMode, setIsRangeMode] = useState(false);
@@ -282,11 +297,42 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
     {
       key: "file_url",
       label: "File Surat",
-      render: (l) => l.file_url ? (
-        <a href={getViewerUrl(l.file_url)} target="_blank" rel="noreferrer" className="text-[var(--color-primary)] hover:underline text-xs flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <FileText size={14} /> Buka
-        </a>
-      ) : <span className="text-gray-400 text-xs">-</span>
+      render: (l) => {
+        const job = getJobByRecordId(l.id, "file_url");
+        if (job && (job.status === "pending" || job.status === "uploading")) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800 animate-pulse">
+              <UploadCloud size={12} className="animate-bounce" />
+              <span>{job.progress > 0 ? `${job.progress}%` : "Mengunggah..."}</span>
+            </span>
+          );
+        }
+
+        const effectiveUrl = job?.resultUrl || l.file_url;
+        if (effectiveUrl) {
+          return (
+            <a
+              href={getViewerUrl(effectiveUrl)}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--color-primary)] hover:underline text-xs flex items-center gap-1 font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FileText size={14} /> Buka
+            </a>
+          );
+        }
+
+        if (job && job.status === "error") {
+          return (
+            <span className="text-red-500 text-xs flex items-center gap-1 font-medium" title={job.error}>
+              ⚠ Gagal
+            </span>
+          );
+        }
+
+        return <span className="text-gray-400 text-xs">-</span>;
+      },
     },
   ];
 
@@ -296,37 +342,40 @@ export default function SuratClient({ letters }: { letters: Letter[] }) {
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     try {
-      const letterType = formData.get("letter_type") as string || "Masuk";
-      const folderName = `Surat ${letterType}`;
-      
-      let folderId = "";
-      if (selectedFile) {
-        // Buat atau dapatkan folder di Google Drive dalam folder Sekretaris
-        const res = await fetch('/api/drive/create-folder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ folderName, parentFolderName: 'Sekretaris' })
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        if (data.folderId) folderId = data.folderId;
+      const letterType = (formData.get("letter_type") as string) || "Masuk";
+      const subject = (formData.get("subject") as string) || "Surat";
+      const fileToUpload = selectedFile;
 
-        // Upload langsung dari browser ke Google Drive (melewati Vercel)
-        const { url: fileUrl } = await uploadFileToDrive(selectedFile, folderId || undefined);
-        if (fileUrl) {
-          formData.set('file_url', fileUrl);
-        }
-      }
+      let targetRecordId = editData?.id;
 
       if (editData) {
         formData.append("id", editData.id);
+        formData.set("file_url", editData.file_url || "");
         await editSurat(formData);
       } else {
-        await tambahSurat(formData);
+        // Simpan data teks ke database seketika tanpa menunggu Google Drive
+        formData.delete("file_url");
+        const res = await tambahSurat(formData);
+        targetRecordId = res?.id;
       }
+
+      // Tutup modal langsung seketika!
       setShowModal(false);
       setEditData(null);
       setSelectedFile(null);
+
+      // Jika ada file yang dipilih, jalankan upload di latar belakang
+      if (fileToUpload && targetRecordId) {
+        enqueueUpload({
+          file: fileToUpload,
+          title: subject,
+          recordId: targetRecordId,
+          tableName: "letters",
+          fieldName: "file_url",
+          folderName: `Surat ${letterType}`,
+          parentFolderName: "Sekretaris",
+        });
+      }
     } catch (e) {
       alert("Gagal menyimpan: " + (e as Error).message);
     } finally {
