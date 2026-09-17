@@ -1,9 +1,8 @@
-export const dynamic = "force-dynamic";
-
 import { Metadata } from "next";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 import { ArsipPublikClient } from "./ArsipPublikClient";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Arsip UKM | Pilar Bangsa",
@@ -11,20 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ArsipPublikPage() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Ambil semua arsip sekali, filter dilakukan di client (instant, tanpa loading)
+  // Ambil semua arsip, di-cache secara ISR (instant navigation)
   const { data } = await supabase
     .from("archives")
     .select("id, title, period, category, drive_url, programs(title)")

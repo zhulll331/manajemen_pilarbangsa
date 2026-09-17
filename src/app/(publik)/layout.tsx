@@ -1,98 +1,22 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { LogIn, Share2, Mail, Globe } from 'lucide-react'
+import { Share2, Mail, Globe } from 'lucide-react'
 import { ShareButton } from '@/components/ShareButton'
+import { PublikNavbar } from '@/components/PublikNavbar'
+import PublikLoading from './loading'
 
 export default function PublikLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900 selection:bg-gray-900 selection:text-white">
-      {/* Top Accent Line (Merah, Hijau, Kuning) */}
-      <div className="h-1.5 w-full grid grid-cols-3">
-        <div className="bg-[#E31837]"></div>
-        <div className="bg-[#008000]"></div>
-        <div className="bg-[#FFD700]"></div>
-      </div>
-
-      {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Logo & Brand */}
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <Image 
-                  src="/logo_pilar.svg" 
-                  alt="Logo Pilar Bangsa" 
-                  width={48} 
-                  height={48} 
-                  className="object-contain w-full h-full drop-shadow-sm"
-                />
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <Image 
-                  src="/logo_untag.svg" 
-                  alt="Logo Universitas" 
-                  width={48} 
-                  height={48} 
-                  className="object-contain w-full h-full drop-shadow-sm scale-[1.25]"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base sm:text-xl font-extrabold tracking-tight text-gray-900 group-hover:text-[#E31837] transition-colors duration-300">
-                Pilar Bangsa
-              </span>
-              <span className="hidden sm:block text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-widest">
-                Digital Office
-              </span>
-            </div>
-          </Link>
-
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/" 
-              className="font-bold text-sm tracking-wide text-gray-800 hover:text-[#E31837] transition-colors py-2"
-            >
-              Beranda
-            </Link>
-            <Link 
-              href="/tentang-kami" 
-              className="font-bold text-sm tracking-wide text-gray-800 hover:text-[#008000] transition-colors py-2"
-            >
-              Tentang Kami
-            </Link>
-            <Link 
-              href="/program-kerja" 
-              className="font-bold text-sm tracking-wide text-gray-800 hover:text-[#FFD700] transition-colors py-2"
-            >
-              Program Kerja
-            </Link>
-            <Link 
-              href="/arsip" 
-              className="font-bold text-sm tracking-wide text-gray-800 hover:text-[#0000FF] transition-colors py-2"
-            >
-              Arsip UKM
-            </Link>
-          </nav>
-
-          {/* Login Button */}
-          <div className="flex items-center">
-            <Link 
-              href="/login" 
-              className="flex items-center space-x-1.5 sm:space-x-2 bg-black hover:bg-gray-800 text-white font-bold px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
-            >
-              <LogIn className="w-4 h-4" />
-              <span className="hidden sm:inline">Login Pengurus</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Header & Navbar Interaktif */}
+      <PublikNavbar />
 
       {/* Main Content */}
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
-        {children}
+        <Suspense fallback={<PublikLoading />}>
+          {children}
+        </Suspense>
       </main>
 
       {/* Footer */}

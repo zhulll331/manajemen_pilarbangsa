@@ -36,6 +36,7 @@ async function getNews(): Promise<NewsItem[]> {
   const fetchMedia = async (): Promise<NewsItem[]> => {
     try {
       const res = await fetch(mediaApiUrl, {
+        signal: AbortSignal.timeout(2000), // Batas maksimal 2 detik agar tidak pernah memblokir navigasi
         next: { revalidate: 60 }, // Otomatis cek data baru setiap 60 detik
       })
       if (res.ok) {

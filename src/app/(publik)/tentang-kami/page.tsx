@@ -22,7 +22,7 @@ async function getStrukturPimpinan() {
   return null
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60;
 
 export default async function TentangPage() {
   const strukturData = await getStrukturPimpinan();
