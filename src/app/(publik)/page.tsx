@@ -26,45 +26,84 @@ interface NewsItem {
   category?: string
 }
 
-// Fetch berita otomatis dari Portal Media (khusus kategori Berita UKM) dengan fallback
+// Fetch berita gabungan dari Portal Media (Berita UKM) dan input Humas internal (news_links)
 async function getNews(): Promise<NewsItem[]> {
   const mediaApiUrl =
     process.env.NEXT_PUBLIC_MEDIA_API_URL ||
     'https://www.mediapilarbangsa.web.id/api/berita-ukm?limit=6'
 
-  try {
-    const res = await fetch(mediaApiUrl, {
-      next: { revalidate: 60 }, // Otomatis cek dan perbarui data baru setiap 60 detik
-    })
-    if (res.ok) {
-      const mediaNews = await res.json()
-      if (Array.isArray(mediaNews) && mediaNews.length > 0) {
-        return mediaNews
+  // 1. Fetch dari Portal Media
+  const fetchMedia = async (): Promise<NewsItem[]> => {
+    try {
+      const res = await fetch(mediaApiUrl, {
+        next: { revalidate: 60 }, // Otomatis cek data baru setiap 60 detik
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          return data
+        }
       }
+    } catch (err) {
+      console.warn('Gagal fetch berita dari portal media:', err)
     }
-  } catch (err) {
-    console.warn('Gagal fetch berita dari portal media, menggunakan fallback:', err)
+    return []
   }
 
-  // Fallback ke Supabase news_links lokal jika API sedang tidak terjangkau
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      const { data } = await supabase
-        .from('news_links')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(6)
-      return (data as NewsItem[]) || []
+  // 2. Fetch dari Supabase news_links (input internal Humas)
+  const fetchHumas = async (): Promise<NewsItem[]> => {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey)
+        const { data, error } = await supabase
+          .from('news_links')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(6)
+        if (!error && data) {
+          return data.map((item: any) => ({
+            ...item,
+            category: item.category || 'Warta UKM',
+          }))
+        }
+      }
+    } catch (err) {
+      console.error('Gagal fetch berita dari Supabase Humas:', err)
     }
-  } catch (err) {
-    console.error('Fallback fetch error:', err)
+    return []
   }
 
-  return []
+  // Jalankan fetch keduanya secara paralel
+  const [mediaNews, humasNews] = await Promise.all([
+    fetchMedia(),
+    fetchHumas(),
+  ])
+
+  // Gabungkan dan hilangkan duplikasi URL
+  const combined = [...mediaNews, ...humasNews]
+  const seenUrls = new Set<string>()
+  const uniqueNews: NewsItem[] = []
+
+  for (const item of combined) {
+    const key = (item.url || item.id || '').trim().toLowerCase()
+    if (key && !seenUrls.has(key)) {
+      seenUrls.add(key)
+      uniqueNews.push(item)
+    }
+  }
+
+  // Urutkan berdasarkan tanggal terbaru (published_at atau created_at)
+  uniqueNews.sort((a, b) => {
+    const dateA = new Date(a.published_at || a.created_at || 0).getTime()
+    const dateB = new Date(b.published_at || b.created_at || 0).getTime()
+    return dateB - dateA
+  })
+
+  return uniqueNews.slice(0, 9)
 }
+
 
 
 export default async function BerandaPage() {
