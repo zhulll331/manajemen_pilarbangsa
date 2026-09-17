@@ -14,20 +14,58 @@ export const metadata = {
   keywords: ['UKM Pilar Bangsa', 'Untag Banyuwangi', 'Pilar Bangsa Digital Office', 'Universitas 17 Agustus 1945 Banyuwangi', 'Organisasi Mahasiswa', 'Sistem Manajemen Pilar Bangsa'],
 }
 
-// Fetch news from Supabase
-async function getNews() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  const { data } = await supabase
-    .from('news_links')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(6)
-
-  return data || []
+interface NewsItem {
+  id: string
+  title: string
+  url: string
+  image_url: string
+  excerpt?: string
+  published_at?: string
+  created_at?: string
+  author?: string
+  category?: string
 }
+
+// Fetch berita otomatis dari Portal Media (khusus kategori Berita UKM) dengan fallback
+async function getNews(): Promise<NewsItem[]> {
+  const mediaApiUrl =
+    process.env.NEXT_PUBLIC_MEDIA_API_URL ||
+    'https://www.mediapilarbangsa.web.id/api/berita-ukm?limit=6'
+
+  try {
+    const res = await fetch(mediaApiUrl, {
+      next: { revalidate: 60 }, // Otomatis cek dan perbarui data baru setiap 60 detik
+    })
+    if (res.ok) {
+      const mediaNews = await res.json()
+      if (Array.isArray(mediaNews) && mediaNews.length > 0) {
+        return mediaNews
+      }
+    }
+  } catch (err) {
+    console.warn('Gagal fetch berita dari portal media, menggunakan fallback:', err)
+  }
+
+  // Fallback ke Supabase news_links lokal jika API sedang tidak terjangkau
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey)
+      const { data } = await supabase
+        .from('news_links')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6)
+      return (data as NewsItem[]) || []
+    }
+  } catch (err) {
+    console.error('Fallback fetch error:', err)
+  }
+
+  return []
+}
+
 
 export default async function BerandaPage() {
   const newsList = await getNews();
@@ -74,13 +112,28 @@ export default async function BerandaPage() {
                 >
                   <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-gray-100">
                     <img 
-                      src={news.image_url} 
+                      src={news.image_url || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop'} 
                       alt={news.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    {news.category && (
+                      <span className="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                        {news.category}
+                      </span>
+                    )}
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
+                    {news.published_at && (
+                      <span className="text-xs text-gray-400 font-medium mb-2">
+                        {new Date(news.published_at).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                        {news.author ? ` • ${news.author}` : ''}
+                      </span>
+                    )}
                     <h3 className="font-bold text-gray-900 text-lg leading-snug group-hover:text-[#E31837] transition-colors line-clamp-3 mb-4">
                       {news.title}
                     </h3>
