@@ -8,17 +8,25 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   
+  // Ambil sesi langsung dari cookie tanpa network call berlebih
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  // Jalankan verifikasi user dan pengambilan profile secara paralel
+  const [userResult, profileResult] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+  ]);
+
+  const user = userResult.data.user;
   if (!user) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+  const profile = profileResult.data;
 
   let userRole = profile?.role;
   const email = user.email?.toLowerCase() || '';
