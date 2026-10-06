@@ -289,14 +289,6 @@ export default function ProgramKerjaPage() {
             Setiap akhir kegiatan, 4 Wakil Ketua Bidang diwajibkan memperbarui status program kerja dan mengunggah dokumentasi ke dalam folder Google Drive resmi organisasi untuk menjamin transparansi akuntabilitas publik.
           </p>
         </div>
-        <div className="flex-shrink-0">
-          <a
-            href="/login"
-            className="px-8 py-4 bg-white text-black font-extrabold rounded-2xl shadow-xl hover:bg-gray-100 transition-all duration-300 inline-block hover:-translate-y-1"
-          >
-            Akses Panel Admin Divisi
-          </a>
-        </div>
       </section>
     </div>
   )

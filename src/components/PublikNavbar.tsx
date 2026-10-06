@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogIn, Menu, X, Home, Users, Briefcase, Archive, ArrowRight } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, X, Home, Users, Briefcase, Archive, ArrowRight } from "lucide-react";
 
 export function PublikNavbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -132,18 +131,8 @@ export function PublikNavbar() {
             })}
           </nav>
 
-          {/* Desktop Action & Mobile Toggle */}
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/login" 
-              prefetch={true}
-              onClick={() => handleLinkClick("/login")}
-              className="flex items-center space-x-1.5 sm:space-x-2 bg-black hover:bg-gray-800 text-white font-bold px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <LogIn className="w-4 h-4" />
-              <span className="hidden sm:inline">Login Pengurus</span>
-            </Link>
-
+          {/* Mobile Toggle */}
+          <div className="md:hidden">
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

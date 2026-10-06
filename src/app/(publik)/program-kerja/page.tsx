@@ -289,14 +289,6 @@ export default function ProgramKerjaPage() {
             Sesuai dengan pedoman keterbukaan informasi, Biro Humas & Kerjasama secara rutin memperbarui status pelaksanaan program kerja dari seluruh divisi dan mengunggah dokumentasi pelaksanaannya ke dalam portal ini.
           </p>
         </div>
-        <div className="flex-shrink-0">
-          <a
-            href="/login"
-            className="px-8 py-4 bg-white text-black font-extrabold rounded-2xl shadow-xl hover:bg-gray-100 transition-all duration-300 inline-block hover:-translate-y-1"
-          >
-            Akses Dashboard Humas
-          </a>
-        </div>
       </section>
     </div>
   )

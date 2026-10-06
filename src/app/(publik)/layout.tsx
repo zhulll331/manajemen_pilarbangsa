@@ -103,11 +103,6 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                     <span>Program Kerja</span>
                   </Link>
                 </li>
-                <li>
-                  <Link href="/login" className="hover:text-white transition-colors flex items-center space-x-2">
-                    <span>Login Internal</span>
-                  </Link>
-                </li>
               </ul>
             </div>
 

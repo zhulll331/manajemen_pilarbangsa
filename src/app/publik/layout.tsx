@@ -1,7 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { LogIn, Share2, Mail, Globe } from 'lucide-react'
+import { Share2, Mail, Globe } from 'lucide-react'
 import { ShareButton } from '@/components/ShareButton'
 
 export default function PublikLayout({ children }: { children: React.ReactNode }) {
@@ -71,16 +71,6 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
             </Link>
           </nav>
 
-          {/* Login Button */}
-          <div className="flex items-center">
-            <Link 
-              href="/login" 
-              className="flex items-center space-x-2 bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Login Pengurus</span>
-            </Link>
-          </div>
         </div>
       </header>
 
@@ -171,11 +161,6 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                 <li>
                   <Link href="/program-kerja" className="hover:text-white transition-colors flex items-center space-x-2">
                     <span>Program Kerja</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/login" className="hover:text-white transition-colors flex items-center space-x-2">
-                    <span>Login Internal</span>
                   </Link>
                 </li>
               </ul>
