@@ -156,7 +156,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
 
                 <div>
                   <p className="font-semibold text-white mb-1">Email Resmi:</p>
-                  <a href="mailto:ukmpilarbangsa@gmail.com" className="hover:text-blue-400 transition-colors">
+                  <a href="mailto:ukmpilarbangsa@gmail.com" className="break-all hover:text-blue-400 transition-colors">
                     ukmpilarbangsa@gmail.com
                   </a>
                 </div>

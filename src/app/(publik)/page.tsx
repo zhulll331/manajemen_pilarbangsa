@@ -2,6 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { HeroSlider } from '@/components/HeroSlider'
+import { PilarPhotoMarquee } from '@/components/PilarPhotoMarquee'
 import { TimelineRoadmap } from '@/components/TimelineRoadmap'
 import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper'
 import { ScrollReveal } from '@/components/ScrollReveal'
@@ -116,6 +117,8 @@ export default async function BerandaPage() {
       <section>
         <HeroSlider />
       </section>
+
+      <PilarPhotoMarquee />
 
       {/* Timeline Roadmap Section */}
       <ScrollReveal direction="up">
