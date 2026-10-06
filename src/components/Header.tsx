@@ -1,51 +1,46 @@
 "use client";
 
-import { Bell, Search, User, Menu } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Menu, Search, X } from "lucide-react";
+import { getDashboardMenu, getRoleLabel, isDashboardMenuActive } from "./dashboard-navigation";
 
-export function Header({ role = "ketua", name = "Pengguna", onMenuClick }: { role?: string, name?: string, onMenuClick?: () => void }) {
-  // Capitalize first letter of role
-  const roleName = role.charAt(0).toUpperCase() + role.slice(1);
+export function Header({ role = "ketua", name = "Pengguna", onMenuClick, isMenuOpen = false }: {
+  role?: string; name?: string; onMenuClick?: () => void; isMenuOpen?: boolean;
+}) {
+  const pathname = usePathname();
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLDivElement>(null);
+  const menus = getDashboardMenu(role);
+  const current = pathname === "/dashboard/profil" ? "Profil saya" : menus.find(menu => isDashboardMenuActive(pathname, menu.href))?.label || "Dashboard";
+  const results = menus.filter(menu => menu.label.toLocaleLowerCase("id").includes(query.trim().toLocaleLowerCase("id")));
+  const initials = name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
 
-  return (
-    <header className="h-16 md:h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 shrink-0">
-      <div className="flex items-center gap-3">
-        <button 
-          className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" 
-          onClick={onMenuClick}
-        >
-          <Menu size={24} />
-        </button>
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-800">Dashboard {roleName}</h1>
-          <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Selamat datang kembali, {name}!</p>
-        </div>
+  useEffect(() => {
+    const close = (event: MouseEvent) => { if (!searchRef.current?.contains(event.target as Node)) setQuery(""); };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
+
+  return <header className="admin-header">
+    <div className="admin-header-title">
+      <button className="admin-menu-button" onClick={onMenuClick} aria-label="Buka navigasi" aria-expanded={isMenuOpen} aria-controls="admin-navigation"><Menu size={23} /></button>
+      <div><p className="admin-eyebrow">RUANG PENGURUS <span>/ {getRoleLabel(role)}</span></p><p className="admin-current-page">{current}</p></div>
+    </div>
+    <div className="admin-header-actions">
+      <div className="admin-search" ref={searchRef} role="search" aria-label="Cari menu pengurus" onKeyDown={event => { if (event.key === "Escape") setQuery(""); }}>
+        <Search size={17} aria-hidden="true" />
+        <input type="search" aria-label="Cari menu" placeholder="Cari menu…" value={query} onChange={event => setQuery(event.target.value)} />
+        {query && <button onClick={() => setQuery("")} aria-label="Hapus pencarian"><X size={15} /></button>}
+        {query.trim() && <nav className="admin-search-results" aria-label="Hasil pencarian menu">
+          {results.length ? results.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setQuery("")}><Icon size={17} />{label}<ArrowUpRight size={15} /></Link>) : <p>Tidak ada menu yang cocok.</p>}
+        </nav>}
       </div>
-
-      <div className="flex items-center gap-6">
-        <div className="relative hidden md:block">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Cari sesuatu..." 
-            className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent w-64"
-          />
-        </div>
-
-        <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-          <Bell className="w-6 h-6" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
-
-        <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-secondary)] flex items-center justify-center text-white">
-            <User className="w-5 h-5" />
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-sm font-semibold text-gray-700">{name}</p>
-            <p className="text-xs text-gray-500 text-right">{roleName}</p>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+      <Link href="/" className="admin-public-link">Website publik <ArrowUpRight size={15} /></Link>
+      <Link href="/dashboard/profil" className="admin-profile" aria-label={`Profil ${name}`}>
+        <span className="admin-avatar">{initials || "PB"}</span><span className="admin-profile-copy"><strong>{name}</strong><small>{getRoleLabel(role)}</small></span>
+      </Link>
+    </div>
+  </header>;
 }

@@ -1,6 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
 import DashboardKetuaClient from "./DashboardKetuaClient";
 import { aggregateFinancialData } from "@/utils/finance";
+import { Suspense } from "react";
+import { AttendanceOverview } from "@/components/AttendanceOverview";
+import { AttendanceCardsSkeleton } from "@/components/AttendanceCards";
 
 export default async function DashboardKetua() {
   const supabase = await createClient();
@@ -56,6 +59,7 @@ export default async function DashboardKetua() {
 
   return (
     <DashboardKetuaClient
+      attendanceOverview={<Suspense fallback={<AttendanceCardsSkeleton />}><AttendanceOverview /></Suspense>}
       totalAnggota={totalAnggota || 0}
       programBerjalan={programBerjalan || 0}
       agendaBulanIni={agendaBulanIni || 0}

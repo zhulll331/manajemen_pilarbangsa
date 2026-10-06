@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Save, CalendarCheck, Download, Sparkles, Loader2, Bot } from "lucide-react";
 import * as XLSX from "xlsx";
+import { AttendanceSelectionSummary } from "@/components/AttendanceSelectionSummary";
 import { simpanPresensiMassal, parsePresensiAI, isGeminiConfigured } from "./actions";
 
 interface Member {
@@ -294,6 +295,7 @@ export default function PresensiClient({
       </div>
 
       {/* AI Mass Attendance Panel */}
+      {selectedAgenda && <AttendanceSelectionSummary memberIds={filteredMembers.map(member => member.id)} statuses={attendanceMap} />}
       {selectedAgenda && hasGemini && (
         <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
           <button 

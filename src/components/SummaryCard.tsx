@@ -11,20 +11,20 @@ interface SummaryCardProps {
 
 export function SummaryCard({ title, value, icon, trend, trendUp, color = "primary" }: SummaryCardProps) {
   const bgColors = {
-    primary: "bg-blue-100 text-[var(--color-primary)]",
+    primary: "bg-rose-50 text-[var(--color-primary)]",
     green: "bg-green-100 text-[var(--color-accent-green)]",
     yellow: "bg-yellow-100 text-yellow-600",
     red: "bg-red-100 text-red-500",
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="admin-stat bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
+          <h3 className="admin-stat-value text-3xl font-bold text-gray-900">{value}</h3>
         </div>
-        <div className={`p-3 rounded-xl ${bgColors[color]}`}>
+        <div className={`admin-stat-icon p-3 rounded-xl ${bgColors[color]}`}>
           {icon}
         </div>
       </div>

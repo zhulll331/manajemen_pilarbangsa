@@ -55,9 +55,9 @@ export default function DashboardBendaharaClient({
   return (
     <div className="space-y-8">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <Link href="/dashboard/bendahara/laporan" className="block hover:scale-[1.02] transition-transform">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
+          <div className="admin-stat bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 rounded-xl text-[var(--color-primary)]"><Wallet size={24} /></div>

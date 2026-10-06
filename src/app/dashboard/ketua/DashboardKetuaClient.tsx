@@ -17,6 +17,7 @@ const CartesianGrid = dynamic(() => import("recharts").then(mod => mod.Cartesian
 const Tooltip = dynamic(() => import("recharts").then(mod => mod.Tooltip), { ssr: false });
 
 interface DashboardKetuaClientProps {
+  attendanceOverview?: React.ReactNode;
   totalAnggota: number;
   programBerjalan: number;
   agendaBulanIni: number;
@@ -27,6 +28,7 @@ interface DashboardKetuaClientProps {
 }
 
 export default function DashboardKetuaClient({
+  attendanceOverview,
   totalAnggota,
   programBerjalan,
   agendaBulanIni,
@@ -42,13 +44,8 @@ export default function DashboardKetuaClient({
 
   return (
     <div className="space-y-8">
-      {/* Storage Widget Row */}
-      <div className="grid grid-cols-1 gap-6">
-        <StorageWidget />
-      </div>
-
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="admin-summary-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <Link href="/dashboard/sekretaris/anggota" className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Total Anggota" value={totalAnggota.toString()} icon={<Users size={24} />} color="primary" />
         </Link>
@@ -59,10 +56,10 @@ export default function DashboardKetuaClient({
           <SummaryCard title="Agenda Bulan Ini" value={agendaBulanIni.toString()} icon={<Calendar size={24} />} color="yellow" />
         </div>
         <Link href="/dashboard/bendahara/laporan" className="block hover:scale-[1.02] transition-transform">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
+          <div className="admin-stat bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-50 rounded-xl text-green-600"><Wallet size={24} /></div>
+              <div className="admin-balance-label flex items-center gap-3">
+                <div className="admin-balance-icon p-2 bg-green-50 rounded-xl text-green-600"><Wallet size={24} /></div>
                 <p className="text-sm font-medium text-gray-500">Saldo Kas</p>
               </div>
               <button
@@ -73,7 +70,7 @@ export default function DashboardKetuaClient({
                 {saldoVisible ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <p className="text-2xl font-bold text-gray-800 tracking-tight transition-all duration-300">
+            <p className="admin-balance-value text-2xl font-bold text-gray-800 tracking-tight transition-all duration-300">
               {saldoVisible ? formatCurrency(saldoKas) : "Rp ••••••••"}
             </p>
           </div>
@@ -81,6 +78,7 @@ export default function DashboardKetuaClient({
       </div>
 
       {/* Charts Row */}
+      {attendanceOverview}
       <div className="grid grid-cols-1 gap-6">
         <ChartCard title="Progress Program Kerja per Divisi">
           <ResponsiveContainer width="100%" height={300}>
@@ -143,6 +141,7 @@ export default function DashboardKetuaClient({
           </Link>
         </div>
       </div>
+      <StorageWidget />
     </div>
   );
 }

@@ -33,6 +33,7 @@ interface ArchiveLetter {
 }
 
 interface DashboardSekretarisClientProps {
+  attendanceOverview?: React.ReactNode;
   totalAnggota: number;
   suratMasuk: number;
   suratKeluar: number;
@@ -44,6 +45,7 @@ interface DashboardSekretarisClientProps {
 }
 
 export default function DashboardSekretarisClient({
+  attendanceOverview,
   totalAnggota,
   suratMasuk,
   suratKeluar,
@@ -56,13 +58,14 @@ export default function DashboardSekretarisClient({
   return (
     <div className="space-y-8">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="admin-summary-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <SummaryCard title="Total Anggota" value={totalAnggota} icon={<Users size={24} />} color="primary" />
         <SummaryCard title="Surat Masuk" value={suratMasuk} icon={<Mail size={24} />} color="yellow" />
         <SummaryCard title="Surat Keluar" value={suratKeluar} icon={<MailOpen size={24} />} color="green" />
         <SummaryCard title="Notulensi Rapat" value={totalNotulensi} icon={<ClipboardList size={24} />} color="primary" />
       </div>
 
+      {attendanceOverview}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Tabel Anggota Terbaru */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">

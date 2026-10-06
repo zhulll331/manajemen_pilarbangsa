@@ -116,7 +116,7 @@ export function DataTable<T extends { id: string }>({
 
     {/* Pagination Controls */}
     {pagination && totalPages > 1 && (
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
+      <div className="admin-table-pagination flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
         <span className="text-sm text-gray-500">
           Menampilkan <span className="font-medium">{startIndex + 1}</span> hingga{" "}
           <span className="font-medium">{Math.min(startIndex + pageSize, data.length)}</span> dari{" "}
@@ -125,6 +125,7 @@ export function DataTable<T extends { id: string }>({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            aria-label="Halaman sebelumnya"
             disabled={currentPage === 1}
             className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
@@ -135,6 +136,7 @@ export function DataTable<T extends { id: string }>({
           </span>
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            aria-label="Halaman berikutnya"
             disabled={currentPage === totalPages}
             className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >

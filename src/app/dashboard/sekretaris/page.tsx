@@ -1,5 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import DashboardSekretarisClient from "./DashboardSekretarisClient";
+import { Suspense } from "react";
+import { AttendanceOverview } from "@/components/AttendanceOverview";
+import { AttendanceCardsSkeleton } from "@/components/AttendanceCards";
 
 export default async function DashboardSekretaris() {
   const supabase = await createClient();
@@ -73,6 +76,7 @@ export default async function DashboardSekretaris() {
 
   return (
     <DashboardSekretarisClient
+      attendanceOverview={<Suspense fallback={<AttendanceCardsSkeleton />}><AttendanceOverview canManage /></Suspense>}
       totalAnggota={totalAnggota || 0}
       suratMasuk={suratMasuk || 0}
       suratKeluar={suratKeluar || 0}
