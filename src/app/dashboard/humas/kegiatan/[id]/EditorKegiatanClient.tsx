@@ -35,8 +35,13 @@ import {
   RefreshCw, 
   Info,
   Check,
-  Sparkles
+  Sparkles,
+  Upload,
+  Image as ImageIcon,
+  Loader2,
+  X
 } from 'lucide-react';
+import { convertAndCompressToWebP } from '@/utils/compressImage';
 
 interface Props {
   initialEvent: PublicEvent | null;
@@ -83,6 +88,11 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
 
+  // Banner Upload State
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [bannerUploadStatus, setBannerUploadStatus] = useState<string | null>(null);
+  const [showManualUrlInput, setShowManualUrlInput] = useState(false);
+
   // Track changes for beforeunload
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -97,6 +107,77 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
 
   const markDirty = () => {
     if (!isDirty) setIsDirty(true);
+  };
+
+  // Handler Upload Foto Banner ke Supabase Storage (Auto-WebP)
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input value agar user bisa memilih kembali berkas yang sama jika diperlukan
+    e.target.value = '';
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Berkas yang dipilih harus berupa format gambar (PNG, JPG, JPEG, WEBP, dll).');
+      return;
+    }
+
+    setIsUploadingBanner(true);
+    setBannerUploadStatus('Mengompresi & mengonversi gambar ke WebP...');
+    setErrorMessage(null);
+
+    try {
+      // 1. Konversi ke WebP dan kompres efisien di client side
+      const webpFile = await convertAndCompressToWebP(file, 1920, 0.82, 450 * 1024);
+      
+      const originalSizeKB = Math.round(file.size / 1024);
+      const webpSizeKB = Math.round(webpFile.size / 1024);
+      
+      setBannerUploadStatus(`Menyimpan ke Supabase Storage (${webpSizeKB} KB)...`);
+
+      // 2. Buat nama berkas unik
+      const eventSlugPrefix = slug ? slug.substring(0, 30) : 'kegiatan';
+      const cleanPrefix = eventSlugPrefix.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'banner';
+      const fileName = `banner-${cleanPrefix}-${Date.now()}.webp`;
+
+      // 3. Upload ke bucket 'event-banners'
+      const { error: uploadError } = await supabase.storage
+        .from('event-banners')
+        .upload(fileName, webpFile, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'image/webp',
+        });
+
+      if (uploadError) {
+        throw new Error('Gagal mengunggah banner ke Supabase Storage: ' + uploadError.message);
+      }
+
+      // 4. Dapatkan public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('event-banners')
+        .getPublicUrl(fileName);
+
+      if (!publicUrlData?.publicUrl) {
+        throw new Error('Gagal mendapatkan tautan publik untuk banner yang diunggah.');
+      }
+
+      setBannerUrl(publicUrlData.publicUrl);
+      markDirty();
+      setSuccessMessage(
+        `Banner berhasil diunggah! Berkas dioptimasi dari ${originalSizeKB} KB menjadi ${webpSizeKB} KB (.WebP).`
+      );
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Terjadi kesalahan saat memproses gambar banner.');
+    } finally {
+      setIsUploadingBanner(false);
+      setBannerUploadStatus(null);
+    }
+  };
+
+  const handleRemoveBanner = () => {
+    setBannerUrl('');
+    markDirty();
   };
 
   // Helper Auto Generate Slug
@@ -581,33 +662,130 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
               />
             </div>
 
-            {/* Banner URL & Preview */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                URL Gambar Banner (HTTPS)
-              </label>
-              <input
-                type="url"
-                value={bannerUrl}
-                onChange={(e) => {
-                  setBannerUrl(e.target.value);
-                  markDirty();
-                }}
-                placeholder="https://images.unsplash.com/... atau URL banner resmi"
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm font-mono"
-              />
-              {bannerUrl && bannerUrl.startsWith('https://') && (
-                <div className="mt-2 rounded-2xl overflow-hidden border border-gray-200 max-h-56 bg-gray-50 relative">
-                  <img
-                    src={bannerUrl}
-                    alt="Preview Banner"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
+            {/* Banner URL & Upload Preview */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon size={14} className="text-gray-400" />
+                  <span>Gambar Banner Kegiatan</span>
+                  <span className="text-[10px] bg-red-100 text-[#E31837] px-2 py-0.5 rounded-full font-bold">
+                    Auto-WebP
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowManualUrlInput(!showManualUrlInput)}
+                  className="text-xs text-gray-500 hover:text-[#E31837] transition-colors underline cursor-pointer"
+                >
+                  {showManualUrlInput ? 'Sembunyikan URL Manual' : 'Input URL Manual (Opsional)'}
+                </button>
+              </div>
+
+              {/* Upload Dropzone / Action */}
+              <div className="grid grid-cols-1 gap-3">
+                <label
+                  className={`relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
+                    isUploadingBanner
+                      ? 'bg-gray-50 border-gray-300 pointer-events-none'
+                      : 'border-gray-200 hover:border-[#E31837] hover:bg-red-50/20 bg-white'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerUpload}
+                    disabled={isUploadingBanner}
+                    className="sr-only"
                   />
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-[11px] px-2.5 py-1 rounded-lg backdrop-blur-xs">
-                    Preview Banner
+
+                  {isUploadingBanner ? (
+                    <div className="flex flex-col items-center gap-2 text-center py-2">
+                      <Loader2 size={32} className="animate-spin text-[#E31837]" />
+                      <p className="text-sm font-bold text-gray-800">{bannerUploadStatus || 'Memproses berkas...'}</p>
+                      <p className="text-xs text-gray-400">Sedang mengompresi ke WebP dan menyimpan ke Supabase Storage</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-red-50 text-[#E31837] flex items-center justify-center shadow-xs">
+                        <Upload size={22} />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-gray-800 hover:text-[#E31837] transition-colors">
+                          {bannerUrl ? 'Klik untuk mengganti foto banner' : 'Pilih atau Tarik Foto Banner ke Sini'}
+                        </span>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Format foto apapun otomatis dikonversi ke <strong className="text-gray-700">WebP</strong> & dikompres seefisien mungkin ke bucket <code className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-[11px] text-[#E31837]">event-banners</code>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </label>
+
+                {/* Input URL Manual jika dibutuhkan */}
+                {showManualUrlInput && (
+                  <div className="space-y-1.5 pt-1">
+                    <label className="text-[11px] font-semibold text-gray-500">
+                      Tautan URL Gambar Banner Langsung (HTTPS):
+                    </label>
+                    <input
+                      type="url"
+                      value={bannerUrl}
+                      onChange={(e) => {
+                        setBannerUrl(e.target.value);
+                        markDirty();
+                      }}
+                      placeholder="https://images.unsplash.com/... atau URL banner resmi"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-xs font-mono"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Preview Banner */}
+              {bannerUrl && (
+                <div className="mt-2 rounded-2xl overflow-hidden border border-gray-200 bg-gray-900/5 relative group">
+                  <div className="aspect-21/9 max-h-64 w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <img
+                      src={bannerUrl}
+                      alt="Preview Banner"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Overlay Controls */}
+                  <div className="absolute top-3 left-3 bg-black/60 text-white text-[11px] px-3 py-1.5 rounded-xl backdrop-blur-md flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span>Banner Terpasang (WebP)</span>
+                  </div>
+
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <a
+                      href={bannerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-xl bg-black/60 hover:bg-black/80 text-white text-xs backdrop-blur-md transition-all flex items-center gap-1"
+                      title="Buka gambar penuh di tab baru"
+                    >
+                      <Eye size={14} />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handleRemoveBanner}
+                      className="p-2 rounded-xl bg-red-600/80 hover:bg-red-600 text-white text-xs backdrop-blur-md transition-all flex items-center gap-1 cursor-pointer"
+                      title="Hapus gambar banner"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  <div className="p-3 bg-white border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                    <span className="font-mono text-[11px] truncate max-w-md">{bannerUrl}</span>
+                    <span className="text-[10px] text-green-700 bg-green-50 font-bold px-2 py-0.5 rounded-full shrink-0">
+                      Aktif di Halaman Publik
+                    </span>
                   </div>
                 </div>
               )}
@@ -960,7 +1138,11 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
               <p className="text-[11px] text-gray-500">
                 {publishStatus === 'draft' && 'Kegiatan tersimpan aman dan tidak bisa dilihat pengunjung.'}
                 {publishStatus === 'published' && 'Halaman dapat diakses publik, masuk ke indeks dan sitemap.'}
-                {publishStatus === 'archived' && 'Halaman tetap bisa diakses melalui tautan langsung & tab arsip.'}
+                {publishStatus === 'archived' && (
+                  <span className="block mt-1 p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-medium leading-relaxed">
+                    ⚠️ <strong>Kebijakan Penghematan Penyimpanan:</strong> Kegiatan yang diarsipkan akan otomatis terhapus permanen beserta foto bannernya pada H+14 setelah kegiatan selesai (atau H+14 sejak diarsipkan jika waktu selesai kosong).
+                  </span>
+                )}
               </p>
             </div>
 

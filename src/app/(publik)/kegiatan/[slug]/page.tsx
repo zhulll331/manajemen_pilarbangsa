@@ -65,13 +65,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
               alt: event.title,
             },
           ]
-        : [],
+        : [
+            {
+              url: '/og-image.webp',
+              width: 1200,
+              height: 630,
+              alt: event.title,
+            },
+          ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: event.banner_url ? [event.banner_url] : [],
+      images: [event.banner_url || '/og-image.webp'],
     },
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -61,6 +61,21 @@ export default function KelolaKegiatanClient({ initialEvents }: Props) {
       setIsRefreshing(false);
     }
   };
+
+  // Jalankan pemeriksaan auto-purge H+14 saat membuka halaman
+  useEffect(() => {
+    const runAutoPurgeCheck = async () => {
+      try {
+        const { data: purgedCount } = await supabase.rpc('fn_purge_expired_archived_events');
+        if (typeof purgedCount === 'number' && purgedCount > 0) {
+          fetchEvents();
+        }
+      } catch {
+        // Abaikan jika RPC belum dibuat atau tidak ada izin
+      }
+    };
+    runAutoPurgeCheck();
+  }, []);
 
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
@@ -182,6 +197,20 @@ export default function KelolaKegiatanClient({ initialEvents }: Props) {
           </span>
         );
     }
+  };
+
+  const getArchiveCountdown = (ev: PublicEvent) => {
+    if (ev.publish_status !== 'archived') return null;
+    const baseDateStr = ev.ends_at || ev.updated_at;
+    const baseDate = new Date(baseDateStr).getTime();
+    const expiryDate = baseDate + 14 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const diffDays = Math.ceil((expiryDate - now) / (24 * 60 * 60 * 1000));
+    
+    if (diffDays <= 0) {
+      return 'Hapus: Hari ini';
+    }
+    return `H+14 (${diffDays} hari lagi)`;
   };
 
   const getRegistrationBadge = (status: RegistrationStatus) => {
@@ -390,7 +419,14 @@ export default function KelolaKegiatanClient({ initialEvents }: Props) {
 
                     {/* Status Publikasi */}
                     <td className="py-4 px-4 whitespace-nowrap">
-                      {getPublishBadge(ev.publish_status)}
+                      <div className="flex flex-col gap-1 items-start">
+                        {getPublishBadge(ev.publish_status)}
+                        {ev.publish_status === 'archived' && (
+                          <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 font-medium">
+                            {getArchiveCountdown(ev)}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Pendaftaran */}

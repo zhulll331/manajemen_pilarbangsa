@@ -24,6 +24,20 @@ export const metadata: Metadata = {
     siteName: 'UKM Pilar Bangsa Untag Banyuwangi',
     locale: 'id_ID',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.webp',
+        width: 1200,
+        height: 630,
+        alt: 'Pusat Kegiatan Pilar Bangsa',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pusat Kegiatan | UKM Pilar Bangsa Untag Banyuwangi',
+    description: 'Pusat informasi resmi, berkas panduan, twibbon, dan pendaftaran kegiatan mahasiswa UKM Pilar Bangsa.',
+    images: ['/og-image.webp'],
   },
 };
 
