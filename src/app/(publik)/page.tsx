@@ -7,7 +7,8 @@ import { TimelineRoadmap } from '@/components/TimelineRoadmap'
 import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper'
 import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
-import { ArrowRight, Newspaper } from 'lucide-react'
+import { ArrowRight, Newspaper, Calendar, Sparkles, MapPin, CheckCircle2 } from 'lucide-react'
+import { PublicEvent } from '@/types/events'
 
 export const metadata = {
   title: 'Pilar Bangsa Digital Office | UKM Pilar Bangsa Untag Banyuwangi',
@@ -25,6 +26,29 @@ interface NewsItem {
   created_at?: string
   author?: string
   category?: string
+}
+
+// Fetch kegiatan sorotan beranda (hanya 1 kegiatan terbit bertanda is_featured = true)
+async function getFeaturedEvent(): Promise<PublicEvent | null> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!supabaseUrl || !supabaseKey) return null
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    const { data, error } = await supabase
+      .from('public_events')
+      .select('*')
+      .eq('is_featured', true)
+      .eq('publish_status', 'published')
+      .maybeSingle()
+
+    if (error || !data) return null
+    return data as PublicEvent
+  } catch (err) {
+    console.warn('Gagal fetch featured event untuk beranda:', err)
+    return null
+  }
 }
 
 // Fetch berita gabungan dari Portal Media (Berita UKM) dan input Humas internal (news_links)
@@ -109,7 +133,10 @@ async function getNews(): Promise<NewsItem[]> {
 
 
 export default async function BerandaPage() {
-  const newsList = await getNews();
+  const [newsList, featuredEvent] = await Promise.all([
+    getNews(),
+    getFeaturedEvent(),
+  ]);
 
   return (
     <div className="space-y-24 overflow-hidden">
@@ -117,6 +144,82 @@ export default async function BerandaPage() {
       <section>
         <HeroSlider />
       </section>
+
+      {/* Featured Event Section (Hanya tampil jika ada kegiatan sorotan yang terbit) */}
+      {featuredEvent && (
+        <ScrollReveal direction="up">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-black via-gray-950 to-neutral-900 border border-gray-800 shadow-2xl p-6 sm:p-10 md:p-12 text-white">
+              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#FFD700_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
+              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <div className="space-y-4 max-w-2xl">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/80 text-[#FFD700] text-xs font-bold uppercase tracking-wider border border-red-800/60 shadow-sm">
+                    <Sparkles size={14} className="text-[#FFD700]" />
+                    <span>Sorotan Kegiatan Utama</span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+                    {featuredEvent.title}
+                  </h2>
+
+                  {featuredEvent.summary && (
+                    <p className="text-gray-300 text-sm sm:text-base leading-relaxed line-clamp-3">
+                      {featuredEvent.summary}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-300 pt-2 font-medium">
+                    {featuredEvent.starts_at && (
+                      <div className="flex items-center gap-1.5">
+                        <Calendar size={15} className="text-[#FFD700]" />
+                        <span>
+                          {new Date(featuredEvent.starts_at).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {featuredEvent.location && (
+                      <div className="flex items-center gap-1.5">
+                        <MapPin size={15} className="text-[#E31837]" />
+                        <span>{featuredEvent.location}</span>
+                      </div>
+                    )}
+                    {featuredEvent.registration_status === 'open' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-900/60 text-emerald-300 text-xs font-semibold border border-emerald-700/50">
+                        <CheckCircle2 size={12} /> Pendaftaran Dibuka
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <Link
+                    href={`/kegiatan/${featuredEvent.slug}`}
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-[#E31837] hover:bg-red-700 text-white font-extrabold text-base shadow-lg hover:shadow-red-900/50 transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <span>
+                      {featuredEvent.registration_status === 'open'
+                        ? 'Lihat Info & Daftar'
+                        : 'Lihat Informasi Kegiatan'}
+                    </span>
+                    <ArrowRight size={18} />
+                  </Link>
+
+                  <Link
+                    href="/kegiatan"
+                    className="inline-flex items-center justify-center px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition-all"
+                  >
+                    Semua Kegiatan
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+      )}
 
       <PilarPhotoMarquee />
 

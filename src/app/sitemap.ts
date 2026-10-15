@@ -29,6 +29,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.9,
     },
+    {
+      url: `${BASE_URL}/kegiatan`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/arsip`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
   ]
 
   // Halaman dinamis: Program Kerja per divisi
@@ -44,5 +56,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...prokerPages]
+  // Halaman dinamis: Kegiatan Publik (hanya terbit dan arsip)
+  const { data: events } = await supabase
+    .from('public_events')
+    .select('slug, updated_at')
+    .in('publish_status', ['published', 'archived'])
+
+  const eventPages: MetadataRoute.Sitemap = (events || []).map((ev) => ({
+    url: `${BASE_URL}/kegiatan/${ev.slug}`,
+    lastModified: ev.updated_at ? new Date(ev.updated_at) : new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
+
+  return [...staticPages, ...prokerPages, ...eventPages]
 }

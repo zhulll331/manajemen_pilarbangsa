@@ -21,6 +21,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
     { href: "/dashboard/bendahara/laporan", label: "Laporan Keuangan", icon: FileText },
   ],
   humas: [
+    { href: "/dashboard/humas/kegiatan", label: "Kelola Kegiatan", icon: Calendar },
     { href: "/dashboard/humas/proker", label: "Kelola Proker", icon: ClipboardList },
     { href: "/dashboard/humas/berita", label: "Kelola Berita", icon: FileText },
     { href: "/dashboard/humas/knowledge", label: "Basis Pengetahuan AI", icon: Brain },

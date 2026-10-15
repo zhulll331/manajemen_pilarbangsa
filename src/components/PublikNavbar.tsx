@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Home, Users, Briefcase, Archive, ArrowRight } from "lucide-react";
+import { Menu, X, Home, Users, Briefcase, Archive, ArrowRight, Calendar } from "lucide-react";
 
 export function PublikNavbar() {
   const pathname = usePathname();
@@ -41,6 +41,7 @@ export function PublikNavbar() {
   const navItems = [
     { href: "/", label: "Beranda", icon: <Home size={18} /> },
     { href: "/tentang-kami", label: "Tentang Kami", icon: <Users size={18} /> },
+    { href: "/kegiatan", label: "Kegiatan", icon: <Calendar size={18} /> },
     { href: "/program-kerja", label: "Program Kerja", icon: <Briefcase size={18} /> },
     { href: "/arsip", label: "Arsip UKM", icon: <Archive size={18} /> },
   ];
