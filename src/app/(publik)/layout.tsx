@@ -99,13 +99,18 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                   </Link>
                 </li>
                 <li>
-                  <Link href="/program-kerja" className="hover:text-white transition-colors flex items-center space-x-2">
-                    <span>Program Kerja</span>
+                  <Link href="/kegiatan" className="hover:text-white transition-colors flex items-center space-x-2">
+                    <span>Kegiatan</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/kegiatan" className="hover:text-white transition-colors flex items-center space-x-2">
-                    <span>Kegiatan</span>
+                  <Link href="/twibbon" className="hover:text-white transition-colors flex items-center space-x-2">
+                    <span>Twibbon</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/program-kerja" className="hover:text-white transition-colors flex items-center space-x-2">
+                    <span>Program Kerja</span>
                   </Link>
                 </li>
                 <li>

@@ -195,7 +195,7 @@ export default async function BerandaPage() {
                   </div>
                 </div>
 
-                <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="shrink-0 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
                   <Link
                     href={`/kegiatan/${featuredEvent.slug}`}
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-[#E31837] hover:bg-red-700 text-white font-extrabold text-base shadow-lg hover:shadow-red-900/50 transition-all duration-300 hover:-translate-y-0.5"
@@ -206,6 +206,14 @@ export default async function BerandaPage() {
                         : 'Lihat Informasi Kegiatan'}
                     </span>
                     <ArrowRight size={18} />
+                  </Link>
+
+                  <Link
+                    href="/twibbon/diklat-kepemimpinan-2026"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-[#008000] hover:bg-green-700 text-white font-bold text-sm shadow-md transition-all"
+                  >
+                    <Sparkles size={16} />
+                    <span>Pasang Twibbon Diklat</span>
                   </Link>
 
                   <Link

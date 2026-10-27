@@ -82,3 +82,24 @@ Pada panel sebelah kanan:
 - Klik **"Simpan Draft"** untuk menyimpan progres tanpa membuka akses ke publik.
 - Klik **"Publikasikan"** ketika seluruh data siap ditampilkan.
 - **Pencegahan Konflik:** Jika rekan pengurus lain memperbarui kegiatan yang sama pada saat yang bersamaan, sistem akan mendeteksi perbedaan versi dan meminta Anda memuat ulang form agar data tidak saling tertimpa.
+
+
+---
+
+## 6. Mengelola Kampanye Twibbon Resmi (`/dashboard/humas/twibbon`)
+
+Selain menautkan halaman kegiatan, Humas (dan Ketua sebagai cadangan) dapat mengelola modul **Twibbon Pilar Bangsa** internal agar peserta tidak perlu berpindah ke layanan pihak ketiga yang penuh iklan:
+
+1. Buka menu **"Kelola Twibbon"** di sidebar kiri (`/dashboard/humas/twibbon`).
+2. Untuk kegiatan **Diklat Kepemimpinan 2026**, klik tombol **"Siapkan Draft Diklat 2026"** untuk membuat draft kampanye `/twibbon/diklat-kepemimpinan-2026` secara otomatis beserta template caption umum & personal.
+3. **Unggah Bingkai PNG Transparan (1080×1080 px):**
+   - File wajib berformat PNG statis, dimensi tepat `1080 × 1080` piksel, ukuran maksimal `5 MiB`, dan memiliki area transparan untuk foto peserta.
+   - Panel admin menyediakan **Pratinjau Area Transparan (Checkerboard)** dan **Simulasi Foto Peserta** untuk memastikan area wajah tidak tertutup elemen bingkai.
+4. **Template Caption Resmi:**
+   - **Template Caption Umum (`caption_default`):** Digunakan saat peserta tidak mengisi Nama atau Program Studi (tidak boleh menyisakan token `{{...}}`).
+   - **Template Caption Personal (`caption_template`):** Digunakan otomatis saat peserta mengisi Nama Lengkap (`{{nama}}`) dan Program Studi (`{{prodi}}`).
+5. **Pratinjau Privat & Publikasi Atomik:**
+   - Gunakan tombol **"Pratinjau Privat Draft"** untuk menguji editor twibbon sebelum dibuka ke publik.
+   - Klik **"Publikasikan Kampanye"** untuk menerbitkan revisi immutable ke `/twibbon/[slug]`.
+6. **Mengalihkan Kartu "Twibbon Diklat" di Halaman Kegiatan:**
+   - Setelah kampanye berstatus `Published`, gunakan tombol **"Arahkan Kartu Kegiatan ke /twibbon/[slug]"** di dalam editor Twibbon untuk mengganti tautan kartu Twibbon di halaman Kegiatan ke URL internal. Tersedia pula tombol **Rollback ke Cadangan (twb.nz)** bila diperlukan.

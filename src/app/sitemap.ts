@@ -36,6 +36,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${BASE_URL}/twibbon`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${BASE_URL}/arsip`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -69,5 +75,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  return [...staticPages, ...prokerPages, ...eventPages]
+  // Halaman dinamis: Kampanye Twibbon Publik (hanya published & archived melalui RPC proyeksi aman)
+  let twibbonPages: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE_URL}/twibbon/diklat-kepemimpinan-2026`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    },
+  ]
+
+  try {
+    const { data: twibbons, error: twibbonErr } = await supabase.rpc(
+      'get_public_twibbon_campaigns'
+    )
+    if (!twibbonErr && Array.isArray(twibbons) && twibbons.length > 0) {
+      twibbonPages = twibbons.map((t: any) => ({
+        url: `${BASE_URL}/twibbon/${t.slug}`,
+        lastModified: t.published_at ? new Date(t.published_at) : new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.85,
+      }))
+    }
+  } catch {
+    // Fallback default tetap menyertakan diklat-kepemimpinan-2026
+  }
+
+  return [...staticPages, ...prokerPages, ...eventPages, ...twibbonPages]
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { PublicEventResource, RegistrationStatus, PublishStatus } from '@/types/events';
 import { 
   Link as LinkIcon, 
@@ -11,7 +12,8 @@ import {
   Share2, 
   Lock, 
   Clock, 
-  AlertCircle 
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 
 interface Props {
@@ -60,7 +62,6 @@ export default function KegiatanResourceView({
   // Handle Share Page
   const handleShare = async () => {
     const url = window.location.href;
-    const shareText = `Halo! Simak informasi dan berkas kegiatan "${eventTitle}" di UKM Pilar Bangsa Untag Banyuwangi: ${url}`;
 
     try {
       if (navigator.share) {
@@ -120,9 +121,23 @@ export default function KegiatanResourceView({
                 publishStatus === 'archived');
 
             let urlHostname = '';
+            let internalTwibbonPath: string | null = null;
             try {
               if (item.url) {
-                urlHostname = new URL(item.url).hostname;
+                if (item.url.startsWith('/twibbon/')) {
+                  urlHostname = 'www.pilarbangsa.my.id';
+                  internalTwibbonPath = item.url;
+                } else {
+                  const parsed = new URL(item.url);
+                  urlHostname = parsed.hostname;
+                  if (
+                    (parsed.hostname === 'www.pilarbangsa.my.id' ||
+                      parsed.hostname === 'pilarbangsa.my.id') &&
+                    parsed.pathname.startsWith('/twibbon/')
+                  ) {
+                    internalTwibbonPath = parsed.pathname;
+                  }
+                }
               }
             } catch {
               urlHostname = '';
@@ -178,7 +193,7 @@ export default function KegiatanResourceView({
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2.5 rounded-2xl bg-red-50 text-[#E31837] group-hover:bg-[#E31837] group-hover:text-white transition-colors shrink-0">
-                        <LinkIcon size={20} />
+                        {internalTwibbonPath ? <Sparkles size={20} /> : <LinkIcon size={20} />}
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-900 text-base sm:text-lg group-hover:text-[#E31837] transition-colors">
@@ -199,19 +214,29 @@ export default function KegiatanResourceView({
                   </div>
 
                   <div className="pl-11 sm:pl-0">
-                    <a
-                      href={item.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-sm transition-all hover:shadow-md ${
-                        isRegLink
-                          ? 'bg-[#008000] hover:bg-green-700 text-white'
-                          : 'bg-[#E31837] hover:bg-red-700 text-white'
-                      }`}
-                    >
-                      <span>{isRegLink ? 'Isi Formulir Pendaftaran' : 'Buka Tautan'}</span>
-                      <ExternalLink size={15} />
-                    </a>
+                    {internalTwibbonPath ? (
+                      <Link
+                        href={internalTwibbonPath}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-sm transition-all hover:shadow-md bg-[#E31837] hover:bg-red-700 text-white"
+                      >
+                        <span>Buat & Pasang Twibbon</span>
+                        <ArrowRight size={15} />
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-sm transition-all hover:shadow-md ${
+                          isRegLink
+                            ? 'bg-[#008000] hover:bg-green-700 text-white'
+                            : 'bg-[#E31837] hover:bg-red-700 text-white'
+                        }`}
+                      >
+                        <span>{isRegLink ? 'Isi Formulir Pendaftaran' : 'Buka Tautan'}</span>
+                        <ExternalLink size={15} />
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

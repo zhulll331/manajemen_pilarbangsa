@@ -82,7 +82,11 @@ export async function proxy(request: NextRequest) {
     }
 
     // Cek apakah userRole sesuai dengan pathname
-    if (userRole === 'ketua' && !pathname.startsWith('/dashboard/ketua')) {
+    if (
+      userRole === 'ketua' &&
+      !pathname.startsWith('/dashboard/ketua') &&
+      !pathname.startsWith('/dashboard/humas/twibbon')
+    ) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard/ketua'
       return NextResponse.redirect(url)

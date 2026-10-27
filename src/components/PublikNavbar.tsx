@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Home, Users, Briefcase, Archive, ArrowRight, Calendar } from "lucide-react";
+import { Menu, X, Home, Users, Briefcase, Archive, ArrowRight, Calendar, Sparkles } from "lucide-react";
 
 export function PublikNavbar() {
   const pathname = usePathname();
@@ -42,6 +42,7 @@ export function PublikNavbar() {
     { href: "/", label: "Beranda", icon: <Home size={18} /> },
     { href: "/tentang-kami", label: "Tentang Kami", icon: <Users size={18} /> },
     { href: "/kegiatan", label: "Kegiatan", icon: <Calendar size={18} /> },
+    { href: "/twibbon", label: "Twibbon", icon: <Sparkles size={18} /> },
     { href: "/program-kerja", label: "Program Kerja", icon: <Briefcase size={18} /> },
     { href: "/arsip", label: "Arsip UKM", icon: <Archive size={18} /> },
   ];
@@ -110,7 +111,9 @@ export function PublikNavbar() {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-2 lg:space-x-3">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(`${item.href}/`));
               return (
                 <Link 
                   key={item.href}
@@ -149,7 +152,9 @@ export function PublikNavbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-lg px-4 py-4 space-y-2 shadow-lg animate-in slide-in-from-top-2 duration-200">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(`${item.href}/`));
               return (
                 <Link
                   key={item.href}
