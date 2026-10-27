@@ -29,10 +29,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.webp',
+        url: 'https://www.pilarbangsa.my.id/twibbon/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Twibbon Pilar Bangsa',
+        alt: 'Katalog Twibbon Resmi UKM Pilar Bangsa',
+        type: 'image/png',
       },
     ],
   },
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
     title: 'Twibbon Pilar Bangsa | UKM Pilar Bangsa Untag Banyuwangi',
     description:
       'Pasang bingkai Twibbon resmi 1080×1080 dan salin caption kegiatan UKM Pilar Bangsa langsung dari perangkat Anda tanpa login.',
-    images: ['/og-image.webp'],
+    images: ['https://www.pilarbangsa.my.id/twibbon/opengraph-image'],
   },
 };
 

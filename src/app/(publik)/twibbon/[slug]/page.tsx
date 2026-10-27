@@ -32,12 +32,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     campaign.description ||
     `Pasang bingkai Twibbon resmi 1080×1080 dan salin caption ${campaign.title} UKM Pilar Bangsa langsung dari perangkat Anda.`;
 
-  const ogImageUrl =
-    campaign.thumbnail_url && !campaign.thumbnail_url.startsWith('builtin:')
+  const dynamicOgImageUrl = `https://www.pilarbangsa.my.id/twibbon/${campaign.slug}/opengraph-image`;
+  const campaignPhotoUrl =
+    (campaign.thumbnail_url && !campaign.thumbnail_url.startsWith('builtin:')
       ? campaign.thumbnail_url
-      : '/og-image.webp';
+      : null) ||
+    (campaign.frame.url && !campaign.frame.url.startsWith('builtin:')
+      ? campaign.frame.url
+      : null);
 
   const canonicalUrl = `https://www.pilarbangsa.my.id/twibbon/${campaign.slug}`;
+
+  const ogImages = [
+    {
+      url: dynamicOgImageUrl,
+      width: 1200,
+      height: 630,
+      alt: `${campaign.title} - Twibbon UKM Pilar Bangsa`,
+      type: 'image/png',
+    },
+    ...(campaignPhotoUrl
+      ? [
+          {
+            url: campaignPhotoUrl,
+            width: 1080,
+            height: 1080,
+            alt: campaign.title,
+            type: 'image/png',
+          },
+        ]
+      : []),
+  ];
 
   return {
     title,
@@ -52,20 +77,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'UKM Pilar Bangsa Untag Banyuwangi',
       locale: 'id_ID',
       type: 'website',
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1080,
-          height: 1080,
-          alt: campaign.title,
-        },
-      ],
+      images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [ogImageUrl],
+      images: [dynamicOgImageUrl],
     },
   };
 }
