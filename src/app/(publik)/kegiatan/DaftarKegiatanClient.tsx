@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PublicEvent } from '@/types/events';
+import { normalizeEventTimestamps, formatEventDateWib } from '@/utils/eventDate';
 import { 
   Calendar, 
   MapPin, 
@@ -11,8 +12,7 @@ import {
   Archive, 
   Sparkles, 
   Clock, 
-  CheckCircle2, 
-  AlertCircle 
+  CheckCircle2 
 } from 'lucide-react';
 
 interface Props {
@@ -33,7 +33,8 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
 
     const now = new Date().getTime();
 
-    initialEvents.forEach((ev) => {
+    initialEvents.forEach((rawEv) => {
+      const ev = normalizeEventTimestamps(rawEv);
       if (ev.publish_status === 'archived') {
         arsip.push(ev);
       } else if (ev.publish_status === 'published') {
@@ -218,7 +219,8 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
                     <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold flex items-center gap-1.5 drop-shadow-md">
                       <Calendar size={13} className="text-[#FFD700]" />
                       <span>
-                        {new Date(ev.starts_at).toLocaleDateString('id-ID', {
+                        {formatEventDateWib(ev.starts_at, {
+                          weekday: 'long',
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',

@@ -8,6 +8,7 @@ import {
   DEFAULT_DIKLAT_CAPTION_PERSONAL,
   DEFAULT_DIKLAT_CAPTION_UMUM,
 } from '@/lib/twibbon/caption';
+import { normalizeEventTimestamps } from '@/utils/eventDate';
 
 export async function GET(
   _request: NextRequest,
@@ -87,17 +88,18 @@ export async function GET(
         .eq('id', campaign.event_id)
         .maybeSingle();
       if (ev) {
+        const normEv = normalizeEventTimestamps(ev);
         eventInfo = {
-          id: ev.id,
-          title: ev.title,
-          slug: ev.slug,
-          date: ev.starts_at ? String(ev.starts_at).slice(0, 10) : null,
-          starts_at: ev.starts_at,
-          ends_at: ev.ends_at,
-          location: ev.location,
+          id: normEv.id,
+          title: normEv.title,
+          slug: normEv.slug,
+          date: normEv.starts_at ? String(normEv.starts_at).slice(0, 10) : null,
+          starts_at: normEv.starts_at,
+          ends_at: normEv.ends_at,
+          location: normEv.location,
           timezone: 'Asia/Jakarta' as const,
-          url: `/kegiatan/${ev.slug}`,
-          registration_status: ev.registration_status,
+          url: `/kegiatan/${normEv.slug}`,
+          registration_status: normEv.registration_status,
         };
       }
     }

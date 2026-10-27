@@ -18,6 +18,7 @@ import {
   extractCaptionTokens,
   renderParticipantCaption,
 } from '@/lib/twibbon/caption';
+import { formatEventScheduleRangeWib } from '@/utils/eventDate';
 import {
   type NormalizedParticipantPhoto,
   createSampleDiklatFrameCanvas,
@@ -982,12 +983,10 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
                         Tanggal Kegiatan
                       </div>
                       <div className="font-bold text-gray-900">
-                        {new Date(campaign.event.starts_at).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
+                        {formatEventScheduleRangeWib(
+                          campaign.event.starts_at,
+                          campaign.event.ends_at
+                        )}
                       </div>
                     </div>
                   </div>

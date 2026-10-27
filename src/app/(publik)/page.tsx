@@ -9,6 +9,7 @@ import { ScrollReveal } from '@/components/ScrollReveal'
 import { createClient } from '@supabase/supabase-js'
 import { ArrowRight, Newspaper, Calendar, Sparkles, MapPin, CheckCircle2 } from 'lucide-react'
 import { PublicEvent } from '@/types/events'
+import { normalizeEventTimestamps, formatEventDateWib } from '@/utils/eventDate'
 
 export const metadata = {
   title: 'Pilar Bangsa Digital Office | UKM Pilar Bangsa Untag Banyuwangi',
@@ -44,7 +45,7 @@ async function getFeaturedEvent(): Promise<PublicEvent | null> {
       .maybeSingle()
 
     if (error || !data) return null
-    return data as PublicEvent
+    return normalizeEventTimestamps(data as PublicEvent)
   } catch (err) {
     console.warn('Gagal fetch featured event untuk beranda:', err)
     return null
@@ -173,7 +174,8 @@ export default async function BerandaPage() {
                       <div className="flex items-center gap-1.5">
                         <Calendar size={15} className="text-[#FFD700]" />
                         <span>
-                          {new Date(featuredEvent.starts_at).toLocaleDateString('id-ID', {
+                          {formatEventDateWib(featuredEvent.starts_at, {
+                            weekday: 'long',
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',

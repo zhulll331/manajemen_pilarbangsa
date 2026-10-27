@@ -42,6 +42,11 @@ import {
   X
 } from 'lucide-react';
 import { convertAndCompressToWebP } from '@/utils/compressImage';
+import {
+  normalizeEventTimestamps,
+  toWibDateTimeLocalInput,
+  fromWibDateTimeLocalInput,
+} from '@/utils/eventDate';
 
 interface Props {
   initialEvent: PublicEvent | null;
@@ -53,18 +58,23 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
   const router = useRouter();
   const supabase = createClient();
 
+  const normalizedInitial = useMemo(
+    () => (initialEvent ? normalizeEventTimestamps(initialEvent) : null),
+    [initialEvent]
+  );
+
   // Form State Event
-  const [title, setTitle] = useState(initialEvent?.title || '');
-  const [slug, setSlug] = useState(initialEvent?.slug || '');
+  const [title, setTitle] = useState(normalizedInitial?.title || '');
+  const [slug, setSlug] = useState(normalizedInitial?.slug || '');
   const [isSlugAuto, setIsSlugAuto] = useState(isNew);
-  const [summary, setSummary] = useState(initialEvent?.summary || '');
-  const [description, setDescription] = useState(initialEvent?.description || '');
-  const [bannerUrl, setBannerUrl] = useState(initialEvent?.banner_url || '');
+  const [summary, setSummary] = useState(normalizedInitial?.summary || '');
+  const [description, setDescription] = useState(normalizedInitial?.description || '');
+  const [bannerUrl, setBannerUrl] = useState(normalizedInitial?.banner_url || '');
   const [startsAt, setStartsAt] = useState(
-    initialEvent?.starts_at ? new Date(initialEvent.starts_at).toISOString().slice(0, 16) : ''
+    toWibDateTimeLocalInput(normalizedInitial?.starts_at)
   );
   const [endsAt, setEndsAt] = useState(
-    initialEvent?.ends_at ? new Date(initialEvent.ends_at).toISOString().slice(0, 16) : ''
+    toWibDateTimeLocalInput(normalizedInitial?.ends_at)
   );
   const [location, setLocation] = useState(initialEvent?.location || '');
   const [publishStatus, setPublishStatus] = useState<PublishStatus>(
@@ -104,6 +114,37 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
+
+  // Sinkronisasi otomatis ke database apabila mendeteksi timestamp lama yang bergeser akibat bug UTC
+  useEffect(() => {
+    if (
+      !isNew &&
+      initialEvent &&
+      normalizedInitial &&
+      (initialEvent.starts_at !== normalizedInitial.starts_at ||
+        initialEvent.ends_at !== normalizedInitial.ends_at)
+    ) {
+      supabase
+        .from('public_events')
+        .update({
+          starts_at: normalizedInitial.starts_at,
+          ends_at: normalizedInitial.ends_at,
+        })
+        .eq('id', initialEvent.id)
+        .select('version')
+        .single()
+        .then(({ data }) => {
+          if (data?.version) {
+            setVersion(data.version);
+          }
+          fetch('/api/admin/kegiatan/revalidate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug: initialEvent.slug }),
+          }).catch(() => {});
+        });
+    }
+  }, [isNew, initialEvent, normalizedInitial, supabase]);
 
   const markDirty = () => {
     if (!isDirty) setIsDirty(true);
@@ -277,7 +318,9 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
     if (bannerUrl && !bannerUrl.startsWith('https://')) {
       return 'URL Banner harus menggunakan protokol aman HTTPS (https://...).';
     }
-    if (startsAt && endsAt && new Date(endsAt) < new Date(startsAt)) {
+    const startIso = fromWibDateTimeLocalInput(startsAt);
+    const endIso = fromWibDateTimeLocalInput(endsAt);
+    if (startIso && endIso && new Date(endIso) < new Date(startIso)) {
       return 'Waktu selesai tidak boleh lebih awal dari waktu mulai.';
     }
 
@@ -360,8 +403,8 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
         summary: summary.trim() || null,
         description: description.trim() || null,
         banner_url: bannerUrl.trim() || null,
-        starts_at: startsAt ? new Date(startsAt).toISOString() : null,
-        ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+        starts_at: fromWibDateTimeLocalInput(startsAt),
+        ends_at: fromWibDateTimeLocalInput(endsAt),
         location: location.trim() || null,
         publish_status: targetPublishStatus,
         registration_status: registrationStatus,
@@ -448,8 +491,21 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
           : 'Perubahan kegiatan berhasil disimpan sebagai draft.'
       );
 
+      // Revalidasi cache halaman publik (/kegiatan/[slug], /kegiatan, /, /twibbon) secara instan
+      try {
+        await fetch('/api/admin/kegiatan/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: slug.trim() }),
+        });
+      } catch {
+        // Abaikan jika gagal revalidasi jaringan
+      }
+
       if (isNew) {
         router.replace(`/dashboard/humas/kegiatan/${savedEventId}`);
+      } else {
+        router.refresh();
       }
     } catch (err: any) {
       console.error('Gagal menyimpan kegiatan:', err);

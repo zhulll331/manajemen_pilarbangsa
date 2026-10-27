@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { PublicEvent, PublishStatus, RegistrationStatus } from '@/types/events';
+import { normalizeEventTimestamps, formatEventDateWib } from '@/utils/eventDate';
 import { 
   Plus, 
   Search, 
@@ -32,7 +33,9 @@ export default function KelolaKegiatanClient({ initialEvents }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
-  const [events, setEvents] = useState<PublicEvent[]>(initialEvents);
+  const [events, setEvents] = useState<PublicEvent[]>(() =>
+    initialEvents.map((ev) => normalizeEventTimestamps(ev))
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPublishStatus, setFilterPublishStatus] = useState<string>('all');
   const [filterRegStatus, setFilterRegStatus] = useState<string>('all');
@@ -54,7 +57,7 @@ export default function KelolaKegiatanClient({ initialEvents }: Props) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setEvents((data as PublicEvent[]) || []);
+      setEvents(((data as PublicEvent[]) || []).map((ev) => normalizeEventTimestamps(ev)));
     } catch (err: any) {
       setErrorMessage(err.message || 'Gagal memuat ulang data kegiatan.');
     } finally {
@@ -440,7 +443,7 @@ export default function KelolaKegiatanClient({ initialEvents }: Props) {
                         <div className="flex items-center gap-1.5 font-medium text-gray-700">
                           <Calendar size={13} className="text-gray-400" />
                           <span>
-                            {new Date(ev.starts_at).toLocaleDateString('id-ID', {
+                            {formatEventDateWib(ev.starts_at, {
                               day: 'numeric',
                               month: 'short',
                               year: 'numeric'

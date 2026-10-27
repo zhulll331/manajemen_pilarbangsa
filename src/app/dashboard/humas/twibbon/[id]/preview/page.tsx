@@ -10,6 +10,7 @@ import type {
   TwibbonPublicCampaignDetail,
 } from '@/types/twibbon';
 import { ArrowLeft, Edit3 } from 'lucide-react';
+import { normalizeEventTimestamps } from '@/utils/eventDate';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,18 +89,19 @@ export default async function AdminTwibbonPreviewPage({ params }: PageProps) {
       .eq('id', eventId)
       .maybeSingle();
     if (ev) {
-      const startsAt = ev.starts_at ? String(ev.starts_at) : null;
+      const normEv = normalizeEventTimestamps(ev);
+      const startsAt = normEv.starts_at ? String(normEv.starts_at) : null;
       relatedEvent = {
-        id: String(ev.id),
-        title: String(ev.title),
-        slug: String(ev.slug),
+        id: String(normEv.id),
+        title: String(normEv.title),
+        slug: String(normEv.slug),
         date: startsAt ? startsAt.slice(0, 10) : null,
         starts_at: startsAt,
-        ends_at: ev.ends_at ? String(ev.ends_at) : null,
-        location: ev.location ? String(ev.location) : null,
+        ends_at: normEv.ends_at ? String(normEv.ends_at) : null,
+        location: normEv.location ? String(normEv.location) : null,
         timezone: 'Asia/Jakarta',
-        url: `/kegiatan/${String(ev.slug)}`,
-        registration_status: ev.registration_status ? String(ev.registration_status) : null,
+        url: `/kegiatan/${String(normEv.slug)}`,
+        registration_status: normEv.registration_status ? String(normEv.registration_status) : null,
       };
     }
   }

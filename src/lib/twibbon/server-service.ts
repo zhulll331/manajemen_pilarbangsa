@@ -10,6 +10,7 @@ import {
   DEFAULT_DIKLAT_CAPTION_PERSONAL,
   DEFAULT_DIKLAT_CAPTION_UMUM,
 } from './caption';
+import { normalizeEventTimestamps } from '@/utils/eventDate';
 
 export class TwibbonHttpError extends Error {
   status: number;
@@ -157,14 +158,15 @@ export async function requireTwibbonAdmin() {
  */
 async function buildDefaultDiklatSampleCampaign(): Promise<TwibbonPublicCampaignDetail> {
   const supabase = await createClient();
-  const { data: diklatEvent } = await supabase
+  const { data: rawDiklatEvent } = await supabase
     .from('public_events')
     .select('id, title, slug, starts_at, ends_at, location, registration_status, publish_status')
     .eq('slug', 'pendaftaran-diklat-kepemimpinan-periode-20262027')
     .in('publish_status', ['published', 'archived'])
     .maybeSingle();
 
-  const startsAt = diklatEvent?.starts_at || '2026-11-01T00:00:00+00:00';
+  const diklatEvent = rawDiklatEvent ? normalizeEventTimestamps(rawDiklatEvent) : null;
+  const startsAt = diklatEvent?.starts_at || '2026-11-01T02:00:00.000Z';
   const location = diklatEvent?.location || 'Mondoluko Farm, Desa Taman Suruh';
   const eventSlug = diklatEvent?.slug || 'pendaftaran-diklat-kepemimpinan-periode-20262027';
 
@@ -233,15 +235,23 @@ export async function fetchPublicTwibbonCampaignList(
       published_at: String(row.published_at),
       archived_at: row.archived_at ? String(row.archived_at) : null,
       event: row.event_id
-        ? {
-            id: String(row.event_id),
-            title: String(row.event_title || ''),
-            slug: String(row.event_slug || ''),
-            starts_at: row.event_starts_at ? String(row.event_starts_at) : null,
-            ends_at: row.event_ends_at ? String(row.event_ends_at) : null,
-            location: row.event_location ? String(row.event_location) : null,
-            url: `/kegiatan/${String(row.event_slug)}`,
-          }
+        ? (() => {
+            const norm = normalizeEventTimestamps({
+              id: String(row.event_id),
+              slug: String(row.event_slug || ''),
+              starts_at: row.event_starts_at ? String(row.event_starts_at) : null,
+              ends_at: row.event_ends_at ? String(row.event_ends_at) : null,
+            });
+            return {
+              id: norm.id,
+              title: String(row.event_title || ''),
+              slug: norm.slug,
+              starts_at: norm.starts_at,
+              ends_at: norm.ends_at,
+              location: row.event_location ? String(row.event_location) : null,
+              url: `/kegiatan/${String(row.event_slug)}`,
+            };
+          })()
         : null,
     }));
   }
@@ -305,7 +315,15 @@ export async function fetchPublicTwibbonCampaignBySlug(
 
   if (!error && Array.isArray(data) && data.length > 0) {
     const row = data[0] as Record<string, unknown>;
-    const startsAt = row.event_starts_at ? String(row.event_starts_at) : null;
+    const normEvent = row.event_id
+      ? normalizeEventTimestamps({
+          id: String(row.event_id),
+          slug: String(row.event_slug || ''),
+          starts_at: row.event_starts_at ? String(row.event_starts_at) : null,
+          ends_at: row.event_ends_at ? String(row.event_ends_at) : null,
+        })
+      : null;
+    const startsAt = normEvent?.starts_at ?? null;
     return {
       id: String(row.id),
       slug: String(row.slug),
@@ -325,14 +343,14 @@ export async function fetchPublicTwibbonCampaignBySlug(
       caption_template: String(row.caption_template || DEFAULT_DIKLAT_CAPTION_PERSONAL),
       published_at: String(row.published_at),
       archived_at: row.archived_at ? String(row.archived_at) : null,
-      event: row.event_id
+      event: normEvent
         ? {
-            id: String(row.event_id),
+            id: normEvent.id,
             title: String(row.event_title || ''),
-            slug: String(row.event_slug || ''),
+            slug: normEvent.slug,
             date: startsAt ? startsAt.slice(0, 10) : null,
             starts_at: startsAt,
-            ends_at: row.event_ends_at ? String(row.event_ends_at) : null,
+            ends_at: normEvent.ends_at,
             location: row.event_location ? String(row.event_location) : null,
             timezone: 'Asia/Jakarta',
             url: `/kegiatan/${String(row.event_slug)}`,

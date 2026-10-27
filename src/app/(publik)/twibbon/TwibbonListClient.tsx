@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import type { TwibbonPublicCampaignCard } from '@/types/twibbon';
 import { createSampleDiklatFrameCanvas } from '@/lib/twibbon/renderer';
+import { formatEventDateWib } from '@/utils/eventDate';
 import {
   Sparkles,
   Calendar,
@@ -141,7 +142,7 @@ export default function TwibbonListClient({ campaigns }: TwibbonListClientProps)
                   <div className="flex items-center gap-1.5 text-gray-500">
                     <Calendar size={13} className="text-[#E31837] shrink-0" />
                     <span>
-                      {new Date(campaign.event.starts_at).toLocaleDateString('id-ID', {
+                      {formatEventDateWib(campaign.event.starts_at, {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long',

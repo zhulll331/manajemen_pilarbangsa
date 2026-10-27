@@ -4,6 +4,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { PublicEvent, PublicEventResource } from '@/types/events';
+import {
+  normalizeEventTimestamps,
+  formatEventScheduleRangeWib,
+} from '@/utils/eventDate';
 import KegiatanResourceView from './KegiatanResourceView';
 import { 
   Calendar, 
@@ -12,7 +16,6 @@ import {
   Clock, 
   CheckCircle2, 
   Archive, 
-  Share2, 
   Lock 
 } from 'lucide-react';
 
@@ -101,7 +104,7 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const event: PublicEvent = eventData as PublicEvent;
+  const event: PublicEvent = normalizeEventTimestamps(eventData as PublicEvent);
 
   // Fetch Visible Resources
   const { data: resourcesData } = await supabase
@@ -197,17 +200,7 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
                     <div>
                       <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Waktu Pelaksanaan</div>
                       <div className="font-bold text-gray-900">
-                        {new Date(event.starts_at).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                        {event.ends_at && ` - ${new Date(event.ends_at).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}`}
+                        {formatEventScheduleRangeWib(event.starts_at, event.ends_at)}
                       </div>
                     </div>
                   </div>

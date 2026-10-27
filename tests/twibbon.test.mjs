@@ -38,6 +38,12 @@ import {
   applyExifContextTransform,
   renderTwibbonComposite,
 } from '../src/lib/twibbon/renderer.ts';
+import {
+  toWibDateTimeLocalInput,
+  fromWibDateTimeLocalInput,
+  formatEventScheduleRangeWib,
+  normalizeEventTimestamps,
+} from '../src/utils/eventDate.ts';
 
 function makePngHeaderBytes(width, height, includeAcTL = false) {
   const chunks = [];
@@ -547,4 +553,29 @@ test('T19 & T20: server-side PNG validator (validateAdminFramePngOnServer) decod
   const resEmpty = await validateAdminFramePngOnServer(emptyPngBuf, 'image/png');
   assert.equal(resEmpty.valid, false);
   assert.equal(resEmpty.errorCode, 'FRAME_FULLY_TRANSPARENT');
+});
+
+test('Event date WIB synchronization preserves 01/11/2026 09.00-16.00 WIB across round-trips and UTC servers', () => {
+  // 1. Round-trip datetime-local <-> ISO UTC without -7h drift
+  let localVal = '2026-11-01T09:00';
+  for (let i = 0; i < 5; i++) {
+    const iso = fromWibDateTimeLocalInput(localVal);
+    assert.equal(iso, '2026-11-01T02:00:00.000Z');
+    localVal = toWibDateTimeLocalInput(iso);
+    assert.equal(localVal, '2026-11-01T09:00');
+  }
+
+  // 2. Drifted Diklat 2026 event row is normalized to 01/11/2026 09:00 - 16:00 WIB
+  const drifted = normalizeEventTimestamps({
+    id: 'b7585b4e-c8f9-4a4a-aaac-d1e30de4e48c',
+    slug: 'pendaftaran-diklat-kepemimpinan-periode-20262027',
+    starts_at: '2026-10-31T10:00:00+00:00',
+    ends_at: '2026-10-31T19:00:00+00:00',
+  });
+  assert.equal(drifted.starts_at, '2026-11-01T02:00:00.000Z');
+  assert.equal(drifted.ends_at, '2026-11-01T09:00:00.000Z');
+
+  // 3. Schedule range formats as Minggu, 1 November 2026 • 09.00 - 16.00 WIB
+  const schedule = formatEventScheduleRangeWib(drifted.starts_at, drifted.ends_at);
+  assert.equal(schedule, 'Minggu, 1 November 2026 • 09.00 - 16.00 WIB');
 });

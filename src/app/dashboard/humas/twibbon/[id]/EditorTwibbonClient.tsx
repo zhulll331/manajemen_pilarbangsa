@@ -11,6 +11,10 @@ import type {
 } from '@/types/twibbon';
 import type { PublicEvent, PublicEventResource } from '@/types/events';
 import {
+  normalizeEventTimestamps,
+  formatEventDateWib,
+} from '@/utils/eventDate';
+import {
   normalizeCampaignSlug,
   validateAdminFrameHeader,
   analyzeFrameRgbaPixels,
@@ -140,7 +144,8 @@ export default function EditorTwibbonClient({
 
   const selectedEvent = useMemo(() => {
     if (!relatedEventId) return null;
-    return events.find((e) => e.id === relatedEventId) || null;
+    const found = events.find((e) => e.id === relatedEventId) || null;
+    return found ? normalizeEventTimestamps(found) : null;
   }, [events, relatedEventId]);
 
   // Auto-generate slug from title if not touched and not locked
@@ -988,7 +993,7 @@ export default function EditorTwibbonClient({
                     {selectedEvent.starts_at && (
                       <span className="inline-flex items-center gap-1.5">
                         <Calendar size={13} className="text-[#E31837]" />
-                        {new Date(selectedEvent.starts_at).toLocaleDateString('id-ID', {
+                        {formatEventDateWib(selectedEvent.starts_at, {
                           weekday: 'long',
                           day: 'numeric',
                           month: 'long',
