@@ -15,8 +15,7 @@ import {
   zoomTransform,
 } from '@/lib/twibbon/transform';
 import {
-  MAX_NAMA_LENGTH,
-  MAX_PRODI_LENGTH,
+  extractCaptionTokens,
   renderParticipantCaption,
 } from '@/lib/twibbon/caption';
 import {
@@ -93,8 +92,11 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
   const [canShareFiles, setCanShareFiles] = useState<boolean>(false);
 
   // Local caption personalization state (never sent to backend/URL)
-  const [namaInput, setNamaInput] = useState<string>('');
-  const [prodiInput, setProdiInput] = useState<string>('');
+  const captionTokens = useMemo(
+    () => extractCaptionTokens(campaign.caption_template),
+    [campaign.caption_template]
+  );
+  const [tokenValues, setTokenValues] = useState<Record<string, string>>({});
   const [captionCopied, setCaptionCopied] = useState<boolean>(false);
   const [captionCopyFallbackMessage, setCaptionCopyFallbackMessage] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
@@ -446,10 +448,9 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
     return renderParticipantCaption({
       captionDefault: campaign.caption_default,
       captionTemplate: campaign.caption_template,
-      nama: namaInput,
-      prodi: prodiInput,
+      values: tokenValues,
     });
-  }, [campaign.caption_default, campaign.caption_template, namaInput, prodiInput]);
+  }, [campaign.caption_default, campaign.caption_template, tokenValues]);
 
   // Copy caption with fallback selection (F12, T17)
   const handleCopyCaption = async () => {
@@ -1041,51 +1042,48 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
                 Caption Resmi & Personalisasi Opsional
               </h2>
               <p className="text-xs sm:text-sm text-gray-500">
-                Isi nama dan program studi jika ingin menyertakannya di caption. Kosongkan jika ingin memakai caption umum.
+                {captionTokens.length > 0
+                  ? `Isi ${captionTokens.map((t) => t.label.toLowerCase()).join(', ')} jika ingin menyertakannya di caption. Kosongkan jika ingin memakai caption umum.`
+                  : 'Salin teks caption resmi di bawah ini untuk dibagikan bersama foto Twibbon Anda.'}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label
-                  htmlFor="twibbon-input-nama"
-                  className="block text-xs font-bold text-gray-700 mb-1"
-                >
-                  Nama Lengkap <span className="text-gray-400 font-normal">(Opsional)</span>
-                </label>
-                <input
-                  id="twibbon-input-nama"
-                  type="text"
-                  maxLength={MAX_NAMA_LENGTH}
-                  value={namaInput}
-                  onChange={(e) => setNamaInput(e.target.value)}
-                  placeholder="Contoh: Budi Santoso"
-                  autoComplete="off"
-                  data-private="true"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none"
-                />
+            {captionTokens.length > 0 && (
+              <div
+                className={`grid grid-cols-1 ${
+                  captionTokens.length === 1 ? 'sm:grid-cols-1' : 'sm:grid-cols-2'
+                } gap-3`}
+              >
+                {captionTokens.map((tokenMeta) => (
+                  <div key={tokenMeta.key}>
+                    <label
+                      htmlFor={`twibbon-input-${tokenMeta.key}`}
+                      className="block text-xs font-bold text-gray-700 mb-1"
+                    >
+                      {tokenMeta.label}{' '}
+                      <span className="text-gray-400 font-normal">(Opsional)</span>
+                    </label>
+                    <input
+                      id={`twibbon-input-${tokenMeta.key}`}
+                      type="text"
+                      maxLength={tokenMeta.maxLength}
+                      value={tokenValues[tokenMeta.key] || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTokenValues((prev) => ({
+                          ...prev,
+                          [tokenMeta.key]: val,
+                        }));
+                      }}
+                      placeholder={tokenMeta.placeholder}
+                      autoComplete="off"
+                      data-private="true"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none"
+                    />
+                  </div>
+                ))}
               </div>
-
-              <div>
-                <label
-                  htmlFor="twibbon-input-prodi"
-                  className="block text-xs font-bold text-gray-700 mb-1"
-                >
-                  Program Studi <span className="text-gray-400 font-normal">(Opsional)</span>
-                </label>
-                <input
-                  id="twibbon-input-prodi"
-                  type="text"
-                  maxLength={MAX_PRODI_LENGTH}
-                  value={prodiInput}
-                  onChange={(e) => setProdiInput(e.target.value)}
-                  placeholder="Contoh: Teknik Informatika"
-                  autoComplete="off"
-                  data-private="true"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none"
-                />
-              </div>
-            </div>
+            )}
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">

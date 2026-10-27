@@ -55,9 +55,9 @@ export async function POST(
     const captionDefault = String(
       body.caption_default ?? payload.caption_default ?? ''
     ).trim();
-    const captionTemplate = String(
-      body.caption_template ?? payload.caption_template ?? ''
-    ).trim();
+    const captionTemplate =
+      String(body.caption_template ?? payload.caption_template ?? '').trim() ||
+      captionDefault;
     const frameAssetId = String(
       body.frame_asset_id ?? payload.frame_asset_id ?? ''
     ).trim();

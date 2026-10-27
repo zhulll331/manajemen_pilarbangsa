@@ -18,6 +18,10 @@ import {
 import {
   validateCaptionTemplates,
   renderParticipantCaption,
+  extractCaptionTokens,
+  detectSquareBracketPlaceholders,
+  normalizeTokenKey,
+  QUICK_CAPTION_TOKEN_PRESETS,
   DEFAULT_DIKLAT_2026_CAMPAIGN,
 } from '@/lib/twibbon/caption';
 import {
@@ -49,6 +53,8 @@ import {
   Link2,
   RefreshCw,
   Download,
+  Plus,
+  X,
 } from 'lucide-react';
 
 interface EditorTwibbonClientProps {
@@ -104,9 +110,16 @@ export default function EditorTwibbonClient({
   const [frameWarning, setFrameWarning] = useState<string | null>(null);
   const [showSamplePhotoSim, setShowSamplePhotoSim] = useState<boolean>(false);
 
-  // Caption dual-variant preview simulation
-  const [simNama, setSimNama] = useState<string>('Budi Santoso');
-  const [simProdi, setSimProdi] = useState<string>('Teknik Informatika');
+  // Caption flexible token management & dual-variant preview simulation
+  const [customTokenInput, setCustomTokenInput] = useState<string>('');
+  const [simValues, setSimValues] = useState<Record<string, string>>({
+    nama: 'Budi Santoso',
+    fakultas: 'Fakultas Teknik',
+    prodi: 'Teknik Informatika',
+    asal_sekolah: 'SMAN 1 Banyuwangi',
+    kelas: 'XII MIPA 1',
+  });
+  const captionTemplateTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Event resource integration state
   const [eventTwibbonResource, setEventTwibbonResource] =
@@ -235,28 +248,92 @@ export default function EditorTwibbonClient({
     img.src = framePreviewUrl;
   }, [framePreviewUrl, showSamplePhotoSim]);
 
-  // Caption live validation & dual preview
+  // Caption live validation, active tokens, bracket converter & dual preview
+  const activeCaptionTokens = useMemo(
+    () => extractCaptionTokens(captionTemplate),
+    [captionTemplate]
+  );
+
+  const bracketSuggestions = useMemo(
+    () => detectSquareBracketPlaceholders(captionTemplate),
+    [captionTemplate]
+  );
+
   const captionValidation = useMemo(() => {
     return validateCaptionTemplates(captionDefault, captionTemplate || '');
   }, [captionDefault, captionTemplate]);
+
+  const effectiveSimValues = useMemo(() => {
+    const merged: Record<string, string> = {};
+    for (const tokenMeta of activeCaptionTokens) {
+      merged[tokenMeta.key] = simValues[tokenMeta.key] ?? tokenMeta.sampleValue;
+    }
+    return merged;
+  }, [activeCaptionTokens, simValues]);
 
   const previewPersonalOutput = useMemo(() => {
     return renderParticipantCaption({
       captionDefault,
       captionTemplate: captionTemplate || '',
-      nama: simNama,
-      prodi: simProdi,
+      values: effectiveSimValues,
     });
-  }, [captionDefault, captionTemplate, simNama, simProdi]);
+  }, [captionDefault, captionTemplate, effectiveSimValues]);
 
   const previewDefaultOutput = useMemo(() => {
     return renderParticipantCaption({
       captionDefault,
       captionTemplate: captionTemplate || '',
-      nama: '',
-      prodi: '',
+      values: {},
     });
   }, [captionDefault, captionTemplate]);
+
+  // Insert a {{token}} at cursor position (or end of captionTemplate)
+  const handleInsertToken = (rawKey: string) => {
+    const key = normalizeTokenKey(rawKey);
+    if (!key) {
+      setErrorMessage(
+        'Nama variabel hanya boleh berisi huruf, angka, spasi, atau garis bawah (contoh: nama, fakultas, asal_sekolah).'
+      );
+      return;
+    }
+    setErrorMessage(null);
+    const tokenText = `{{${key}}}`;
+    const textarea = captionTemplateTextareaRef.current;
+
+    if (textarea) {
+      const start = textarea.selectionStart ?? captionTemplate.length;
+      const end = textarea.selectionEnd ?? captionTemplate.length;
+      const nextValue =
+        captionTemplate.slice(0, start) + tokenText + captionTemplate.slice(end);
+      setCaptionTemplate(nextValue);
+
+      requestAnimationFrame(() => {
+        textarea.focus();
+        const cursor = start + tokenText.length;
+        textarea.setSelectionRange(cursor, cursor);
+      });
+    } else {
+      setCaptionTemplate((prev) => (prev ? `${prev} ${tokenText}` : tokenText));
+    }
+  };
+
+  // Remove all occurrences of a specific {{token}} from captionTemplate
+  const handleRemoveToken = (tokenKey: string) => {
+    setCaptionTemplate((prev) => {
+      const next = prev.replace(/\{\{([^{}]*)\}\}/g, (fullMatch, rawInside: string) => {
+        if (normalizeTokenKey(rawInside) === tokenKey) {
+          return '';
+        }
+        return fullMatch;
+      });
+      return next.replace(/ {2,}/g, ' ');
+    });
+  };
+
+  // Convert a square bracket placeholder like [nama fakultas] into {{fakultas}}
+  const handleConvertBracketToToken = (rawBracket: string, suggestedKey: string) => {
+    setCaptionTemplate((prev) => prev.split(rawBracket).join(`{{${suggestedKey}}}`));
+  };
 
   // Fill with Diklat 2026 preset
   const handleFillDiklatPreset = () => {
@@ -989,14 +1066,13 @@ export default function EditorTwibbonClient({
 
           {/* Card 2: Template Caption (Umum & Personal) */}
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-5">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
               <h2 className="text-base sm:text-lg font-extrabold text-gray-900 flex items-center gap-2">
                 <FileText size={18} className="text-[#E31837]" />
-                <span>2. Template Caption Resmi (Plain Text)</span>
+                <span>2. Template Caption Resmi & Variabel Fleksibel</span>
               </h2>
-              <span className="text-xs font-semibold text-gray-500">
-                Token didukung: <code className="bg-gray-100 px-1.5 py-0.5 rounded">{'{{nama}}'}</code> &{' '}
-                <code className="bg-gray-100 px-1.5 py-0.5 rounded">{'{{prodi}}'}</code>
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                Fleksibel untuk Mahasiswa, Siswa, & Umum
               </span>
             </div>
 
@@ -1022,12 +1098,12 @@ export default function EditorTwibbonClient({
                 </span>
               </div>
               <p className="text-[11px] text-gray-500">
-                Digunakan saat peserta tidak mengisi Nama atau Program Studi. Tidak boleh mengandung token{' '}
+                Digunakan saat peserta tidak mengisi kolom data diri (atau jika kampanye tidak memakai variabel personal). Tidak boleh mengandung token{' '}
                 <code>{'{{...}}'}</code>.
               </p>
               <textarea
                 id="caption-default"
-                rows={7}
+                rows={6}
                 maxLength={2000}
                 value={captionDefault}
                 onChange={(e) => setCaptionDefault(e.target.value)}
@@ -1036,63 +1112,224 @@ export default function EditorTwibbonClient({
               />
             </div>
 
-            {/* Caption Personal (caption_template) */}
-            <div className="space-y-1.5 pt-2 border-t border-gray-100">
+            {/* Caption Personal (caption_template) + Interactive Variable Manager */}
+            <div className="space-y-3 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="caption-template"
                   className="text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  Template Caption Personal (`caption_template`) <span className="text-[#E31837]">*</span>
+                  Template Caption Personal (`caption_template`)
                 </label>
                 <span className="text-[11px] text-gray-400">
                   {captionTemplate.length}/2000 karakter
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500">
-                Digunakan otomatis apabila peserta mengisi <strong>Nama Lengkap</strong> dan{' '}
-                <strong>Program Studi</strong>. Gunakan <code>{'{{nama}}'}</code> dan{' '}
-                <code>{'{{prodi}}'}</code>.
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                Tambahkan atau kurangi variabel menggunakan tanda <code>{'{{nama_variabel}}'}</code> sesuai peserta kegiatan (misal: mahasiswa memakai{' '}
+                <code>{'{{nama}}'}</code>, <code>{'{{fakultas}}'}</code>, <code>{'{{prodi}}'}</code>; siswa sekolah memakai{' '}
+                <code>{'{{nama}}'}</code>, <code>{'{{asal_sekolah}}'}</code>, <code>{'{{kelas}}'}</code>). Kolom input di halaman peserta akan menyesuaikan otomatis!
               </p>
+
+              {/* Interactive Variable / Token Manager Box */}
+              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 space-y-3.5">
+                {/* 1. Active Variables in Template (with Remove button) */}
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-extrabold text-gray-700 uppercase tracking-wider flex items-center justify-between">
+                    <span>
+                      Variabel Aktif di Halaman Peserta ({activeCaptionTokens.length})
+                    </span>
+                    {activeCaptionTokens.length > 0 && (
+                      <span className="text-[10px] font-normal text-gray-500">
+                        Klik variabel untuk menyisipkan lagi, atau klik ✕ untuk menghapus
+                      </span>
+                    )}
+                  </div>
+
+                  {activeCaptionTokens.length === 0 ? (
+                    <div className="text-xs text-gray-500 bg-white border border-dashed border-gray-300 rounded-xl p-2.5">
+                      Belum ada variabel <code>{'{{...}}'}</code> di dalam teks. Klik tombol preset di bawah untuk menambahkan variabel.
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {activeCaptionTokens.map((tokenMeta) => (
+                        <div
+                          key={tokenMeta.key}
+                          className="inline-flex items-center rounded-xl bg-white border border-red-200 shadow-2xs overflow-hidden text-xs"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleInsertToken(tokenMeta.key)}
+                            className="px-2.5 py-1.5 font-mono font-bold text-[#E31837] hover:bg-red-50 transition-colors flex items-center gap-1.5"
+                            title={`Sisipkan {{${tokenMeta.key}}} pada posisi kursor`}
+                          >
+                            <span>{`{{${tokenMeta.key}}}`}</span>
+                            <span className="font-sans font-medium text-[11px] text-gray-500">
+                              ({tokenMeta.label})
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveToken(tokenMeta.key)}
+                            className="px-2 py-1.5 text-gray-400 hover:text-red-700 hover:bg-red-100 border-l border-red-100 transition-colors"
+                            title={`Hapus semua variabel {{${tokenMeta.key}}} dari template`}
+                            aria-label={`Hapus variabel ${tokenMeta.key}`}
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Quick-Add Variable Presets (Mahasiswa & Siswa) */}
+                <div className="space-y-1.5 pt-2 border-t border-gray-200/70">
+                  <div className="text-[11px] font-bold text-gray-600">
+                    Tambah Cepat Variabel (Klik untuk menyisipkan ke posisi kursor):
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {QUICK_CAPTION_TOKEN_PRESETS.map((preset) => {
+                      const isActive = activeCaptionTokens.some((t) => t.key === preset.key);
+                      return (
+                        <button
+                          key={preset.key}
+                          type="button"
+                          onClick={() => handleInsertToken(preset.key)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                            isActive
+                              ? 'bg-red-50/80 text-[#E31837] border-red-200 hover:bg-red-100'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          <Plus size={12} />
+                          <span className="font-mono">{`{{${preset.key}}}`}</span>
+                          <span className="text-[10px] font-normal text-gray-500">
+                            {preset.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Custom Variable Creator */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-gray-200/70">
+                  <input
+                    type="text"
+                    value={customTokenInput}
+                    onChange={(e) => setCustomTokenInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (customTokenInput.trim()) {
+                          handleInsertToken(customTokenInput);
+                          setCustomTokenInput('');
+                        }
+                      }
+                    }}
+                    placeholder="Buat variabel kustom lain (misal: nama_fakultas, angkatan, hobi)..."
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs focus:border-[#E31837] outline-none"
+                  />
+                  <button
+                    type="button"
+                    disabled={!customTokenInput.trim()}
+                    onClick={() => {
+                      if (customTokenInput.trim()) {
+                        handleInsertToken(customTokenInput);
+                        setCustomTokenInput('');
+                      }
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold transition-colors disabled:opacity-40 shrink-0"
+                  >
+                    <Plus size={14} />
+                    <span>Tambah & Sisipkan Variabel</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Helper Banner if Square Brackets like [nama fakultas] are detected */}
+              {bracketSuggestions.length > 0 && (
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 space-y-2">
+                  <div className="text-xs font-bold flex items-center gap-1.5 text-amber-900">
+                    <Sparkles size={14} className="text-amber-600 shrink-0" />
+                    <span>
+                      Terdeteksi tanda kurung siku <code>[...]</code> pada teks Anda — ubah menjadi variabel otomatis dengan 1 klik:
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {bracketSuggestions.map((item) => (
+                      <button
+                        key={item.rawBracket}
+                        type="button"
+                        onClick={() =>
+                          handleConvertBracketToToken(
+                            item.rawBracket,
+                            item.suggestedTokenKey
+                          )
+                        }
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold shadow-2xs transition-colors"
+                      >
+                        <span>Ubah</span>
+                        <code className="bg-amber-100 px-1 rounded">{item.rawBracket}</code>
+                        <span>→</span>
+                        <code className="text-[#E31837] font-mono font-extrabold">
+                          {`{{${item.suggestedTokenKey}}}`}
+                        </code>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <textarea
                 id="caption-template"
+                ref={captionTemplateTextareaRef}
                 rows={7}
                 maxLength={2000}
                 value={captionTemplate}
                 onChange={(e) => setCaptionTemplate(e.target.value)}
-                placeholder="Contoh: Halo! Saya {{nama}} dari Program Studi {{prodi}} siap mengikuti..."
+                placeholder="Contoh: Halo! Aku {{nama}}, dari fakultas {{fakultas}}, prodi {{prodi}}..."
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-xs sm:text-sm font-sans leading-relaxed"
               />
             </div>
 
             {/* Dual-Scenario Live Caption Preview (PRD 12.2) */}
             <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wider">
+              <div className="space-y-2">
+                <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wider block">
                   Simulasi Pratinjau Caption (2 Skenario)
                 </span>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={simNama}
-                    onChange={(e) => setSimNama(e.target.value)}
-                    placeholder="Simulasi Nama"
-                    className="px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-xs"
-                  />
-                  <input
-                    type="text"
-                    value={simProdi}
-                    onChange={(e) => setSimProdi(e.target.value)}
-                    placeholder="Simulasi Prodi"
-                    className="px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-xs"
-                  />
-                </div>
+                {activeCaptionTokens.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {activeCaptionTokens.map((tokenMeta) => (
+                      <div key={tokenMeta.key} className="space-y-0.5">
+                        <label className="text-[10px] font-bold text-gray-500 block">
+                          Simulasi {tokenMeta.label} (<code>{`{{${tokenMeta.key}}}`}</code>)
+                        </label>
+                        <input
+                          type="text"
+                          value={effectiveSimValues[tokenMeta.key] || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setSimValues((prev) => ({
+                              ...prev,
+                              [tokenMeta.key]: val,
+                            }));
+                          }}
+                          placeholder={tokenMeta.placeholder}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-white border border-gray-200 space-y-1.5">
                   <div className="text-[11px] font-bold text-emerald-700">
-                    Skenario A: Nama & Prodi Terisi ({previewPersonalOutput.variant})
+                    Skenario A: Semua Variabel Terisi ({previewPersonalOutput.variant})
                   </div>
                   <div className="text-xs text-gray-700 whitespace-pre-wrap max-h-44 overflow-y-auto leading-relaxed">
                     {previewPersonalOutput.text || '(Kosong)'}
@@ -1101,7 +1338,7 @@ export default function EditorTwibbonClient({
 
                 <div className="p-3 rounded-xl bg-white border border-gray-200 space-y-1.5">
                   <div className="text-[11px] font-bold text-gray-600">
-                    Skenario B: Nama / Prodi Kosong ({previewDefaultOutput.variant})
+                    Skenario B: Variabel Dikosongkan Peserta ({previewDefaultOutput.variant})
                   </div>
                   <div className="text-xs text-gray-700 whitespace-pre-wrap max-h-44 overflow-y-auto leading-relaxed">
                     {previewDefaultOutput.text || '(Kosong)'}

@@ -19,6 +19,8 @@ import {
 import {
   validateCaptionTemplates,
   renderParticipantCaption,
+  extractCaptionTokens,
+  detectSquareBracketPlaceholders,
   DEFAULT_DIKLAT_CAPTION_UMUM,
   DEFAULT_DIKLAT_CAPTION_PERSONAL,
 } from '../src/lib/twibbon/caption.ts';
@@ -367,7 +369,7 @@ test('T14: admin frame PNG validation rejects non-PNG, APNG, wrong dimensions, >
   assert.equal(goodRes.hasTransparencyWarning, false);
 });
 
-test('T15 & T16: caption validation and local rendering handle complete, partial, empty, unknown tokens, and HTML safely', () => {
+test('T15 & T16: caption validation and local rendering handle flexible tokens (mahasiswa, siswa, custom), partial, empty, invalid syntax, and HTML safely', () => {
   // Valid default Diklat templates pass
   const validCheck = validateCaptionTemplates(
     DEFAULT_DIKLAT_CAPTION_UMUM,
@@ -375,12 +377,32 @@ test('T15 & T16: caption validation and local rendering handle complete, partial
   );
   assert.equal(validCheck.valid, true);
 
-  // Unknown token {{nim}} rejected on publish
+  // Flexible tokens for Mahasiswa (nama, fakultas, prodi) and Siswa (nama, asal_sekolah, kelas) pass
+  const mhsTemplate = 'Kenalin, Aku {{nama}}, dari fakultas {{fakultas}}, prodi {{prodi}}.';
+  assert.equal(validateCaptionTemplates(DEFAULT_DIKLAT_CAPTION_UMUM, mhsTemplate).valid, true);
+  assert.deepEqual(
+    extractCaptionTokens(mhsTemplate).map((t) => t.key),
+    ['nama', 'fakultas', 'prodi']
+  );
+
+  // Auto-detect square-bracket placeholders like [nama fakultas] -> {{fakultas}}
+  const bracketMatches = detectSquareBracketPlaceholders(
+    'Kenalin, Aku {{nama}}, dari fakultas [nama fakultas], prodi {{prodi}}.'
+  );
+  assert.equal(bracketMatches.length, 1);
+  assert.equal(bracketMatches[0].rawBracket, '[nama fakultas]');
+  assert.equal(bracketMatches[0].suggestedTokenKey, 'fakultas');
+
+  // Invalid token syntax ({{<script>}} or empty {{}}) rejected on publish
   const badToken = validateCaptionTemplates(
     DEFAULT_DIKLAT_CAPTION_UMUM,
-    'Halo saya {{nama}} dengan NIM {{nim}}'
+    'Halo saya {{nama}} dengan {{<script>}}'
   );
   assert.equal(badToken.valid, false);
+  assert.equal(
+    validateCaptionTemplates(DEFAULT_DIKLAT_CAPTION_UMUM, 'Halo {{}}').valid,
+    false
+  );
 
   // Unbalanced braces rejected on publish
   const unbalanced = validateCaptionTemplates(
@@ -399,6 +421,22 @@ test('T15 & T16: caption validation and local rendering handle complete, partial
   assert.equal(full.variant, 'personal');
   assert.ok(full.text.includes('Saya Budi Santoso dari Teknik Informatika'));
   assert.ok(!full.text.includes('{{'));
+
+  // Multi-variable Siswa template (nama + asal_sekolah + kelas) rendered via values map
+  const siswaCaption = renderParticipantCaption({
+    captionDefault: DEFAULT_DIKLAT_CAPTION_UMUM,
+    captionTemplate: 'Halo! Saya {{nama}} siswa kelas {{kelas}} dari {{asal_sekolah}}.',
+    values: {
+      nama: 'Siti Aminah',
+      kelas: 'XII IPA 1',
+      asal_sekolah: 'SMAN 1 Banyuwangi',
+    },
+  });
+  assert.equal(siswaCaption.variant, 'personal');
+  assert.equal(
+    siswaCaption.text,
+    'Halo! Saya Siti Aminah siswa kelas XII IPA 1 dari SMAN 1 Banyuwangi.'
+  );
 
   // One empty -> uses default caption with zero leftover tokens
   const oneEmpty = renderParticipantCaption({
