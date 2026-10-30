@@ -118,6 +118,11 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                     <span>Arsip UKM</span>
                   </Link>
                 </li>
+                <li>
+                  <Link href="/qr" className="hover:text-[#FFD700] transition-colors flex items-center space-x-2">
+                    <span>QR Code Generator</span>
+                  </Link>
+                </li>
               </ul>
             </div>
 

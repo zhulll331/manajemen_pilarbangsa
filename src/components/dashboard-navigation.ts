@@ -1,4 +1,4 @@
-import { Archive, Brain, Calendar, CalendarCheck, ClipboardList, FileText, FolderOpen, Image, LayoutDashboard, Users, Wallet } from "lucide-react";
+import { Archive, Brain, Calendar, CalendarCheck, ClipboardList, FileText, FolderOpen, Image, LayoutDashboard, QrCode, Users, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface DashboardMenuItem { href: string; label: string; icon: LucideIcon }
@@ -23,6 +23,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
   humas: [
     { href: "/dashboard/humas/kegiatan", label: "Kelola Kegiatan", icon: Calendar },
     { href: "/dashboard/humas/twibbon", label: "Kelola Twibbon", icon: Image },
+    { href: "/qr", label: "QR Code Generator", icon: QrCode },
     { href: "/dashboard/humas/proker", label: "Kelola Proker", icon: ClipboardList },
     { href: "/dashboard/humas/berita", label: "Kelola Berita", icon: FileText },
     { href: "/dashboard/humas/knowledge", label: "Basis Pengetahuan AI", icon: Brain },
@@ -35,6 +36,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
     { href: "/dashboard/ketua/program", label: "Program Kerja", icon: ClipboardList },
     { href: "/dashboard/ketua/evaluasi", label: "Evaluasi", icon: FileText },
     { href: "/dashboard/humas/twibbon", label: "Kelola Twibbon", icon: Image },
+    { href: "/qr", label: "QR Code Generator", icon: QrCode },
   ],
 };
 // Preserve existing role destinations. Authorization remains on the server.

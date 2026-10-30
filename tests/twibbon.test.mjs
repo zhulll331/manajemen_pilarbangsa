@@ -44,6 +44,19 @@ import {
   formatEventScheduleRangeWib,
   normalizeEventTimestamps,
 } from '../src/utils/eventDate.ts';
+import {
+  encodeQrMatrix,
+  buildDirectQrPayload,
+  isFinderEyeModule,
+} from '../src/lib/qr/encoder.ts';
+import {
+  QR_LOGO_PRESETS,
+} from '../src/lib/qr/logos.ts';
+import {
+  DEFAULT_QR_DESIGN,
+  renderQrToSvgString,
+  isModuleInLogoCutout,
+} from '../src/lib/qr/renderer.ts';
 
 function makePngHeaderBytes(width, height, includeAcTL = false) {
   const chunks = [];
@@ -578,4 +591,55 @@ test('Event date WIB synchronization preserves 01/11/2026 09.00-16.00 WIB across
   // 3. Schedule range formats as Minggu, 1 November 2026 • 09.00 - 16.00 WIB
   const schedule = formatEventScheduleRangeWib(drifted.starts_at, drifted.ends_at);
   assert.equal(schedule, 'Minggu, 1 November 2026 • 09.00 - 16.00 WIB');
+});
+
+test('QR Code Generator builds direct payloads, encodes ISO/IEC 18004 Level H matrix, and renders custom SVG with center logo', () => {
+  // 1. Direct payload builders (no intermediate redirect)
+  assert.equal(
+    buildDirectQrPayload({ mode: 'url', url: 'pilarbangsa.my.id/twibbon' }),
+    'https://pilarbangsa.my.id/twibbon'
+  );
+  assert.equal(
+    buildDirectQrPayload({
+      mode: 'whatsapp',
+      waPhone: '0856-0785-1580',
+      waMessage: 'Halo Pilar Bangsa',
+    }),
+    'https://wa.me/6285607851580?text=Halo%20Pilar%20Bangsa'
+  );
+  assert.equal(
+    buildDirectQrPayload({
+      mode: 'gmaps',
+      gmapsQuery: 'https://maps.app.goo.gl/Kqw7VtiUXvSuqFFS6',
+    }),
+    'https://maps.app.goo.gl/Kqw7VtiUXvSuqFFS6'
+  );
+
+  // 2. Encode QR matrix at ECC Level H (30% error recovery)
+  const matrix = encodeQrMatrix('https://www.pilarbangsa.my.id/kegiatan/pendaftaran-diklat-kepemimpinan-periode-20262027', 'H');
+  assert.equal(matrix.ecc, 'H');
+  assert.ok(matrix.size >= 21 && matrix.size % 4 === 1);
+  assert.equal(matrix.modules.length, matrix.size * matrix.size);
+
+  // Top-left finder eye corner & center are always dark (1)
+  assert.equal(matrix.modules[0], 1);
+  assert.equal(matrix.modules[3 * matrix.size + 3], 1);
+
+  // Logo cutout never removes finder eye modules
+  assert.equal(isFinderEyeModule(0, 0, matrix.size), true);
+  assert.equal(isModuleInLogoCutout(0, 0, matrix.size, true, 0.21), false);
+  const mid = Math.floor(matrix.size / 2);
+  assert.equal(isModuleInLogoCutout(mid, mid, matrix.size, true, 0.21), true);
+
+  // 3. Built-in logo catalog includes Pilar, Maskot, Untag, Google, Gemini, GMaps, WA, IG
+  const presetIds = new Set(QR_LOGO_PRESETS.map((p) => p.id));
+  for (const id of ['pilar', 'maskot_ai', 'maskot_ukm', 'untag', 'google', 'gemini', 'gmaps', 'whatsapp', 'instagram']) {
+    assert.ok(presetIds.has(id), `Missing preset logo: ${id}`);
+  }
+
+  // 4. Vector SVG rendering produces valid SVG with embedded logo and frame text
+  const svg = renderQrToSvgString(matrix, DEFAULT_QR_DESIGN, '/logo_pilar.svg');
+  assert.ok(svg.startsWith('<svg'));
+  assert.ok(svg.includes('SCAN ME • PILAR BANGSA'));
+  assert.ok(svg.includes('/logo_pilar.svg'));
 });
