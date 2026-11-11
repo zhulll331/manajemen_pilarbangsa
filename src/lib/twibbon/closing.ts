@@ -55,9 +55,14 @@ export function isTwibbonAutoClosed(
     endsAt?: string | null;
     extendedUntil?: string | null;
     hasEvent: boolean;
+    eventPublishStatus?: string | null;
   },
   now: Date = new Date()
 ): boolean {
+  // Jika kegiatan tertaut sudah diarsipkan, twibbon otomatis ditutup
+  if (params.eventPublishStatus === 'archived') {
+    return true;
+  }
   // Tanpa kegiatan tertaut: tidak ada batas otomatis.
   if (!params.hasEvent) return false;
   const closeAt = computeEffectiveCloseAt(params);

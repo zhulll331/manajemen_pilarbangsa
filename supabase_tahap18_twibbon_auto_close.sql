@@ -32,7 +32,8 @@ RETURNS TABLE (
   event_starts_at timestamptz,
   event_ends_at timestamptz,
   event_location text,
-  event_registration_status varchar
+  event_registration_status varchar,
+  event_publish_status varchar
 )
 LANGUAGE sql
 STABLE
@@ -44,7 +45,8 @@ AS $$
     r.frame_public_url,
     COALESCE(r.thumbnail_public_url, r.frame_public_url),
     c.published_at, c.archived_at, c.extended_until,
-    pe.id, pe.title, pe.slug, pe.starts_at, pe.ends_at, pe.location, pe.registration_status
+    pe.id, pe.title, pe.slug, pe.starts_at, pe.ends_at, pe.location, pe.registration_status,
+    pe.publish_status AS event_publish_status
   FROM public.twibbon_campaigns c
   INNER JOIN public.twibbon_revisions r
     ON r.id = c.published_revision_id AND r.campaign_id = c.id
@@ -88,7 +90,8 @@ RETURNS TABLE (
   event_starts_at timestamptz,
   event_ends_at timestamptz,
   event_location text,
-  event_registration_status varchar
+  event_registration_status varchar,
+  event_publish_status varchar
 )
 LANGUAGE sql
 STABLE
@@ -102,7 +105,8 @@ AS $$
     COALESCE(r.thumbnail_public_url, r.frame_public_url),
     r.caption_default, r.caption_template,
     c.published_at, c.archived_at, c.extended_until,
-    pe.id, pe.title, pe.slug, pe.starts_at, pe.ends_at, pe.location, pe.registration_status
+    pe.id, pe.title, pe.slug, pe.starts_at, pe.ends_at, pe.location, pe.registration_status,
+    pe.publish_status AS event_publish_status
   FROM public.twibbon_campaigns c
   INNER JOIN public.twibbon_revisions r
     ON r.id = c.published_revision_id AND r.campaign_id = c.id

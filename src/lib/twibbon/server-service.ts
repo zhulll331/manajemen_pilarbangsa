@@ -173,6 +173,7 @@ async function buildDefaultDiklatSampleCampaign(): Promise<TwibbonPublicCampaign
     hasEvent: true,
     startsAt,
     endsAt: diklatEvent?.ends_at || null,
+    eventPublishStatus: diklatEvent?.publish_status || null,
   });
   const eventSlug = diklatEvent?.slug || 'pendaftaran-diklat-kepemimpinan-periode-20262027';
 
@@ -240,6 +241,7 @@ export async function fetchPublicTwibbonCampaignList(
           startsAt: row.event_starts_at ? String(row.event_starts_at) : null,
           endsAt: row.event_ends_at ? String(row.event_ends_at) : null,
           extendedUntil: row.extended_until ? String(row.extended_until) : null,
+          eventPublishStatus: row.event_publish_status ? String(row.event_publish_status) : null,
         })
           ? 'archived'
           : 'published',
@@ -346,6 +348,7 @@ export async function fetchPublicTwibbonCampaignBySlug(
       startsAt,
       endsAt: normEvent?.ends_at ?? null,
       extendedUntil: row.extended_until ? String(row.extended_until) : null,
+      eventPublishStatus: row.event_publish_status ? String(row.event_publish_status) : null,
     });
     return {
       id: String(row.id),

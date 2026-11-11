@@ -13,7 +13,8 @@ import {
   Lock, 
   Clock, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Archive
 } from 'lucide-react';
 
 interface Props {
@@ -89,6 +90,16 @@ export default function KegiatanResourceView({
 
   return (
     <div className="space-y-8">
+      {/* Banner Peringatan Arsip */}
+      {publishStatus === 'archived' && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 flex items-start sm:items-center gap-3">
+          <Archive size={20} className="text-amber-700 shrink-0 mt-0.5 sm:mt-0" />
+          <p className="text-xs sm:text-sm font-semibold leading-relaxed">
+            Kegiatan ini telah selesai dan diarsipkan. Semua tautan pendaftaran, twibbon, dan akses berkas dinonaktifkan.
+          </p>
+        </div>
+      )}
+
       {/* Items Section */}
       <div className="space-y-6">
         {resources.map((item) => {
@@ -113,12 +124,14 @@ export default function KegiatanResourceView({
 
           // 2. LINK ITEM
           if (item.item_type === 'link') {
+            const isEventArchived = publishStatus === 'archived';
             const isRegLink = item.link_role === 'registration';
             const isRegDisabled =
               isRegLink &&
               (registrationStatus === 'closed' ||
                 registrationStatus === 'soon' ||
-                publishStatus === 'archived');
+                isEventArchived);
+            const isItemDisabled = isEventArchived || isRegDisabled;
 
             let urlHostname = '';
             let internalTwibbonPath: string | null = null;
@@ -143,21 +156,45 @@ export default function KegiatanResourceView({
               urlHostname = '';
             }
 
-            if (isRegDisabled) {
+            // Jika kegiatan diarsipkan atau pendaftaran ditutup -> kunci tautan (tidak bisa diakses)
+            if (isItemDisabled) {
+              let badgeLabel = 'Tautan Ditutup';
+              let badgeIcon = <Lock size={14} />;
+
+              if (isEventArchived) {
+                if (internalTwibbonPath) {
+                  badgeLabel = 'Twibbon Ditutup';
+                } else if (isRegLink) {
+                  badgeLabel = 'Pendaftaran Ditutup';
+                } else {
+                  badgeLabel = 'Tautan Diarsipkan';
+                }
+              } else if (isRegLink && registrationStatus === 'soon') {
+                badgeLabel = 'Segera Dibuka';
+                badgeIcon = <Clock size={14} />;
+              }
+
               return (
                 <div
                   key={item.id}
-                  className="p-5 sm:p-6 rounded-3xl bg-gray-50 border border-gray-200 opacity-80 space-y-3"
+                  className="p-5 sm:p-6 rounded-3xl bg-gray-50/90 border border-gray-200/90 opacity-80 space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="p-2 rounded-xl bg-gray-200 text-gray-500">
-                          <Lock size={18} />
+                          {internalTwibbonPath ? <Sparkles size={18} /> : <Lock size={18} />}
                         </span>
-                        <h3 className="font-bold text-gray-700 text-base sm:text-lg">
-                          {item.title}
-                        </h3>
+                        <div>
+                          <h3 className="font-bold text-gray-700 text-base sm:text-lg">
+                            {item.title}
+                          </h3>
+                          {urlHostname && (
+                            <span className="text-[11px] font-mono text-gray-400">
+                              {urlHostname}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {item.description && (
                         <p className="text-xs sm:text-sm text-gray-500 pl-10">
@@ -167,16 +204,9 @@ export default function KegiatanResourceView({
                     </div>
 
                     <div className="sm:self-center pl-10 sm:pl-0">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-gray-200 text-gray-600 text-xs font-bold">
-                        {registrationStatus === 'soon' ? (
-                          <>
-                            <Clock size={14} /> Segera Dibuka
-                          </>
-                        ) : (
-                          <>
-                            <Lock size={14} /> Pendaftaran Ditutup
-                          </>
-                        )}
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-gray-200 text-gray-600 text-xs font-bold select-none cursor-not-allowed">
+                        {badgeIcon}
+                        <span>{badgeLabel}</span>
                       </span>
                     </div>
                   </div>
@@ -296,41 +326,59 @@ export default function KegiatanResourceView({
         })}
       </div>
 
-      {/* Share Section Card */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gray-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-xl">
-        <div className="space-y-1">
-          <div className="text-xs font-bold text-[#FFD700] uppercase tracking-wider flex items-center gap-1.5">
-            <Share2 size={14} />
-            <span>Bagikan Kegiatan</span>
+      {/* Share Section Card or Archived Notice */}
+      {publishStatus === 'archived' ? (
+        <div className="p-6 sm:p-8 rounded-3xl bg-gray-100 border border-gray-200 text-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-gray-200 text-gray-600 shrink-0">
+              <Archive size={24} />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-base sm:text-lg text-gray-900">
+                Arsip Resmi Kegiatan
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                Kegiatan ini telah selesai. Seluruh formulir pendaftaran, pembuatan twibbon, dan tautan eksternal dinonaktifkan.
+              </p>
+            </div>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold">
-            Bantu Sebarkan Informasi Ini
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-300">
-            Ajak teman dan rekan mahasiswa lain untuk ikut serta dalam kegiatan ini.
-          </p>
         </div>
+      ) : (
+        <div className="p-6 sm:p-8 rounded-3xl bg-gray-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-xl">
+          <div className="space-y-1">
+            <div className="text-xs font-bold text-[#FFD700] uppercase tracking-wider flex items-center gap-1.5">
+              <Share2 size={14} />
+              <span>Bagikan Kegiatan</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold">
+              Bantu Sebarkan Informasi Ini
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-300">
+              Ajak teman dan rekan mahasiswa lain untuk ikut serta dalam kegiatan ini.
+            </p>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <a
-            href={getWaShareUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#008000] hover:bg-green-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all"
-          >
-            <span>Bagikan via WhatsApp</span>
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={getWaShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#008000] hover:bg-green-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all"
+            >
+              <span>Bagikan via WhatsApp</span>
+            </a>
 
-          <button
-            type="button"
-            onClick={handleShare}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition-all border border-white/20"
-          >
-            <Copy size={15} />
-            <span>Salin Tautan</span>
-          </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition-all border border-white/20"
+            >
+              <Copy size={15} />
+              <span>Salin Tautan</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {shareFeedback && (
         <div className="p-3 bg-green-50 text-[#008000] border border-green-200 rounded-2xl text-xs font-semibold text-center">

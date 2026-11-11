@@ -665,3 +665,8 @@ test('twibbon auto-close: perpanjangan Humas membuka kembali, tanpa kegiatan tid
   assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-21T00:00:00Z')), true);
   assert.equal(isTwibbonAutoClosed({ hasEvent: false }, new Date('2030-01-01T00:00:00Z')), false);
 });
+
+test('twibbon auto-close: kegiatan berstatus archived langsung menutup twibbon', () => {
+  const ev = { hasEvent: true, startsAt: '2030-01-01T00:00:00Z', endsAt: '2030-01-02T00:00:00Z', eventPublishStatus: 'archived' };
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-11T00:00:00Z')), true);
+});
