@@ -488,6 +488,8 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
       setSuccessMessage(
         targetPublishStatus === 'published'
           ? 'Kegiatan berhasil dipublikasikan! Halaman publik kini dapat diakses.'
+          : targetPublishStatus === 'archived'
+          ? 'Kegiatan berhasil dipindahkan ke Arsip Kegiatan publik.'
           : 'Perubahan kegiatan berhasil disimpan sebagai draft.'
       );
 
@@ -572,12 +574,12 @@ export default function EditorKegiatanClient({ initialEvent, initialResources, i
           {/* Tombol Terbitkan / Simpan Perubahan */}
           <button
             type="button"
-            onClick={() => handleSave('published')}
+            onClick={() => handleSave(publishStatus === 'archived' ? 'archived' : 'published')}
             disabled={isSaving}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#E31837] hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
           >
             {isSaving ? <RefreshCw size={15} className="animate-spin" /> : <Send size={15} />}
-            <span>{publishStatus === 'published' ? 'Simpan Perubahan' : 'Publikasikan'}</span>
+            <span>{publishStatus === 'archived' ? 'Simpan ke Arsip' : publishStatus === 'published' ? 'Simpan Perubahan' : 'Publikasikan'}</span>
           </button>
         </div>
       </div>
