@@ -643,3 +643,25 @@ test('QR Code Generator builds direct payloads, encodes ISO/IEC 18004 Level H ma
   assert.ok(svg.includes('SCAN ME • PILAR BANGSA'));
   assert.ok(svg.includes('/logo_pilar.svg'));
 });
+
+import { isTwibbonAutoClosed, computeEffectiveCloseAt } from '../src/lib/twibbon/closing.ts';
+
+test('twibbon auto-close: tutup setelah ends_at, buka sebelum', () => {
+  const ev = { hasEvent: true, startsAt: '2026-11-01T02:00:00Z', endsAt: '2026-11-01T09:00:00Z' };
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-01T08:59:00Z')), false);
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-01T09:01:00Z')), true);
+});
+
+test('twibbon auto-close: tanpa ends_at memakai akhir hari WIB', () => {
+  const ev = { hasEvent: true, startsAt: '2026-11-01T02:00:00Z', endsAt: null };
+  assert.equal(computeEffectiveCloseAt(ev), '2026-11-01T16:59:59.999Z');
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-01T16:00:00Z')), false);
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-01T17:01:00Z')), true);
+});
+
+test('twibbon auto-close: perpanjangan Humas membuka kembali, tanpa kegiatan tidak menutup', () => {
+  const ev = { hasEvent: true, startsAt: '2026-11-01T02:00:00Z', endsAt: '2026-11-01T09:00:00Z', extendedUntil: '2026-11-20T00:00:00Z' };
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-11T00:00:00Z')), false);
+  assert.equal(isTwibbonAutoClosed(ev, new Date('2026-11-21T00:00:00Z')), true);
+  assert.equal(isTwibbonAutoClosed({ hasEvent: false }, new Date('2030-01-01T00:00:00Z')), false);
+});

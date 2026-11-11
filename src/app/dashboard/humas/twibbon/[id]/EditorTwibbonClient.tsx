@@ -13,7 +13,10 @@ import type { PublicEvent, PublicEventResource } from '@/types/events';
 import {
   normalizeEventTimestamps,
   formatEventDateWib,
+  toWibDateTimeLocalInput,
+  fromWibDateTimeLocalInput,
 } from '@/utils/eventDate';
+import { computeEffectiveCloseAt, isTwibbonAutoClosed } from '@/lib/twibbon/closing';
 import {
   normalizeCampaignSlug,
   validateAdminFrameHeader,
@@ -135,6 +138,10 @@ export default function EditorTwibbonClient({
   const [isUploadingAsset, setIsUploadingAsset] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isArchiving, setIsArchiving] = useState<boolean>(false);
+  const [extendInput, setExtendInput] = useState<string>(
+    toWibDateTimeLocalInput(initialCampaign?.extended_until ?? null)
+  );
+  const [isExtending, setIsExtending] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
@@ -660,6 +667,35 @@ export default function EditorTwibbonClient({
     }
   };
 
+  // Perpanjang / cabut perpanjangan masa aktif twibbon (melewati batas kegiatan)
+  const handleExtend = async (clear: boolean) => {
+    if (!campaign) return;
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    const iso = clear ? null : fromWibDateTimeLocalInput(extendInput);
+    if (!clear && !iso) {
+      setErrorMessage('Isi tanggal dan jam perpanjangan (WIB) terlebih dahulu.');
+      return;
+    }
+    setIsExtending(true);
+    try {
+      const res = await fetch(`/api/admin/twibbon/${campaign.id}/extend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expected_version: campaign.edit_version, extended_until: iso }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error?.message || 'Gagal memperbarui perpanjangan.');
+      setCampaign(json.campaign as TwibbonCampaignRow);
+      if (clear) setExtendInput('');
+      setSuccessMessage(clear ? 'Perpanjangan dicabut.' : 'Masa aktif twibbon berhasil diperpanjang.');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Gagal memperbarui perpanjangan.');
+    } finally {
+      setIsExtending(false);
+    }
+  };
+
   // Switch Kegiatan Resource Card URL (Controlled Action per Decision A4 & PRD Section 6)
   const handleSwitchEventResourceUrl = async (targetMode: 'internal' | 'fallback_twbnz') => {
     if (!eventTwibbonResource || !campaign) return;
@@ -857,6 +893,63 @@ export default function EditorTwibbonClient({
         </div>
       )}
 
+      {/* Masa Aktif Otomatis & Perpanjangan */}
+      {campaign && selectedEvent && (() => {
+        const closeAt = computeEffectiveCloseAt({
+          startsAt: selectedEvent.starts_at,
+          endsAt: selectedEvent.ends_at,
+          extendedUntil: campaign.extended_until ?? null,
+        });
+        const closed = isTwibbonAutoClosed({
+          hasEvent: true,
+          startsAt: selectedEvent.starts_at,
+          endsAt: selectedEvent.ends_at,
+          extendedUntil: campaign.extended_until ?? null,
+        });
+        return (
+          <div className={`p-4 sm:p-5 rounded-2xl border space-y-3 ${closed ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100 shadow-sm'}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-sm font-extrabold text-gray-900">Masa Aktif Twibbon</div>
+                <p className="text-xs text-gray-600">
+                  Twibbon otomatis ditutup setelah kegiatan berakhir
+                  {closeAt ? <> (batas efektif: <b>{formatEventDateWib(closeAt, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</b> WIB)</> : null}.
+                  {closed ? ' Saat ini TUTUP untuk peserta.' : ' Saat ini masih terbuka.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="text-xs font-bold text-gray-700 space-y-1">
+                <span className="block">Perpanjang hingga (WIB)</span>
+                <input
+                  type="datetime-local"
+                  value={extendInput}
+                  onChange={(e) => setExtendInput(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => handleExtend(false)}
+                disabled={isExtending}
+                className="px-4 py-2.5 rounded-xl bg-[#008000] hover:bg-green-700 text-white text-xs font-extrabold disabled:opacity-50"
+              >
+                Terapkan Perpanjangan
+              </button>
+              {campaign.extended_until && (
+                <button
+                  type="button"
+                  onClick={() => handleExtend(true)}
+                  disabled={isExtending}
+                  className="px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold disabled:opacity-50"
+                >
+                  Cabut Perpanjangan
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
       {/* Main Two-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Metadata & Caption Templates (7 cols) */}

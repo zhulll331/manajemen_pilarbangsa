@@ -950,7 +950,7 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
             <div className="flex flex-wrap items-center gap-2">
               {isArchived ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 uppercase tracking-wider">
-                  <Archive size={13} /> Kampanye Diarsipkan
+                  <Archive size={13} /> {campaign.auto_closed ? 'Kampanye Telah Berakhir' : 'Kampanye Diarsipkan'}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-[#E31837] border border-red-100 uppercase tracking-wider">
@@ -1012,7 +1012,7 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
             {isArchived ? (
               <div className="p-4 rounded-2xl bg-gray-100 border border-gray-200 text-gray-700 text-sm font-semibold flex items-center gap-2.5">
                 <Archive size={18} className="text-gray-500 shrink-0" />
-                <span>Kampanye ini sudah diarsipkan. Pembuatan twibbon baru telah ditutup.</span>
+                <span>{campaign.auto_closed ? 'Kegiatan ini telah selesai, sehingga pembuatan twibbon baru otomatis ditutup.' : 'Kampanye ini sudah diarsipkan. Pembuatan twibbon baru telah ditutup.'}</span>
               </div>
             ) : (
               !photoData && (

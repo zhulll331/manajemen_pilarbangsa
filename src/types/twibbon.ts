@@ -85,6 +85,8 @@ export interface TwibbonCampaignAdminRecord {
   updated_at: string;
   published_at: string | null;
   archived_at: string | null;
+  /** Perpanjangan batas aktif oleh Humas (melewati batas kegiatan). */
+  extended_until?: string | null;
 }
 
 export interface TwibbonAuditLogRecord {
@@ -127,6 +129,9 @@ export interface TwibbonPublicCampaignDetail {
   slug: string;
   state: 'published' | 'archived';
   can_generate: boolean;
+  /** true bila kampanye ditutup otomatis karena batas kegiatan terlewati */
+  auto_closed?: boolean;
+  extended_until?: string | null;
   revision_id: string;
   revision_number: number;
   title: string;

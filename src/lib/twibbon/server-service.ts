@@ -11,6 +11,7 @@ import {
   DEFAULT_DIKLAT_CAPTION_UMUM,
 } from './caption';
 import { normalizeEventTimestamps } from '@/utils/eventDate';
+import { isTwibbonAutoClosed } from '@/lib/twibbon/closing';
 
 export class TwibbonHttpError extends Error {
   status: number;
@@ -168,13 +169,20 @@ async function buildDefaultDiklatSampleCampaign(): Promise<TwibbonPublicCampaign
   const diklatEvent = rawDiklatEvent ? normalizeEventTimestamps(rawDiklatEvent) : null;
   const startsAt = diklatEvent?.starts_at || '2026-11-01T02:00:00.000Z';
   const location = diklatEvent?.location || 'Mondoluko Farm, Desa Taman Suruh';
+  const sampleClosed = isTwibbonAutoClosed({
+    hasEvent: true,
+    startsAt,
+    endsAt: diklatEvent?.ends_at || null,
+  });
   const eventSlug = diklatEvent?.slug || 'pendaftaran-diklat-kepemimpinan-periode-20262027';
 
   return {
     id: 'sample-diklat-kepemimpinan-2026',
     slug: 'diklat-kepemimpinan-2026',
-    state: 'published',
-    can_generate: true,
+    state: sampleClosed ? 'archived' : 'published',
+    can_generate: !sampleClosed,
+    auto_closed: sampleClosed,
+    extended_until: null,
     revision_id: 'rev-sample-diklat-2026-v1',
     revision_number: 1,
     title: 'Twibbon Diklat Kepemimpinan 2026',
@@ -225,7 +233,16 @@ export async function fetchPublicTwibbonCampaignList(
     return data.map((row: Record<string, unknown>) => ({
       id: String(row.id),
       slug: String(row.slug),
-      state: row.state === 'archived' ? 'archived' : 'published',
+      state:
+        row.state === 'archived' ||
+        isTwibbonAutoClosed({
+          hasEvent: Boolean(row.event_id),
+          startsAt: row.event_starts_at ? String(row.event_starts_at) : null,
+          endsAt: row.event_ends_at ? String(row.event_ends_at) : null,
+          extendedUntil: row.extended_until ? String(row.extended_until) : null,
+        })
+          ? 'archived'
+          : 'published',
       revision_id: String(row.revision_id),
       revision_number: Number(row.revision_number || 1),
       title: String(row.title),
@@ -324,11 +341,19 @@ export async function fetchPublicTwibbonCampaignBySlug(
         })
       : null;
     const startsAt = normEvent?.starts_at ?? null;
+    const autoClosed = isTwibbonAutoClosed({
+      hasEvent: Boolean(normEvent),
+      startsAt,
+      endsAt: normEvent?.ends_at ?? null,
+      extendedUntil: row.extended_until ? String(row.extended_until) : null,
+    });
     return {
       id: String(row.id),
       slug: String(row.slug),
-      state: row.state === 'archived' ? 'archived' : 'published',
-      can_generate: Boolean(row.can_generate),
+      state: row.state === 'archived' || autoClosed ? 'archived' : 'published',
+      can_generate: Boolean(row.can_generate) && !autoClosed,
+      auto_closed: autoClosed && row.state !== 'archived',
+      extended_until: row.extended_until ? String(row.extended_until) : null,
       revision_id: String(row.revision_id),
       revision_number: Number(row.revision_number || 1),
       title: String(row.title),
