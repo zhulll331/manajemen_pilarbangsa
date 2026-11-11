@@ -114,3 +114,4 @@ AS $$
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_public_twibbon_campaign_by_slug(text) TO anon, authenticated, service_role;
+

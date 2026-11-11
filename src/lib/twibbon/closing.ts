@@ -64,3 +64,4 @@ export function isTwibbonAutoClosed(
   if (closeAt === null) return false;
   return now.getTime() > Date.parse(closeAt);
 }
+

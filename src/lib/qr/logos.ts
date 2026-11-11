@@ -289,3 +289,4 @@ export const QR_LOGO_PRESETS: QrLogoPreset[] = [
     `),
   },
 ];
+
