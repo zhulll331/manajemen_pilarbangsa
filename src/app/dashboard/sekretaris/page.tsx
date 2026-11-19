@@ -40,7 +40,7 @@ export default async function DashboardSekretaris() {
     .map(l => new Date(l.date).getTime());
   const maxUkmDate = ukmDates.length > 0 ? Math.max(...ukmDates) : Date.now();
 
-  const recentLetters = [...(rawRecentLetters || [])].sort((a, b) => {
+  const recentLetters = (rawRecentLetters || []).toSorted((a, b) => {
     const isUkmA = isUkm(a.letter_number);
     const isUkmB = isUkm(b.letter_number);
     const numA = getInitialNum(a.letter_number);

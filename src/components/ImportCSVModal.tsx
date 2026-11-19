@@ -67,7 +67,7 @@ export function ImportCSVModal({
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        const plainData = JSON.parse(JSON.stringify(jsonData));
+        const plainData = structuredClone(jsonData);
 
         if (plainData.length === 0) {
           setErrorMsg("File kosong atau format tidak sesuai.");

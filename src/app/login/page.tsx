@@ -75,6 +75,9 @@ function LoginForm() {
               id="email" 
               name="email" 
               type="email" 
+              autoComplete="username"
+              spellCheck={false}
+              enterKeyHint="next"
               required 
               disabled={isPending}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-all text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
@@ -90,6 +93,8 @@ function LoginForm() {
               id="password" 
               name="password" 
               type="password" 
+              autoComplete="current-password"
+              enterKeyHint="done"
               required 
               disabled={isPending}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-all text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"

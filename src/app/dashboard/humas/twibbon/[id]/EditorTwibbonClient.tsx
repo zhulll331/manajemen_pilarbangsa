@@ -1320,6 +1320,9 @@ export default function EditorTwibbonClient({
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
+                        if (e.nativeEvent.isComposing || e.keyCode === 229) {
+                          return;
+                        }
                         if (customTokenInput.trim()) {
                           handleInsertToken(customTokenInput);
                           setCustomTokenInput('');

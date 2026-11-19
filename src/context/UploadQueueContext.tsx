@@ -230,10 +230,9 @@ export function UploadQueueProvider({ children }: { children: React.ReactNode })
   }, [])
 
   const getJobByRecordId = useCallback((recordId: string, fieldName?: string): UploadJob | undefined => {
-    return jobs
-      .slice()
-      .reverse()
-      .find(j => j.recordId === recordId && (!fieldName || j.fieldName === fieldName))
+    return jobs.findLast(
+      j => j.recordId === recordId && (!fieldName || j.fieldName === fieldName)
+    )
   }, [jobs])
 
   const isUploading = useCallback((recordId: string, fieldName?: string): boolean => {

@@ -79,7 +79,7 @@ export default function TransaksiClient({ transactions, programs = [], totalIura
     };
 
     // Urutkan ASC (terlama → terbaru) untuk menghitung running balance
-    const sortedChronological = [...allRows].sort((a, b) => sortKey(a, b, 1));
+    const sortedChronological = allRows.toSorted((a, b) => sortKey(a, b, 1));
 
     // Hitung running balance mulai dari 0
     let runningBalance = 0;

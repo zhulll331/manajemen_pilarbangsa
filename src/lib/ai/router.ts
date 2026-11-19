@@ -33,61 +33,54 @@ async function callGemini(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan");
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+  // Format pesan percakapan untuk Gemini
+  const contents: any[] = [];
 
-  try {
-    // Format pesan percakapan untuk Gemini
-    const contents: any[] = [];
-
-    // Tambahkan riwayat percakapan sebelumnya jika ada
-    for (const h of history) {
-      contents.push({
-        role: h.role === "assistant" ? "model" : "user",
-        parts: [{ text: h.content }],
-      });
-    }
-
-    // Tambahkan pesan terbaru user
+  // Tambahkan riwayat percakapan sebelumnya jika ada
+  for (const h of history) {
     contents.push({
-      role: "user",
-      parts: [{ text: userMessage }],
+      role: h.role === "assistant" ? "model" : "user",
+      parts: [{ text: h.content }],
     });
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents,
-          systemInstruction: {
-            parts: [{ text: systemPrompt }],
-          },
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 2048,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}));
-      throw new Error(`Gemini HTTP ${response.status}: ${JSON.stringify(errJson)}`);
-    }
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text || text.trim() === "") {
-      throw new Error("Gemini menghasilkan respons kosong");
-    }
-
-    return { text: text.trim(), provider: "Google Gemini", model: "gemini-2.5-flash" };
-  } finally {
-    clearTimeout(timeoutId);
   }
+
+  // Tambahkan pesan terbaru user
+  contents.push({
+    role: "user",
+    parts: [{ text: userMessage }],
+  });
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(12000), // 12s timeout
+      body: JSON.stringify({
+        contents,
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 2048,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errJson = await response.json().catch(() => ({}));
+    throw new Error(`Gemini HTTP ${response.status}: ${JSON.stringify(errJson)}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text || text.trim() === "") {
+    throw new Error("Gemini menghasilkan respons kosong");
+  }
+
+  return { text: text.trim(), provider: "Google Gemini", model: "gemini-2.5-flash" };
 }
 
 // 2. Groq Cloud Provider (Super Fast)
@@ -99,59 +92,54 @@ async function callGroq(
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY tidak ditemukan");
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  const signal = AbortSignal.timeout(10000); // 10s total budget across fallback models
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...history.map((h) => ({ role: h.role, content: h.content })),
+    { role: "user", content: userMessage },
+  ];
 
-  try {
-    const messages = [
-      { role: "system", content: systemPrompt },
-      ...history.map((h) => ({ role: h.role, content: h.content })),
-      { role: "user", content: userMessage },
-    ];
+  // Coba model dengan batas token tinggi di Groq
+  const preferredModels = ["groq/compound-mini", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
+  let lastError: any = null;
 
-    // Coba model dengan batas token tinggi di Groq
-    const preferredModels = ["groq/compound-mini", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
-    let lastError: any = null;
+  for (const modelName of preferredModels) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        signal,
+        body: JSON.stringify({
+          model: modelName,
+          messages,
+          temperature: 0.2,
+          max_tokens: 1500,
+        }),
+      });
 
-    for (const modelName of preferredModels) {
-      try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: modelName,
-            messages,
-            temperature: 0.2,
-            max_tokens: 1500,
-          }),
-        });
-
-        if (!response.ok) {
-          const errJson = await response.json().catch(() => ({}));
-          throw new Error(`Groq (${modelName}) HTTP ${response.status}: ${JSON.stringify(errJson)}`);
-        }
-
-        const data = await response.json();
-        const text = data.choices?.[0]?.message?.content;
-        if (!text || text.trim() === "") {
-          throw new Error(`Groq (${modelName}) respons kosong`);
-        }
-
-        return { text: text.trim(), provider: "Groq Cloud", model: modelName };
-      } catch (subErr: any) {
-        lastError = subErr;
-        console.warn(`[AI-Router] Groq model ${modelName} gagal:`, subErr.message);
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(`Groq (${modelName}) HTTP ${response.status}: ${JSON.stringify(errJson)}`);
       }
-    }
 
-    throw lastError || new Error("Semua model Groq gagal merespon");
-  } finally {
-    clearTimeout(timeoutId);
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (!text || text.trim() === "") {
+        throw new Error(`Groq (${modelName}) respons kosong`);
+      }
+
+      return { text: text.trim(), provider: "Groq Cloud", model: modelName };
+    } catch (subErr: any) {
+      lastError = subErr;
+      console.warn(`[AI-Router] Groq model ${modelName} gagal:`, subErr.message);
+      if (signal.aborted) break;
+    }
   }
+
+  throw lastError || new Error("Semua model Groq gagal merespon");
 }
 
 // 3. OpenRouter Provider (Fallback Model Gratis)
@@ -163,56 +151,49 @@ async function callOpenRouter(
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY tidak ditemukan");
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 18000); // 18s timeout untuk antrean free tier
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...history.map((h) => ({ role: h.role, content: h.content })),
+    { role: "user", content: userMessage },
+  ];
 
-  try {
-    const messages = [
-      { role: "system", content: systemPrompt },
-      ...history.map((h) => ({ role: h.role, content: h.content })),
-      { role: "user", content: userMessage },
-    ];
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://pilarbangsa.my.id",
+      "X-Title": "Pilar Bangsa Management",
+    },
+    signal: AbortSignal.timeout(18000), // 18s timeout untuk antrean free tier
+    body: JSON.stringify({
+      models: [
+        "google/gemini-2.0-flash-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+      ],
+      messages,
+      temperature: 0.2,
+      max_tokens: 1800,
+    }),
+  });
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://pilarbangsa.my.id",
-        "X-Title": "Pilar Bangsa Management",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        models: [
-          "google/gemini-2.0-flash-exp:free",
-          "meta-llama/llama-3.3-70b-instruct:free",
-          "nvidia/nemotron-3-ultra-550b-a55b:free",
-        ],
-        messages,
-        temperature: 0.2,
-        max_tokens: 1800,
-      }),
-    });
-
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}));
-      throw new Error(`OpenRouter HTTP ${response.status}: ${JSON.stringify(errJson)}`);
-    }
-
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
-    if (!text || text.trim() === "") {
-      throw new Error("OpenRouter menghasilkan respons kosong");
-    }
-
-    return {
-      text: text.trim(),
-      provider: "OpenRouter",
-      model: data.model || "free-models",
-    };
-  } finally {
-    clearTimeout(timeoutId);
+  if (!response.ok) {
+    const errJson = await response.json().catch(() => ({}));
+    throw new Error(`OpenRouter HTTP ${response.status}: ${JSON.stringify(errJson)}`);
   }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text || text.trim() === "") {
+    throw new Error("OpenRouter menghasilkan respons kosong");
+  }
+
+  return {
+    text: text.trim(),
+    provider: "OpenRouter",
+    model: data.model || "free-models",
+  };
 }
 
 /**
