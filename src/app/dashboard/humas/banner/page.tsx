@@ -168,9 +168,11 @@ export default function BannerManagementPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
-        <PilarLoader size="sm" label="Memuat data banner" />
-        <span className="text-sm font-medium">Memuat data banner...</span>
+      <div className="flex flex-col items-center justify-center w-full min-h-[calc(100dvh-190px)] gap-3.5 text-center">
+        <PilarLoader size="md" label="Memuat data banner" />
+        <p className="text-xs font-medium text-[#686e68] tracking-wide">
+          Sabarr yah...
+        </p>
       </div>
     )
   }
