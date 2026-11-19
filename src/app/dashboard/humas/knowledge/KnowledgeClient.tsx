@@ -18,6 +18,7 @@ import {
   BookOpen,
   Info,
 } from "lucide-react";
+import { PilarLoader } from "@/components/PilarLoader";
 
 interface KnowledgeDoc {
   slug: string;
@@ -466,8 +467,8 @@ export default function KnowledgeClient() {
         </div>
 
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500 text-sm space-y-3">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-600" />
+          <div className="p-12 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
+            <PilarLoader size="sm" label="Memuat dokumen basis pengetahuan" />
             <div>Memuat daftar dokumen basis pengetahuan...</div>
           </div>
         ) : docs.length === 0 ? (

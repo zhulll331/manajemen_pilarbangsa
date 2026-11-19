@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { PublicEventResource, RegistrationStatus, PublishStatus } from '@/types/events';
 import { 
@@ -33,10 +33,16 @@ export default function KegiatanResourceView({
   publishStatus,
 }: Props) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyErrorId, setCopyErrorId] = useState<string | null>(null);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fallback Copy Function
   const handleCopy = async (id: string, text: string) => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    setCopyErrorId(null);
+
     try {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -44,25 +50,30 @@ export default function KegiatanResourceView({
         // Fallback untuk browser yang membatasi clipboard API
         const textArea = document.createElement('textarea');
         textArea.value = text;
+        textArea.setAttribute('readonly', '');
         textArea.style.position = 'fixed';
         textArea.style.opacity = '0';
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        document.execCommand('copy');
+        const ok = document.execCommand('copy');
         document.body.removeChild(textArea);
+        if (!ok) throw new Error('Copy failed');
       }
       setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2500);
+      copyTimerRef.current = setTimeout(() => setCopiedId(null), 2500);
     } catch (err) {
       console.warn('Gagal menyalin:', err);
-      alert('Gagal menyalin otomatis. Silakan salin teks secara manual.');
+      setCopiedId(null);
+      setCopyErrorId(id);
+      copyTimerRef.current = setTimeout(() => setCopyErrorId(null), 3500);
     }
   };
 
   // Handle Share Page
   const handleShare = async () => {
     const url = window.location.href;
+    if (shareTimerRef.current) clearTimeout(shareTimerRef.current);
 
     try {
       if (navigator.share) {
@@ -74,7 +85,7 @@ export default function KegiatanResourceView({
       } else if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
         setShareFeedback('Tautan halaman berhasil disalin!');
-        setTimeout(() => setShareFeedback(null), 2500);
+        shareTimerRef.current = setTimeout(() => setShareFeedback(null), 2500);
       }
     } catch {
       // User cancelled share
@@ -298,21 +309,32 @@ export default function KegiatanResourceView({
                   </div>
 
                   {item.copyable && (
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(item.id, item.content || '')}
-                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs ${
-                        isCopied
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                      }`}
-                      title="Salin isi teks ke clipboard"
-                    >
-                      {isCopied ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{isCopied ? 'Berhasil Disalin!' : 'Salin Teks'}</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(item.id, item.content || '')}
+                        aria-label={`Salin teks ${item.title}`}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs ${
+                          isCopied
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                        }`}
+                      >
+                        {isCopied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+                        <span>{isCopied ? 'Berhasil Disalin!' : 'Salin Teks'}</span>
+                      </button>
+                      <span role="status" className="sr-only">
+                        {isCopied ? `Teks ${item.title} berhasil disalin.` : ''}
+                      </span>
+                    </div>
                   )}
                 </div>
+
+                {copyErrorId === item.id && (
+                  <div role="alert" className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+                    Gagal menyalin otomatis. Silakan blok dan salin teks di bawah secara manual.
+                  </div>
+                )}
 
                 {/* Content Box */}
                 <div className="p-4 rounded-2xl bg-gray-50/80 border border-gray-100 text-gray-800 text-xs sm:text-sm font-sans whitespace-pre-wrap leading-relaxed select-all">
@@ -381,7 +403,7 @@ export default function KegiatanResourceView({
       )}
 
       {shareFeedback && (
-        <div className="p-3 bg-green-50 text-[#008000] border border-green-200 rounded-2xl text-xs font-semibold text-center">
+        <div role="status" className="p-3 bg-green-50 text-[#008000] border border-green-200 rounded-2xl text-xs font-semibold text-center">
           {shareFeedback}
         </div>
       )}

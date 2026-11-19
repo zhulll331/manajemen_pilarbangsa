@@ -145,6 +145,10 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
               <img
                 src={event.banner_url}
                 alt={event.title}
+                width={1200}
+                height={630}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,17 +12,62 @@ export function PublikNavbar() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const headerContainerRef = useRef<HTMLDivElement>(null);
+  const progressTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  // Shrink on scroll
+  // Shrink on scroll via IntersectionObserver sentinel (menghindari scroll listener di main thread)
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const sentinel = sentinelRef.current;
+    if (!sentinel || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsScrolled(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "24px 0px 0px 0px",
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
+
+  // Close mobile menu on Escape or click/tap outside
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (
+        headerContainerRef.current &&
+        e.target instanceof Node &&
+        !headerContainerRef.current.contains(e.target)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [isMobileMenuOpen]);
 
   // Close mobile menu & reset navigation progress on pathname change
   useEffect(() => {
+    progressTimersRef.current.forEach(clearTimeout);
+    progressTimersRef.current = [];
     setIsMobileMenuOpen(false);
     setProgress(100);
     const timer = setTimeout(() => {
@@ -35,47 +80,48 @@ export function PublikNavbar() {
   // Handler for link clicks to provide immediate visual feedback
   const handleLinkClick = (href: string) => {
     if (pathname === href) return;
+    progressTimersRef.current.forEach(clearTimeout);
     setIsNavigating(true);
     setProgress(30);
 
     const step1 = setTimeout(() => setProgress(70), 100);
     const step2 = setTimeout(() => setProgress(90), 300);
-
-    return () => {
-      clearTimeout(step1);
-      clearTimeout(step2);
-    };
+    progressTimersRef.current = [step1, step2];
   };
 
   const navItems = [
-    { href: "/", label: "Beranda", icon: <Home size={18} /> },
-    { href: "/tentang-kami", label: "Tentang Kami", icon: <Users size={18} /> },
-    { href: "/kegiatan", label: "Kegiatan", icon: <Calendar size={18} /> },
-    { href: "/program-kerja", label: "Program Kerja", icon: <Briefcase size={18} /> },
-    { href: "/arsip", label: "Arsip UKM", icon: <Archive size={18} /> },
+    { href: "/", label: "Beranda", icon: <Home size={18} aria-hidden="true" /> },
+    { href: "/tentang-kami", label: "Tentang Kami", icon: <Users size={18} aria-hidden="true" /> },
+    { href: "/kegiatan", label: "Kegiatan", icon: <Calendar size={18} aria-hidden="true" /> },
+    { href: "/program-kerja", label: "Program Kerja", icon: <Briefcase size={18} aria-hidden="true" /> },
+    { href: "/arsip", label: "Arsip UKM", icon: <Archive size={18} aria-hidden="true" /> },
   ];
 
   return (
     <>
+      {/* Sentinel untuk mendeteksi scroll > 24px tanpa event listener scroll */}
+      <div ref={sentinelRef} aria-hidden="true" className="h-px w-full pointer-events-none" />
+
       {/* Top Animated Progress Bar for instant navigation feedback */}
       {isNavigating && (
-        <div className="fixed top-0 left-0 right-0 z-[100] h-1 bg-transparent overflow-hidden">
+        <div className="fixed top-0 left-0 right-0 z-[100] h-1 bg-transparent overflow-hidden" aria-hidden="true">
           <div 
-            className="h-full bg-gradient-to-r from-[#E31837] via-[#FFD700] to-[#008000] transition-all duration-300 ease-out shadow-sm"
+            className="h-full bg-gradient-to-r from-[#E31837] via-[#FFD700] to-[#008000] transition-all duration-300 ease-out motion-reduce:transition-none shadow-sm"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
       {/* Floating pill navbar (backdrop blur + shrink on scroll) */}
-      <div className="sticky top-0 z-50 px-3 sm:px-6 pointer-events-none">
+      <div className="sticky top-0 z-50 px-3 sm:px-6 pointer-events-none [overflow-anchor:none]">
         <div
-          className={`relative mx-auto pointer-events-auto transition-all duration-300 ease-out ${
+          ref={headerContainerRef}
+          className={`relative mx-auto pointer-events-auto transition-all duration-300 ease-out motion-reduce:transition-none ${
             isScrolled ? "max-w-4xl mt-2" : "max-w-6xl mt-3 sm:mt-4"
           }`}
         >
           <header
-            className={`flex items-center justify-between rounded-full border backdrop-blur-xl transition-all duration-300 ease-out ${
+            className={`flex items-center justify-between rounded-full border backdrop-blur-xl transition-all duration-300 ease-out motion-reduce:transition-none ${
               isScrolled
                 ? "h-14 pl-3 pr-2 sm:pl-4 bg-white/70 border-white/60 shadow-lg shadow-black/10"
                 : "h-[72px] pl-4 pr-3 sm:pl-6 bg-white/80 border-gray-200/70 shadow-md shadow-black/5"
@@ -86,11 +132,11 @@ export function PublikNavbar() {
               href="/"
               prefetch={true}
               onClick={() => handleLinkClick("/")}
-              className="flex items-center gap-2 sm:gap-3 group"
+              className="flex items-center gap-2 sm:gap-3 group rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
             >
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div
-                  className={`flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105 ${
+                  className={`flex items-center justify-center shrink-0 transition-all duration-300 motion-reduce:transition-none group-hover:scale-105 ${
                     isScrolled ? "w-8 h-8 sm:w-9 sm:h-9" : "w-10 h-10 sm:w-12 sm:h-12"
                   }`}
                 >
@@ -104,7 +150,7 @@ export function PublikNavbar() {
                   />
                 </div>
                 <div
-                  className={`flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105 ${
+                  className={`flex items-center justify-center shrink-0 transition-all duration-300 motion-reduce:transition-none group-hover:scale-105 ${
                     isScrolled ? "w-8 h-8 sm:w-9 sm:h-9" : "w-10 h-10 sm:w-12 sm:h-12"
                   }`}
                 >
@@ -120,14 +166,14 @@ export function PublikNavbar() {
               </div>
               <div className="flex flex-col leading-tight">
                 <span
-                  className={`font-extrabold tracking-tight text-gray-900 group-hover:text-[#E31837] transition-all duration-300 ${
+                  className={`font-extrabold tracking-tight text-gray-900 group-hover:text-[#E31837] transition-all duration-300 motion-reduce:transition-none ${
                     isScrolled ? "text-sm sm:text-base" : "text-base sm:text-xl"
                   }`}
                 >
                   Pilar Bangsa
                 </span>
                 <span
-                  className={`hidden sm:block text-[10px] font-medium text-gray-500 uppercase tracking-widest overflow-hidden transition-all duration-300 ${
+                  className={`hidden sm:block text-[10px] font-medium text-gray-500 uppercase tracking-widest overflow-hidden transition-all duration-300 motion-reduce:transition-none ${
                     isScrolled ? "max-h-0 opacity-0" : "max-h-4 opacity-100"
                   }`}
                 >
@@ -137,7 +183,7 @@ export function PublikNavbar() {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav aria-label="Utama" className="hidden md:flex items-center gap-1">
               {navItems.map((item) => {
                 const isActive =
                   pathname === item.href ||
@@ -147,12 +193,13 @@ export function PublikNavbar() {
                     key={item.href}
                     href={item.href}
                     prefetch={true}
+                    aria-current={isActive ? "page" : undefined}
                     onClick={() => handleLinkClick(item.href)}
-                    className={`font-bold text-sm tracking-wide rounded-full transition-all duration-200 ${
+                    className={`font-bold text-sm tracking-wide rounded-full transition-all duration-200 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837] ${
                       isScrolled ? "px-3 py-1.5" : "px-4 py-2"
                     } ${
                       isActive
-                        ? "text-[#E31837] bg-red-50/90"
+                        ? "text-[#E31837] bg-red-50/95 ring-1 ring-[#E31837]/30"
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-900/5"
                     }`}
                   >
@@ -164,18 +211,24 @@ export function PublikNavbar() {
 
             {/* Mobile Toggle */}
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2.5 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-900/5 transition-colors"
-              aria-label="Buka Menu"
+              className="md:hidden p-2.5 rounded-full text-gray-700 hover:text-gray-900 hover:bg-gray-900/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+              aria-label={isMobileMenuOpen ? "Tutup Menu" : "Buka Menu"}
               aria-expanded={isMobileMenuOpen}
+              aria-controls="publik-mobile-menu"
             >
-              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              {isMobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
             </button>
           </header>
 
           {/* Mobile Navigation Dropdown (floating card) */}
           {isMobileMenuOpen && (
-            <div className="md:hidden absolute left-0 right-0 top-full mt-2 rounded-3xl border border-white/60 bg-white/85 backdrop-blur-xl p-3 space-y-1 shadow-xl shadow-black/10 animate-in slide-in-from-top-2 duration-200">
+            <nav
+              id="publik-mobile-menu"
+              aria-label="Utama Seluler"
+              className="md:hidden absolute left-0 right-0 top-full mt-2 rounded-3xl border border-white/60 bg-white/85 backdrop-blur-xl p-3 space-y-1 shadow-xl shadow-black/10 animate-in slide-in-from-top-2 duration-200 motion-reduce:animate-none"
+            >
               {navItems.map((item) => {
                 const isActive =
                   pathname === item.href ||
@@ -185,10 +238,11 @@ export function PublikNavbar() {
                     key={item.href}
                     href={item.href}
                     prefetch={true}
+                    aria-current={isActive ? "page" : undefined}
                     onClick={() => handleLinkClick(item.href)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-2xl font-bold text-sm transition-colors ${
+                    className={`flex items-center justify-between px-4 py-3 rounded-2xl font-bold text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837] ${
                       isActive
-                        ? "text-[#E31837] bg-red-50 font-extrabold"
+                        ? "text-[#E31837] bg-red-50 font-extrabold ring-1 ring-[#E31837]/25"
                         : "text-gray-700 hover:bg-gray-900/5"
                     }`}
                   >
@@ -196,13 +250,14 @@ export function PublikNavbar() {
                       {item.icon}
                       <span>{item.label}</span>
                     </div>
-                    {isActive && <ArrowRight size={16} className="text-[#E31837]" />}
+                    {isActive && <ArrowRight size={16} className="text-[#E31837]" aria-hidden="true" />}
                   </Link>
                 );
               })}
-            </div>
+            </nav>
           )}
         </div>
-      </div>    </>
+      </div>
+    </>
   );
 }

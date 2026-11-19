@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { login } from '../actions'
 import { Loader2 } from 'lucide-react'
+import { PilarLoader } from '@/components/PilarLoader'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -130,8 +131,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-4">
       <Suspense fallback={
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-2" />
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center min-h-[400px] gap-3">
+          <PilarLoader size="sm" label="Memuat formulir login" />
           <p className="text-sm text-gray-500">Memuat formulir...</p>
         </div>
       }>

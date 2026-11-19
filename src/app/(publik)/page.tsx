@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { HeroSlider } from '@/components/HeroSlider'
@@ -6,6 +6,7 @@ import { PilarPhotoMarquee } from '@/components/PilarPhotoMarquee'
 import { TimelineRoadmap } from '@/components/TimelineRoadmap'
 import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper'
 import { ScrollReveal } from '@/components/ScrollReveal'
+import { PilarLoader } from '@/components/PilarLoader'
 import { createClient } from '@supabase/supabase-js'
 import { ArrowRight, Newspaper, Calendar, Sparkles, MapPin, CheckCircle2 } from 'lucide-react'
 import { PublicEvent } from '@/types/events'
@@ -133,11 +134,68 @@ async function getNews(): Promise<NewsItem[]> {
 
 
 
+async function BeritaGrid() {
+  const newsList = await getNews();
+
+  if (newsList.length === 0) {
+    return (
+      <div className="text-center p-12 bg-gray-50 rounded-3xl border border-gray-100">
+        <p className="text-gray-500">Belum ada berita terbaru saat ini.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {newsList.map((news) => (
+        <a 
+          key={news.id} 
+          href={news.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="snap-center shrink-0 w-[85vw] sm:w-[350px] md:w-auto bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col"
+        >
+          <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-gray-100">
+            <img 
+              src={news.image_url || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop'} 
+              alt={news.title}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {news.category && (
+              <span className="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                {news.category}
+              </span>
+            )}
+          </div>
+          <div className="p-6 flex flex-col flex-grow">
+            {news.published_at && (
+              <span className="text-xs text-gray-400 font-medium mb-2">
+                {new Date(news.published_at).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+                {news.author ? ` • ${news.author}` : ''}
+              </span>
+            )}
+            <h3 className="font-bold text-gray-900 text-lg leading-snug group-hover:text-[#E31837] transition-colors line-clamp-3 mb-4">
+              {news.title}
+            </h3>
+            <div className="mt-auto flex items-center text-sm font-semibold text-[#008000] group-hover:text-[#E31837] transition-colors">
+              Baca selengkapnya
+              <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export default async function BerandaPage() {
-  const [newsList, featuredEvent] = await Promise.all([
-    getNews(),
-    getFeaturedEvent(),
-  ]);
+  const featuredEvent = await getFeaturedEvent();
 
   return (
     <div className="space-y-24 overflow-hidden">
@@ -256,56 +314,16 @@ export default async function BerandaPage() {
             </p>
           </div>
 
-          {newsList.length > 0 ? (
-            <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {newsList.map((news) => (
-                <a 
-                  key={news.id} 
-                  href={news.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="snap-center shrink-0 w-[85vw] sm:w-[350px] md:w-auto bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col"
-                >
-                  <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-gray-100">
-                    <img 
-                      src={news.image_url || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop'} 
-                      alt={news.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    {news.category && (
-                      <span className="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                        {news.category}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    {news.published_at && (
-                      <span className="text-xs text-gray-400 font-medium mb-2">
-                        {new Date(news.published_at).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
-                        {news.author ? ` • ${news.author}` : ''}
-                      </span>
-                    )}
-                    <h3 className="font-bold text-gray-900 text-lg leading-snug group-hover:text-[#E31837] transition-colors line-clamp-3 mb-4">
-                      {news.title}
-                    </h3>
-                    <div className="mt-auto flex items-center text-sm font-semibold text-[#008000] group-hover:text-[#E31837] transition-colors">
-                      Baca selengkapnya
-                      <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center p-12 bg-gray-50 rounded-3xl border border-gray-100">
-              <p className="text-gray-500">Belum ada berita terbaru saat ini.</p>
-            </div>
-          )}
+          <Suspense
+            fallback={
+              <div className="py-12 flex flex-col items-center justify-center gap-3">
+                <PilarLoader size="md" label="Memuat daftar berita" />
+                <p className="text-sm text-gray-500 font-medium">Memuat berita terbaru...</p>
+              </div>
+            }
+          >
+            <BeritaGrid />
+          </Suspense>
         </section>
       </ScrollReveal>
 

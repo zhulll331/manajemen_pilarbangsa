@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Calendar, Clock, CalendarPlus, Flag, AlertCircle, RefreshCw } from 'lucide-react'
+import { Calendar, Clock, CalendarPlus, Flag, AlertCircle } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import { PilarLoader } from '@/components/PilarLoader'
 
 // Konfigurasi Periode Organisasi — sesuaikan dengan konstanta di IuranClient.tsx
 const PERIOD_START_MONTH: number = 7 // 7 = Juli (bulan mulai periode organisasi)
@@ -212,9 +213,9 @@ export function TimelineRoadmap() {
 
       {/* Tampilan Loading */}
       {loading ? (
-        <div className="p-16 text-center text-gray-400 font-bold flex items-center justify-center space-x-2">
-          <RefreshCw className="w-6 h-6 animate-spin text-[#E31837]" />
-          <span>Memuat data roadmap program kerja langsung dari Supabase...</span>
+        <div className="p-16 text-center text-gray-500 font-bold flex flex-col items-center justify-center gap-3">
+          <PilarLoader size="sm" label="Memuat roadmap program kerja" />
+          <span className="text-sm">Memuat data roadmap program kerja...</span>
         </div>
       ) : filteredEvents.length === 0 ? (
         <div className="p-12 text-center bg-gray-50 rounded-3xl border border-gray-200 space-y-3 max-w-xl mx-auto">

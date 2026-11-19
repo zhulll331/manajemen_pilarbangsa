@@ -1,8 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Upload, Download, AlertTriangle, FileText, CheckCircle } from "lucide-react";
 import * as XLSX from "xlsx";
+
+function isPointerOutsideDialog(
+  e: React.PointerEvent<HTMLDialogElement>,
+  dialog: HTMLDialogElement
+): boolean {
+  const r = dialog.getBoundingClientRect();
+  return (
+    e.clientX < r.left ||
+    e.clientX > r.right ||
+    e.clientY < r.top ||
+    e.clientY > r.bottom
+  );
+}
 
 interface ImportCSVModalProps {
   isOpen: boolean;
@@ -24,6 +37,19 @@ export function ImportCSVModal({
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const pressedOutsideRef = useRef(false);
+  const titleId = useId();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!isOpen && dialog.open) {
+      dialog.close();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -98,83 +124,110 @@ export function ImportCSVModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onCancel={(e) => {
+        if (isLoading) e.preventDefault();
+      }}
+      onClose={() => {
+        if (!isLoading) onClose();
+      }}
+      onPointerDown={(e) => {
+        pressedOutsideRef.current = isPointerOutsideDialog(e, e.currentTarget);
+      }}
+      onPointerUp={(e) => {
+        if (
+          !isLoading &&
+          !('closedBy' in HTMLDialogElement.prototype) &&
+          pressedOutsideRef.current &&
+          isPointerOutsideDialog(e, e.currentTarget)
+        ) {
+          e.currentTarget.close();
+        }
+        pressedOutsideRef.current = false;
+      }}
+      {...({ closedby: isLoading ? "none" : "any" } as Record<string, string>)}
+      className="bg-white rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-lg p-6 border-0 text-left"
+    >
+      <h2 id={titleId} className="text-xl font-bold text-gray-800 mb-2">
+        {title.replace("CSV", "Excel")}
+      </h2>
+      <p className="text-sm text-gray-500 mb-6">
+        Impor data secara massal menggunakan file Excel (.xlsx) atau CSV. Pastikan kolom sesuai dengan template yang disediakan.
+      </p>
 
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{title.replace("CSV", "Excel")}</h3>
-        <p className="text-sm text-gray-500 mb-6">
-          Impor data secara massal menggunakan file Excel (.xlsx) atau CSV. Pastikan kolom sesuai dengan template yang disediakan.
-        </p>
+      {errorMsg && (
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+          <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={18} aria-hidden="true" />
+          <p className="text-sm text-red-700">{errorMsg}</p>
+        </div>
+      )}
 
-        {errorMsg && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
-            <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={18} />
-            <p className="text-sm text-red-700">{errorMsg}</p>
+      {successMsg && (
+        <div role="status" className="mb-4 p-3 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
+          <CheckCircle className="text-green-500 shrink-0 mt-0.5" size={18} aria-hidden="true" />
+          <p className="text-sm text-green-700">{successMsg}</p>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-center">
+          <div className="flex justify-center mb-3">
+            <FileText size={32} className="text-gray-400" aria-hidden="true" />
           </div>
-        )}
-
-        {successMsg && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
-            <CheckCircle className="text-green-500 shrink-0 mt-0.5" size={18} />
-            <p className="text-sm text-green-700">{successMsg}</p>
-          </div>
-        )}
-
-        <div className="space-y-4">
-          <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-center">
-            <div className="flex justify-center mb-3">
-              <FileText size={32} className="text-gray-400" />
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              {file ? file.name : "Unggah file Excel/CSV Anda di sini"}
-            </p>
-            <input 
-              type="file" 
-              accept=".xlsx, .xls, .csv" 
-              className="hidden" 
-              ref={fileInputRef}
-              onChange={handleFileChange}
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
-            >
-              Pilih File
-            </button>
-          </div>
-
+          <p className="text-sm text-gray-600 mb-4">
+            {file ? file.name : "Unggah file Excel/CSV Anda di sini"}
+          </p>
+          <input 
+            type="file" 
+            accept=".xlsx, .xls, .csv" 
+            className="hidden" 
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
           <button
-            onClick={handleDownloadTemplate}
-            className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-[var(--color-primary)] bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
           >
-            <Download size={16} />
-            Unduh Template Excel
+            Pilih File
           </button>
         </div>
 
-        <div className="flex justify-end gap-3 mt-8">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-          >
-            Batal
-          </button>
-          <button
-            onClick={handleImport}
-            disabled={isLoading || !file}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
-          >
-            {isLoading ? "Memproses..." : (
-              <>
-                <Upload size={18} />
-                Import Data
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleDownloadTemplate}
+          className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-[var(--color-primary)] bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
+        >
+          <Download size={16} aria-hidden="true" />
+          Unduh Template Excel
+        </button>
       </div>
-    </div>
+
+      <div className="flex justify-end gap-3 mt-8">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isLoading}
+          className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          onClick={handleImport}
+          disabled={isLoading || !file}
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
+        >
+          {isLoading ? "Memproses..." : (
+            <>
+              <Upload size={18} aria-hidden="true" />
+              Import Data
+            </>
+          )}
+        </button>
+      </div>
+    </dialog>
   );
 }

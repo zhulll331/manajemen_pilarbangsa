@@ -15,8 +15,187 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scroll-padding-top: 6rem;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-text-dark);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.publik-skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10000;
+  padding: 0.625rem 1rem;
+  border-radius: 9999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.2);
+}
+
+.publik-skip-link:where(:not(:focus-visible, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* ===== Loader Pilar Bangsa — staggered, CSS murni ===== */
+:root {
+  --pb-color: #111111;
+  --pb-bg: #ffffff;
+  --pb-dur: 2.4s;
+}
+
+:root[data-theme="dark"],
+.dark {
+  --pb-color: #f9fafb;
+  --pb-bg: #0a0a0a;
+}
+
+.pb-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--pb-bg);
+}
+
+.pb-inline {
+  display: inline-grid;
+  place-items: center;
+}
+
+.pb-loader {
+  --pb-size: min(48vmin, 320px);
+  width: var(--pb-size);
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.pb-loader--sm {
+  --pb-size: 56px;
+}
+
+.pb-loader--md {
+  --pb-size: 96px;
+}
+
+.pb-loader--lg {
+  --pb-size: min(48vmin, 320px);
+}
+
+.pb-part {
+  fill: var(--pb-color);
+  --from: translateY(36px);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation-duration: var(--pb-dur);
+  animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+.pb-ring {
+  --from: scale(.9);
+}
+
+.pb-roof {
+  --from: translateY(-30px);
+}
+
+.pb-teks {
+  --from: translateY(14px);
+}
+
+@keyframes pb-in-alas2 {
+  0%, 0% { opacity: 0; transform: var(--from); }
+  10%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-alas1 {
+  0%, 7% { opacity: 0; transform: var(--from); }
+  17%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-teks {
+  0%, 14% { opacity: 0; transform: var(--from); }
+  24%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-pilar1 {
+  0%, 22% { opacity: 0; transform: var(--from); }
+  32%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-pilar2 {
+  0%, 28% { opacity: 0; transform: var(--from); }
+  38%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-pilar3 {
+  0%, 34% { opacity: 0; transform: var(--from); }
+  44%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-roof {
+  0%, 42% { opacity: 0; transform: var(--from); }
+  52%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes pb-in-ring {
+  0%, 52% { opacity: 0; transform: var(--from); }
+  62%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+
+.pb-alas2 { animation-name: pb-in-alas2; }
+.pb-alas1 { animation-name: pb-in-alas1; }
+.pb-teks { animation-name: pb-in-teks; }
+.pb-pilar1 { animation-name: pb-in-pilar1; }
+.pb-pilar2 { animation-name: pb-in-pilar2; }
+.pb-pilar3 { animation-name: pb-in-pilar3; }
+.pb-roof { animation-name: pb-in-roof; }
+.pb-ring { animation-name: pb-in-ring; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-part {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===== Native Modal Dialog (<dialog>) — Scroll Containment & Backdrop ===== */
+dialog:modal {
+  overscroll-behavior: contain;
+  margin: auto;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+  overscroll-behavior: contain;
 }

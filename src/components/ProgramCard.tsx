@@ -63,6 +63,10 @@ export function ProgramCard({ program }: { program: ProgramWork }) {
         <img
           src={directImageUrl}
           alt={program.title}
+          width={640}
+          height={360}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           onError={(e) => {
             // Fallback terakhir jika ID file salah atau file telah terhapus di Drive

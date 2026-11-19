@@ -1,8 +1,14 @@
+import { PilarLoader } from "@/components/PilarLoader";
+
 export default function PublikLoading() {
   return (
-    <div className="space-y-12 py-4 animate-pulse w-full max-w-7xl mx-auto">
+    <div className="space-y-12 py-4 w-full max-w-7xl mx-auto">
+      <div className="flex flex-col items-center justify-center py-6 gap-3">
+        <PilarLoader size="md" />
+      </div>
+
       {/* Top Hero Banner Skeleton */}
-      <div className="bg-gray-900/5 rounded-3xl p-10 md:p-16 text-center space-y-4 border border-gray-100">
+      <div className="animate-pulse bg-gray-900/5 rounded-3xl p-10 md:p-16 text-center space-y-4 border border-gray-100">
         <div className="h-6 w-40 bg-gray-200 rounded-full mx-auto"></div>
         <div className="h-10 sm:h-14 w-3/4 max-w-2xl bg-gray-200 rounded-2xl mx-auto"></div>
         <div className="h-4 sm:h-5 w-1/2 max-w-lg bg-gray-100 rounded-lg mx-auto"></div>

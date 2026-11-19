@@ -6,6 +6,7 @@ import { Plus, CheckCircle2, Clock, PlayCircle, Trash2, Edit3, Save, X, External
 import { uploadFileToDrive } from '@/utils/driveClientUpload'
 import { useUploadQueue } from '@/context/UploadQueueContext'
 import { StorageWidget } from '@/components/StorageWidget'
+import { PilarLoader } from '@/components/PilarLoader'
 
 interface ProgramItem {
   id: string
@@ -836,9 +837,9 @@ export default function KelolaProkerPage() {
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-gray-400 font-bold flex items-center justify-center space-x-2">
-            <RefreshCw className="w-6 h-6 animate-spin" />
-            <span>Mengambil data dari database Supabase...</span>
+          <div className="p-12 text-center text-gray-500 font-bold flex flex-col items-center justify-center gap-3">
+            <PilarLoader size="sm" label="Memuat data program kerja" />
+            <span className="text-sm">Mengambil data dari database Supabase...</span>
           </div>
         ) : programs.length === 0 ? (
           <div className="p-16 text-center bg-gray-50 rounded-3xl border border-gray-200 space-y-4">

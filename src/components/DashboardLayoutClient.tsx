@@ -7,12 +7,16 @@ import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { UploadQueueProvider } from "@/context/UploadQueueContext";
 import { UploadQueueWidget } from "./UploadQueueWidget";
+import { PilarLoader } from "./PilarLoader";
 
 function DashboardMainSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse w-full">
+    <div className="space-y-6 w-full">
+      <div className="flex items-center justify-center py-4">
+        <PilarLoader size="sm" label="Memuat halaman dashboard" />
+      </div>
       {/* Header skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="animate-pulse flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2">
           <div className="h-8 w-48 bg-gray-200 rounded-lg"></div>
           <div className="h-4 w-72 bg-gray-100 rounded-md"></div>

@@ -183,6 +183,10 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
                     <img
                       src={ev.banner_url!}
                       alt={ev.title}
+                      width={640}
+                      height={360}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (

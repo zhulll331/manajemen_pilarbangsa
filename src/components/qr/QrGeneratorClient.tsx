@@ -125,11 +125,22 @@ export default function QrGeneratorClient() {
   // 3. State Render & Aksi
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyImgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyPayloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [loadedLogoImg, setLoadedLogoImg] = useState<HTMLImageElement | null>(null);
   const [loadedLogoDataUri, setLoadedLogoDataUri] = useState<string | null>(null);
   const [copiedImage, setCopiedImage] = useState(false);
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [statusNote, setStatusNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      if (copyImgTimerRef.current) clearTimeout(copyImgTimerRef.current);
+      if (copyPayloadTimerRef.current) clearTimeout(copyPayloadTimerRef.current);
+    };
+  }, []);
 
   // Hitung payload langsung yang dienkode ke dalam QR Code
   const directPayload = useMemo(
@@ -167,10 +178,10 @@ export default function QrGeneratorClient() {
     try {
       const matrix = encodeQrMatrix(directPayload, 'H');
       return { matrix, error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         matrix: encodeQrMatrix('https://www.pilarbangsa.my.id', 'H'),
-        error: err?.message || 'Teks terlalu panjang.',
+        error: err instanceof Error ? err.message : 'Teks terlalu panjang.',
       };
     }
   }, [directPayload]);
@@ -265,7 +276,8 @@ export default function QrGeneratorClient() {
         setSelectedLogoId('custom');
         setDesign((prev) => ({ ...prev, logoSrc: result }));
         setStatusNote(`Logo kustom "${file.name}" berhasil dipasang di tengah QR.`);
-        setTimeout(() => setStatusNote(null), 3500);
+        if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+        statusTimerRef.current = setTimeout(() => setStatusNote(null), 3500);
       }
     };
     reader.readAsDataURL(file);
@@ -356,7 +368,8 @@ export default function QrGeneratorClient() {
       if (blob && navigator.clipboard && 'ClipboardItem' in window) {
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         setCopiedImage(true);
-        setTimeout(() => setCopiedImage(false), 2500);
+        if (copyImgTimerRef.current) clearTimeout(copyImgTimerRef.current);
+        copyImgTimerRef.current = setTimeout(() => setCopiedImage(false), 2500);
       } else {
         handleDownloadPng(1024);
       }
@@ -369,7 +382,8 @@ export default function QrGeneratorClient() {
     try {
       await navigator.clipboard.writeText(directPayload);
       setCopiedPayload(true);
-      setTimeout(() => setCopiedPayload(false), 2000);
+      if (copyPayloadTimerRef.current) clearTimeout(copyPayloadTimerRef.current);
+      copyPayloadTimerRef.current = setTimeout(() => setCopiedPayload(false), 2000);
     } catch {
       // Abaikan
     }
@@ -440,11 +454,17 @@ export default function QrGeneratorClient() {
           {mode === 'url' && (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-url-input"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Masukkan URL / Tautan Tujuan
                 </label>
                 <input
+                  id="qr-url-input"
                   type="url"
+                  spellCheck={false}
+                  autoComplete="url"
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
                   placeholder="https://www.pilarbangsa.my.id/..."
@@ -479,11 +499,18 @@ export default function QrGeneratorClient() {
           {mode === 'whatsapp' && (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-wa-phone"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Nomor WhatsApp Tujuan
                 </label>
                 <input
+                  id="qr-wa-phone"
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  spellCheck={false}
                   value={waPhone}
                   onChange={(e) => setWaPhone(e.target.value)}
                   placeholder="Contoh: 085607851580 atau 6285607851580"
@@ -491,10 +518,14 @@ export default function QrGeneratorClient() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-wa-message"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Pesan Otomatis Saat Di-Scan (Opsional)
                 </label>
                 <textarea
+                  id="qr-wa-message"
                   rows={2}
                   value={waMessage}
                   onChange={(e) => setWaMessage(e.target.value)}
@@ -507,10 +538,14 @@ export default function QrGeneratorClient() {
 
           {mode === 'gmaps' && (
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label
+                htmlFor="qr-gmaps-query"
+                className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+              >
                 Tautan Google Maps atau Nama Lokasi
               </label>
               <input
+                id="qr-gmaps-query"
                 type="text"
                 value={gmapsQuery}
                 onChange={(e) => setGmapsQuery(e.target.value)}
@@ -527,40 +562,54 @@ export default function QrGeneratorClient() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <label
+                    htmlFor="qr-email-to"
+                    className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                  >
                     Alamat Email Tujuan
                   </label>
                   <input
+                    id="qr-email-to"
                     type="email"
+                    spellCheck={false}
+                    autoComplete="email"
                     value={emailTo}
                     onChange={(e) => setEmailTo(e.target.value)}
                     placeholder="ukmpilarbangsa@gmail.com"
-                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm"
+                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <label
+                    htmlFor="qr-email-subject"
+                    className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                  >
                     Subjek Email (Opsional)
                   </label>
                   <input
+                    id="qr-email-subject"
                     type="text"
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
                     placeholder="Permohonan Kerja Sama"
-                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm"
+                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm"
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-email-body"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Isi Pesan Email (Opsional)
                 </label>
                 <textarea
+                  id="qr-email-body"
                   rows={2}
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
                   placeholder="Tulis isi email..."
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm"
                 />
               </div>
             </div>
@@ -569,37 +618,53 @@ export default function QrGeneratorClient() {
           {mode === 'wifi' && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-wifi-ssid"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Nama WiFi (SSID)
                 </label>
                 <input
+                  id="qr-wifi-ssid"
                   type="text"
+                  spellCheck={false}
+                  autoComplete="off"
                   value={wifiSsid}
                   onChange={(e) => setWifiSsid(e.target.value)}
                   placeholder="Nama WiFi"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-wifi-password"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Kata Sandi WiFi
                 </label>
                 <input
+                  id="qr-wifi-password"
                   type="text"
+                  spellCheck={false}
+                  autoComplete="off"
                   value={wifiPassword}
                   onChange={(e) => setWifiPassword(e.target.value)}
                   placeholder="Kosongkan jika tanpa sandi"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label
+                  htmlFor="qr-wifi-security"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Keamanan
                 </label>
                 <select
+                  id="qr-wifi-security"
                   value={wifiSecurity}
                   onChange={(e) => setWifiSecurity(e.target.value as 'WPA' | 'WEP' | 'nopass')}
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm bg-white"
                 >
                   <option value="WPA">WPA / WPA2 / WPA3</option>
                   <option value="WEP">WEP</option>
@@ -732,7 +797,10 @@ export default function QrGeneratorClient() {
               </div>
 
               {statusNote && (
-                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+                <div
+                  role="status"
+                  className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800"
+                >
                   {statusNote}
                 </div>
               )}
@@ -741,10 +809,14 @@ export default function QrGeneratorClient() {
               {design.logoSrc && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-gray-700">
+                    <label
+                      htmlFor="qr-logo-scale"
+                      className="block text-xs font-bold text-gray-700"
+                    >
                       Ukuran Logo Tengah ({Math.round(design.logoScale * 100)}%)
                     </label>
                     <input
+                      id="qr-logo-scale"
                       type="range"
                       min={0.15}
                       max={0.24}
@@ -932,12 +1004,13 @@ export default function QrGeneratorClient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-700">
+                  <label htmlFor="qr-fg-color" className="block text-xs font-bold text-gray-700">
                     Warna Utama Modul QR
                   </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
+                      aria-label="Pemilih warna utama modul QR"
                       value={design.fgColor}
                       onChange={(e) =>
                         setDesign((prev) => ({ ...prev, fgColor: e.target.value }))
@@ -945,7 +1018,9 @@ export default function QrGeneratorClient() {
                       className="w-11 h-10 rounded-xl border border-gray-200 cursor-pointer"
                     />
                     <input
+                      id="qr-fg-color"
                       type="text"
+                      spellCheck={false}
                       value={design.fgColor}
                       onChange={(e) =>
                         setDesign((prev) => ({ ...prev, fgColor: e.target.value }))
@@ -956,12 +1031,13 @@ export default function QrGeneratorClient() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-700">
+                  <label htmlFor="qr-bg-color" className="block text-xs font-bold text-gray-700">
                     Warna Latar Belakang (Background)
                   </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
+                      aria-label="Pemilih warna latar belakang QR"
                       value={design.bgColor}
                       onChange={(e) =>
                         setDesign((prev) => ({ ...prev, bgColor: e.target.value }))
@@ -969,7 +1045,9 @@ export default function QrGeneratorClient() {
                       className="w-11 h-10 rounded-xl border border-gray-200 cursor-pointer"
                     />
                     <input
+                      id="qr-bg-color"
                       type="text"
+                      spellCheck={false}
                       value={design.bgColor}
                       onChange={(e) =>
                         setDesign((prev) => ({ ...prev, bgColor: e.target.value }))
@@ -1085,10 +1163,14 @@ export default function QrGeneratorClient() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="sm:col-span-2 space-y-1.5">
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      <label
+                        htmlFor="qr-frame-text"
+                        className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                      >
                         Teks Ajakan (Call-to-Action)
                       </label>
                       <input
+                        id="qr-frame-text"
                         type="text"
                         maxLength={34}
                         value={design.frameText}
@@ -1096,16 +1178,20 @@ export default function QrGeneratorClient() {
                           setDesign((prev) => ({ ...prev, frameText: e.target.value }))
                         }
                         placeholder="SCAN ME"
-                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] outline-none text-sm font-bold"
+                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#E31837] focus:ring-2 focus:ring-red-100 outline-none text-sm font-bold"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      <label
+                        htmlFor="qr-frame-color"
+                        className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                      >
                         Warna Pita Bingkai
                       </label>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
+                          aria-label="Pemilih warna pita bingkai QR"
                           value={design.frameColor}
                           onChange={(e) =>
                             setDesign((prev) => ({ ...prev, frameColor: e.target.value }))
@@ -1113,7 +1199,9 @@ export default function QrGeneratorClient() {
                           className="w-11 h-11 rounded-xl border border-gray-200 cursor-pointer"
                         />
                         <input
+                          id="qr-frame-color"
                           type="text"
+                          spellCheck={false}
                           value={design.frameColor}
                           onChange={(e) =>
                             setDesign((prev) => ({ ...prev, frameColor: e.target.value }))
@@ -1165,12 +1253,17 @@ export default function QrGeneratorClient() {
           <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-b from-gray-50 to-gray-100/80 border border-gray-200/80 flex items-center justify-center">
             <canvas
               ref={previewCanvasRef}
+              role="img"
+              aria-label={`Pratinjau QR Code untuk ${directPayload}`}
               className="w-full max-w-[320px] h-auto rounded-2xl shadow-md bg-white"
             />
           </div>
 
           {qrMatrixResult.error && (
-            <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-red-700">
+            <div
+              role="alert"
+              className="p-3 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-red-700"
+            >
               {qrMatrixResult.error}
             </div>
           )}
@@ -1190,6 +1283,9 @@ export default function QrGeneratorClient() {
                   {copiedPayload ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
                   <span>{copiedPayload ? 'Disalin' : 'Salin Isi'}</span>
                 </button>
+                <span role="status" className="sr-only">
+                  {copiedPayload ? 'Isi tujuan QR Code berhasil disalin.' : ''}
+                </span>
                 {directPayload.startsWith('http') && (
                   <a
                     href={directPayload}
@@ -1252,6 +1348,9 @@ export default function QrGeneratorClient() {
                 {copiedImage ? <Check size={15} /> : <Copy size={15} />}
                 <span>{copiedImage ? 'Gambar Disalin!' : 'Salin Gambar QR'}</span>
               </button>
+              <span role="status" className="sr-only">
+                {copiedImage ? 'Gambar QR Code berhasil disalin ke papan klip.' : ''}
+              </span>
             </div>
           </div>
         </div>

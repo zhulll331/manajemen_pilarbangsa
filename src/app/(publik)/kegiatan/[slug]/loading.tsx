@@ -1,8 +1,14 @@
+import { PilarLoader } from "@/components/PilarLoader";
+
 export default function KegiatanDetailLoading() {
   return (
-    <div className="space-y-8 py-6 animate-pulse w-full max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="space-y-8 py-6 w-full max-w-4xl mx-auto px-4 sm:px-6">
+      <div className="flex flex-col items-center justify-center py-4">
+        <PilarLoader size="md" label="Memuat detail kegiatan" />
+      </div>
+
       {/* Breadcrumb Skeleton */}
-      <div className="h-4 w-48 bg-gray-200 rounded"></div>
+      <div className="animate-pulse h-4 w-48 bg-gray-200 rounded"></div>
 
       {/* Hero Banner Skeleton */}
       <div className="h-64 sm:h-80 w-full bg-gray-200 rounded-3xl"></div>

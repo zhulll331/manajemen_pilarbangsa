@@ -871,20 +871,22 @@ export default function EditorTwibbonClient({
 
       {/* Alerts */}
       {errorMessage && (
-        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 flex items-start gap-3">
-          <AlertCircle size={20} className="shrink-0 text-red-600 mt-0.5" />
+        <div role="alert" className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 flex items-start gap-3">
+          <AlertCircle size={20} className="shrink-0 text-red-600 mt-0.5" aria-hidden="true" />
           <div className="flex-1 text-sm font-medium">{errorMessage}</div>
-          <button onClick={() => setErrorMessage(null)} className="text-red-500 hover:text-red-700">
+          <button type="button" aria-label="Tutup pesan kesalahan" onClick={() => setErrorMessage(null)} className="text-red-500 hover:text-red-700">
             ✕
           </button>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-green-50 border border-green-200 text-[#008000] flex items-start gap-3">
-          <CheckCircle2 size={20} className="shrink-0 text-[#008000] mt-0.5" />
+        <div role="status" className="p-4 rounded-2xl bg-green-50 border border-green-200 text-[#008000] flex items-start gap-3">
+          <CheckCircle2 size={20} className="shrink-0 text-[#008000] mt-0.5" aria-hidden="true" />
           <div className="flex-1 text-sm font-medium">{successMessage}</div>
           <button
+            type="button"
+            aria-label="Tutup pesan berhasil"
             onClick={() => setSuccessMessage(null)}
             className="text-green-600 hover:text-green-800"
           >

@@ -8,12 +8,16 @@ import PublikLoading from './loading'
 
 export default function PublikLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-900 selection:bg-gray-900 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-white text-gray-900 selection:bg-gray-900 selection:text-white [overflow-anchor:none]">
+      <a href="#publik-main" className="publik-skip-link">
+        Langsung ke konten utama
+      </a>
+
       {/* Header & Navbar Interaktif */}
       <PublikNavbar />
 
       {/* Main Content */}
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
+      <main id="publik-main" tabIndex={-1} className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8 outline-none">
         <Suspense fallback={<PublikLoading />}>
           {children}
         </Suspense>
@@ -36,8 +40,8 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 flex items-center justify-center">
                     <Image 
-                      src="/logo_pilar.svg" 
-                      alt="Logo Pilar Bangsa" 
+                      src="/logo_untag.svg" 
+                      alt="Logo Universitas 17 Agustus 1945 Banyuwangi" 
                       width={48} 
                       height={48} 
                       className="object-contain w-full h-full drop-shadow-md"
@@ -45,8 +49,8 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
                   </div>
                   <div className="w-12 h-12 flex items-center justify-center">
                     <Image 
-                      src="/logo_untag.svg" 
-                      alt="Logo Universitas" 
+                      src="/logo_pilar.svg" 
+                      alt="Logo UKM Pilar Bangsa" 
                       width={48} 
                       height={48} 
                       className="object-contain w-full h-full drop-shadow-md"

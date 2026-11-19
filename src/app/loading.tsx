@@ -1,5 +1,5 @@
-import { LoadingLogo } from "@/components/LoadingLogo";
+import { PilarLoader } from "@/components/PilarLoader";
 
 export default function Loading() {
-  return <LoadingLogo fullScreen={true} />;
+  return <PilarLoader fullscreen />;
 }

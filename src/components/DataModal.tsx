@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 interface DataModalProps {
   isOpen: boolean;
@@ -10,48 +10,74 @@ interface DataModalProps {
   children: React.ReactNode;
 }
 
+function isPointerOutsideDialog(
+  e: React.PointerEvent<HTMLDialogElement>,
+  dialog: HTMLDialogElement
+): boolean {
+  const r = dialog.getBoundingClientRect();
+  return (
+    e.clientX < r.left ||
+    e.clientX > r.right ||
+    e.clientY < r.top ||
+    e.clientY > r.bottom
+  );
+}
+
 export function DataModal({ isOpen, onClose, title, children }: DataModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const pressedOutsideRef = useRef(false);
+  const titleId = useId();
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!isOpen && dialog.open) {
+      dialog.close();
     }
-    return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onClose={onClose}
+      onPointerDown={(e) => {
+        pressedOutsideRef.current = isPointerOutsideDialog(e, e.currentTarget);
+      }}
+      onPointerUp={(e) => {
+        if (
+          !('closedBy' in HTMLDialogElement.prototype) &&
+          pressedOutsideRef.current &&
+          isPointerOutsideDialog(e, e.currentTarget)
+        ) {
+          e.currentTarget.close();
+        }
+        pressedOutsideRef.current = false;
+      }}
+      {...({ closedby: "any" } as Record<string, string>)}
+      className="admin-modal bg-white rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-y-auto p-0 border-0 text-left animate-in zoom-in-95 duration-200"
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-
-      {/* Modal */}
-      <div className="admin-modal relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="sticky top-0 bg-white flex items-center justify-between p-6 pb-4 border-b border-gray-100 rounded-t-2xl z-10">
-          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label="Tutup dialog"
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {children}
-        </div>
+      {/* Header */}
+      <div className="sticky top-0 bg-white flex items-center justify-between p-6 pb-4 border-b border-gray-100 rounded-t-2xl z-10">
+        <h2 id={titleId} className="text-lg font-bold text-gray-800">
+          {title}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Tutup dialog"
+          className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
-    </div>
+
+      {/* Content */}
+      <div className="p-6">{children}</div>
+    </dialog>
   );
 }

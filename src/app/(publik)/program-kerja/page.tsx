@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { ProgramCard, ProgramWork } from '@/components/ProgramCard'
+import { PilarLoader } from '@/components/PilarLoader'
 import { Layers, Search, Filter, RefreshCw } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 
@@ -250,9 +251,9 @@ export default function ProgramKerjaPage() {
 
       {/* Program Work Grid Section */}
       {loading ? (
-        <div className="p-16 text-center text-gray-400 font-bold flex items-center justify-center space-x-2">
-          <RefreshCw className="w-6 h-6 animate-spin" />
-          <span>Memuat data program kerja langsung dari Supabase...</span>
+        <div className="p-16 text-center text-gray-500 font-bold flex flex-col items-center justify-center gap-3">
+          <PilarLoader size="md" label="Memuat daftar program kerja" />
+          <span className="text-sm">Memuat katalog program kerja &amp; karya tulis...</span>
         </div>
       ) : filteredPrograms.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center shadow-sm space-y-4">

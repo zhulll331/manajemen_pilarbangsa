@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Image as ImageIcon, Save, RefreshCw, CheckCircle2, Upload, AlertCircle, Trash2, Plus } from 'lucide-react'
 import { compressImageIfNeeded } from '@/utils/compressImage'
+import { PilarLoader } from '@/components/PilarLoader'
 
 function getCleanImageUrl(url: string, defaultImg: string) {
   if (!url) return defaultImg
@@ -167,9 +168,9 @@ export default function BannerManagementPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
-        <RefreshCw className="animate-spin mr-2" size={24} />
-        Memuat data banner...
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
+        <PilarLoader size="sm" label="Memuat data banner" />
+        <span className="text-sm font-medium">Memuat data banner...</span>
       </div>
     )
   }

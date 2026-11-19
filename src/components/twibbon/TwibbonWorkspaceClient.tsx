@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import type { TwibbonPublicCampaignDetail, TwibbonTransformState } from '@/types/twibbon';
+import { PilarLoader } from '@/components/PilarLoader';
 import {
   TWIBBON_LOGICAL_HEIGHT,
   TWIBBON_LOGICAL_WIDTH,
@@ -108,6 +109,18 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
   const captionTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const activePhotoRef = useRef<NormalizedParticipantPhoto | null>(null);
   const activeResultUrlRef = useRef<string | null>(null);
+  const fallbackDialogRef = useRef<HTMLDialogElement | null>(null);
+  const fallbackPressedOutsideRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const dialog = fallbackDialogRef.current;
+    if (!dialog) return;
+    if (showImageFallbackModal && resultObjectUrl && !dialog.open) {
+      dialog.showModal();
+    } else if ((!showImageFallbackModal || !resultObjectUrl) && dialog.open) {
+      dialog.close();
+    }
+  }, [showImageFallbackModal, resultObjectUrl]);
 
   // Pointer & Pinch gesture tracking refs
   const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
@@ -629,7 +642,7 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
               {/* Loading Overlay for Frame or Photo Decode */}
               {(frameLoading || isDecodingPhoto || isExporting) && (
                 <div className="absolute inset-0 bg-black/55 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 text-center space-y-3">
-                  <RefreshCw size={32} className="animate-spin text-[#FFD700]" />
+                  <PilarLoader size="sm" className="[--pb-color:#ffffff]" label="Memuat twibbon" />
                   <p className="text-sm sm:text-base font-bold">
                     {isExporting
                       ? 'Menyiapkan twibbon…'
@@ -1190,59 +1203,77 @@ export default function TwibbonWorkspaceClient({ campaign, isPreviewMode = false
 
       {/* Fallback Image Save Modal for Restricted Browsers / In-App Webviews (PRD 8.4, 18, 20, T18) */}
       {showImageFallbackModal && resultObjectUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Pratinjau Gambar Twibbon untuk Simpan Manual"
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+        <dialog
+          ref={fallbackDialogRef}
+          aria-labelledby="twibbon-fallback-dialog-title"
+          onClose={() => setShowImageFallbackModal(false)}
+          onPointerDown={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            fallbackPressedOutsideRef.current =
+              e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+          }}
+          onPointerUp={(e) => {
+            if (!('closedBy' in HTMLDialogElement.prototype) && fallbackPressedOutsideRef.current) {
+              const r = e.currentTarget.getBoundingClientRect();
+              const outside =
+                e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+              if (outside) e.currentTarget.close();
+            }
+            fallbackPressedOutsideRef.current = false;
+          }}
+          {...({ closedby: 'any' } as Record<string, string>)}
+          className="bg-white rounded-3xl max-w-lg w-[calc(100%-2rem)] p-5 sm:p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[92vh] border-0 text-left"
         >
-          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[92vh]">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="font-extrabold text-gray-900 text-base sm:text-lg">
-                Pratinjau Gambar (1080 × 1080 PNG)
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowImageFallbackModal(false)}
-                className="min-w-[40px] min-h-[40px] rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center"
-                aria-label="Tutup pratinjau"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Buka pratinjau gambar, lalu gunakan pilihan simpan di browsermu (pada HP: <strong>tekan dan tahan gambar di bawah</strong> lalu pilih <strong>Simpan Gambar / Download Image</strong>, atau buka halaman ini di Chrome/Safari jika kamu sedang memakai browser dalam aplikasi Instagram/WhatsApp).
-            </p>
-
-            <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
-              <img
-                src={resultObjectUrl}
-                alt="Pratinjau Twibbon 1080x1080"
-                className="w-full h-auto block"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-              <a
-                href={resultObjectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-xs font-bold"
-              >
-                <ExternalLink size={14} />
-                <span>Buka Gambar di Tab Baru</span>
-              </a>
-              <button
-                type="button"
-                onClick={() => setShowImageFallbackModal(false)}
-                className="min-h-[44px] px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold hover:bg-gray-50"
-              >
-                Tutup
-              </button>
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <h2
+              id="twibbon-fallback-dialog-title"
+              className="font-extrabold text-gray-900 text-base sm:text-lg"
+            >
+              Pratinjau Gambar (1080 × 1080 PNG)
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowImageFallbackModal(false)}
+              className="min-w-[40px] min-h-[40px] rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center"
+              aria-label="Tutup pratinjau"
+            >
+              <X size={18} />
+            </button>
           </div>
-        </div>
+
+          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+            Buka pratinjau gambar, lalu gunakan pilihan simpan di browsermu (pada HP: <strong>tekan dan tahan gambar di bawah</strong> lalu pilih <strong>Simpan Gambar / Download Image</strong>, atau buka halaman ini di Chrome/Safari jika kamu sedang memakai browser dalam aplikasi Instagram/WhatsApp).
+          </p>
+
+          <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
+            <img
+              src={resultObjectUrl}
+              alt="Pratinjau Twibbon 1080x1080"
+              width={1080}
+              height={1080}
+              className="w-full h-auto block"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+            <a
+              href={resultObjectUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-xs font-bold"
+            >
+              <ExternalLink size={14} />
+              <span>Buka Gambar di Tab Baru</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowImageFallbackModal(false)}
+              className="min-h-[44px] px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold hover:bg-gray-50"
+            >
+              Tutup
+            </button>
+          </div>
+        </dialog>
       )}
     </div>
   );
