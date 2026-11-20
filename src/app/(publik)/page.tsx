@@ -2,6 +2,8 @@ import React, { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { HeroSlider } from '@/components/HeroSlider'
+import { HeroSliderSkeleton } from '@/components/hero/HeroSliderSkeleton'
+import { getHeroSlides } from '@/lib/heroSlides'
 import { PilarPhotoMarquee } from '@/components/PilarPhotoMarquee'
 import { TimelineRoadmap } from '@/components/TimelineRoadmap'
 import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper'
@@ -194,6 +196,11 @@ async function BeritaGrid() {
   );
 }
 
+async function HeroBannerSection() {
+  const slides = await getHeroSlides();
+  return <HeroSlider initialSlides={slides} />;
+}
+
 export default async function BerandaPage() {
   const featuredEvent = await getFeaturedEvent();
 
@@ -201,7 +208,9 @@ export default async function BerandaPage() {
     <div className="space-y-24 overflow-hidden">
       {/* Hero Banner Section */}
       <section>
-        <HeroSlider />
+        <Suspense fallback={<HeroSliderSkeleton />}>
+          <HeroBannerSection />
+        </Suspense>
       </section>
 
       {/* Featured Event Section (Hanya tampil jika ada kegiatan sorotan yang terbit) */}

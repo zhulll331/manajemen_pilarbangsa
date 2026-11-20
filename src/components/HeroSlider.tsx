@@ -1,194 +1,315 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
-import Link from 'next/link'
-import Image from 'next/image'
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import {
+  FALLBACK_HERO_SLIDE,
+  HeroSlideItem,
+  isTableMissingError,
+  mapHeroSlideRow,
+  mapLegacyBannerToHeroSlide,
+} from '@/lib/heroSlides';
+import { HeroSlideContent } from './hero/HeroSlideContent';
+import { HeroSlideMedia } from './hero/HeroSlideMedia';
+import { HeroSliderSkeleton } from './hero/HeroSliderSkeleton';
+import './hero/hero-banner.css';
 
-function getCleanImageUrl(url: string, defaultImg: string = "") {
-  if (!url) return defaultImg
-  if (url.includes('drive.google.com')) {
-    const match = url.match(/id=([^&]+)/) || url.match(/d\/([a-zA-Z0-9_-]+)/)
-    if (match && match[1]) {
-      return `/api/drive/image?id=${match[1]}`
-    }
-  }
-  return url
-}
+const AUTOPLAY_INTERVAL_MS = 5500;
+const SWIPE_THRESHOLD_PX = 45;
 
-export function HeroSlider() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [slides, setSlides] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export function HeroSlider({ initialSlides }: { initialSlides?: HeroSlideItem[] }) {
+  const hasInitialSlides = Boolean(initialSlides && initialSlides.length > 0);
+  const [slides, setSlides] = useState<HeroSlideItem[]>(
+    hasInitialSlides && initialSlides ? initialSlides : []
+  );
+  const [isLoading, setIsLoading] = useState(!hasInitialSlides);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocusedWithin, setIsFocusedWithin] = useState(false);
+  const [isTabHidden, setIsTabHidden] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
 
-  const supabase = createClient()
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    async function fetchBanners() {
-      const { data, error } = await supabase
-        .from('banners')
-        .select('*')
-        .order('id', { ascending: true })
+    if (hasInitialSlides) return;
 
-      if (!error && data && data.length > 0) {
-        setSlides(data)
+    let cancelled = false;
+    async function loadSlides() {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('hero_slides')
+          .select(
+            'id, image_url, badge, title, description, cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href, sort_order, is_active, created_at'
+          )
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (cancelled) return;
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          setSlides(data.map((row, idx) => mapHeroSlideRow(row as Record<string, unknown>, idx)));
+        } else if (error && isTableMissingError(error)) {
+          const { data: legacyData, error: legacyError } = await supabase
+            .from('banners')
+            .select('id, title, subtitle, description, image_url, badge, created_at')
+            .order('id', { ascending: true });
+
+          if (!cancelled && !legacyError && Array.isArray(legacyData) && legacyData.length > 0) {
+            setSlides(
+              legacyData.map((row, idx) =>
+                mapLegacyBannerToHeroSlide(row as Record<string, unknown>, idx)
+              )
+            );
+          } else if (!cancelled) {
+            setSlides([FALLBACK_HERO_SLIDE]);
+          }
+        } else {
+          setSlides([FALLBACK_HERO_SLIDE]);
+        }
+      } catch {
+        if (!cancelled) {
+          setSlides([FALLBACK_HERO_SLIDE]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false)
     }
 
-    fetchBanners()
-  }, [])
+    loadSlides();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasInitialSlides]);
 
   useEffect(() => {
-    if (isPaused || slides.length <= 1) return
+    if (typeof window === 'undefined' || !window.matchMedia) return;
 
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 4000)
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    syncPreference();
 
-    return () => clearInterval(timer)
-  }, [isPaused, slides.length])
+    mediaQuery.addEventListener('change', syncPreference);
+    return () => mediaQuery.removeEventListener('change', syncPreference);
+  }, []);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length)
-  }
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
-  }
+    const handleVisibilityChange = () => {
+      setIsTabHidden(document.visibilityState !== 'visible');
+    };
+    handleVisibilityChange();
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  const safeIndex = slides.length > 0 ? currentIndex % slides.length : 0;
+  const isAutoplayPaused =
+    slides.length <= 1 ||
+    isHovered ||
+    isFocusedWithin ||
+    isTabHidden ||
+    isManuallyPaused ||
+    prefersReducedMotion;
+
+  const goToSlide = useCallback(
+    (targetIndex: number, userTriggered = true) => {
+      if (slides.length === 0) return;
+      const normalized = ((targetIndex % slides.length) + slides.length) % slides.length;
+      setCurrentIndex(normalized);
+      if (userTriggered) {
+        setHasUserInteracted(true);
+        const targetSlide = slides[normalized];
+        setAnnouncement(
+          `Slide ${normalized + 1} dari ${slides.length}: ${targetSlide?.title ?? ''}`
+        );
+      }
+    },
+    [slides]
+  );
+
+  const nextSlide = useCallback(
+    (userTriggered = true) => {
+      goToSlide(safeIndex + 1, userTriggered);
+    },
+    [goToSlide, safeIndex]
+  );
+
+  const prevSlide = useCallback(
+    (userTriggered = true) => {
+      goToSlide(safeIndex - 1, userTriggered);
+    },
+    [goToSlide, safeIndex]
+  );
+
+  useEffect(() => {
+    if (isAutoplayPaused) return;
+
+    const timer = window.setTimeout(() => {
+      nextSlide(false);
+    }, AUTOPLAY_INTERVAL_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [isAutoplayPaused, safeIndex, nextSlide]);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+    if (e.touches.length !== 1) return;
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
+    if (!touchStartRef.current || e.changedTouches.length !== 1 || slides.length <= 1) {
+      touchStartRef.current = null;
+      return;
+    }
+
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+
+    if (Math.abs(dx) >= SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      if (dx < 0) {
+        nextSlide(true);
+      } else {
+        prevSlide(true);
+      }
+    }
+  };
 
   if (isLoading) {
-    return (
-      <div className="relative w-full h-[550px] md:h-[650px] overflow-hidden rounded-3xl shadow-2xl bg-gray-100 animate-pulse my-8 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
-      </div>
-    )
+    return <HeroSliderSkeleton />;
   }
 
-  if (!slides || slides.length === 0) return null;
+  const activeSlides = slides.length > 0 ? slides : [FALLBACK_HERO_SLIDE];
+  const activeSlide = activeSlides[safeIndex] ?? FALLBACK_HERO_SLIDE;
 
   return (
-    <div 
-      className="relative w-full h-[550px] md:h-[650px] overflow-hidden rounded-3xl shadow-2xl bg-black group my-8"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+    <section
+      aria-roledescription="carousel"
+      aria-label="Sorotan Pilar Bangsa Digital Office"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocusCapture={() => setIsFocusedWithin(true)}
+      onBlurCapture={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setIsFocusedWithin(false);
+        }
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ '--pb-hero-interval': `${AUTOPLAY_INTERVAL_MS}ms` } as React.CSSProperties}
+      className={`pb-hero-shell ${
+        isAutoplayPaused ? 'pb-hero-shell--paused' : ''
+      } relative w-full overflow-hidden rounded-3xl border border-gray-100 shadow-xl my-2 md:min-h-[460px] lg:min-h-[530px] xl:min-h-[550px] flex flex-col md:flex-row`}
     >
-      {/* Slides */}
-      {slides.map((slide, index) => (
+      {/* Foto besar di kanan pada desktop/tablet (dan di atas pada mobile) tanpa bingkai keras */}
+      <HeroSlideMedia slides={activeSlides} currentIndex={safeIndex} />
+
+      {/* Kolom kiri: blok teks terang + CTA + kontrol slider */}
+      <div className="relative z-20 w-full md:w-[58%] lg:w-[55%] flex flex-col justify-between px-5 pt-2 pb-6 sm:px-8 sm:pb-8 md:py-10 md:pl-10 md:pr-6 lg:py-12 lg:pl-14 lg:pr-8">
         <div
-          key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-          }`}
+          key={activeSlide.id}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`Slide ${safeIndex + 1} dari ${activeSlides.length}`}
+          aria-live={isAutoplayPaused ? 'polite' : 'off'}
+          className="my-auto py-1 sm:py-2"
         >
-          {/* Background Image with Overlay */}
-          <div className="absolute inset-0 bg-black/60 z-10" />
-          <Image
-            src={getCleanImageUrl(slide.image_url)}
-            alt={slide.title}
-            fill
-            priority={index === 0}
-            sizes="100vw"
-            className="object-cover object-center scale-105 transition-transform duration-1000 ease-out group-hover:scale-100"
-          />
+          <HeroSlideContent slide={activeSlide} />
+        </div>
 
-          {/* Content */}
-          <div className="absolute inset-0 z-20 flex items-center justify-center p-6 md:p-12 text-white">
-            <div className="max-w-4xl text-center space-y-6">
-              {/* Badge */}
-              <div className="inline-block px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase bg-white/10 backdrop-blur-md border border-white/20 shadow-lg"
-                   style={{ borderLeft: `4px solid ${slide.accent_color}` }}>
-                {slide.badge}
-              </div>
+        {activeSlides.length > 1 && (
+          <div className="mt-6 pt-4 flex items-center justify-between gap-4 border-t border-gray-100/80 max-w-md">
+            {/* Indikator titik / progress */}
+            <div className="flex items-center gap-1.5" role="group" aria-label="Pilih slide">
+              {activeSlides.map((slideItem, index) => {
+                const isActive = index === safeIndex;
+                return (
+                  <button
+                    key={slideItem.id}
+                    type="button"
+                    onClick={() => goToSlide(index, true)}
+                    aria-label={`Pilih slide ${index + 1}: ${slideItem.title}`}
+                    aria-current={isActive ? 'true' : undefined}
+                    className="pb-hero-control-btn group inline-flex items-center justify-center min-w-[24px] min-h-[24px] px-1 rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+                  >
+                    {isActive ? (
+                      <span
+                        aria-hidden="true"
+                        className="relative block w-8 h-2 rounded-full bg-gray-200 overflow-hidden ring-1 ring-[#E31837]/25"
+                      >
+                        <span
+                          key={`dot-progress-${safeIndex}`}
+                          className="pb-hero-dot-fill block h-full w-full rounded-full bg-[#E31837]"
+                        />
+                      </span>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="block w-2.5 h-2.5 rounded-full bg-gray-300 group-hover:bg-gray-400 transition-colors"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
-              {/* Title */}
-              <h2 className="text-2xl sm:text-4xl md:text-6xl font-extrabold tracking-tight leading-tight drop-shadow-md">
-                {slide.title}
-              </h2>
+            {/* Kontrol Pause + Panah Kiri/Kanan */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsManuallyPaused((prev) => !prev)}
+                aria-label={
+                  isManuallyPaused ? 'Jalankan putar otomatis slide' : 'Jeda putar otomatis slide'
+                }
+                className="pb-hero-control-btn w-9 h-9 rounded-full border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+              >
+                {isManuallyPaused ? (
+                  <Play size={14} aria-hidden="true" />
+                ) : (
+                  <Pause size={14} aria-hidden="true" />
+                )}
+              </button>
 
-              {/* Subtitle */}
-              <p className="text-base sm:text-xl md:text-2xl font-medium text-gray-200 drop-shadow">
-                {slide.subtitle}
-              </p>
+              <button
+                type="button"
+                onClick={() => prevSlide(true)}
+                aria-label="Slide sebelumnya"
+                className="pb-hero-control-btn w-9 h-9 rounded-full border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+              >
+                <ChevronLeft size={17} aria-hidden="true" />
+              </button>
 
-              {/* Description */}
-              <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-2xl mx-auto line-clamp-3">
-                {slide.description}
-              </p>
-
-              {/* Action Buttons */}
-              <div className="pt-4 flex flex-wrap gap-4 justify-center">
-                <Link
-                  href="/program-kerja"
-                  className="px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-lg"
-                >
-                  Lihat Program Kerja
-                </Link>
-                <Link
-                  href="/tentang-kami"
-                  className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white font-semibold rounded-full hover:bg-white/20 transition-colors shadow-lg"
-                >
-                  Pelajari Lebih Lanjut
-                </Link>
-              </div>
+              <button
+                type="button"
+                onClick={() => nextSlide(true)}
+                aria-label="Slide berikutnya"
+                className="pb-hero-control-btn w-9 h-9 rounded-full border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+              >
+                <ChevronRight size={17} aria-hidden="true" />
+              </button>
             </div>
           </div>
-        </div>
-      ))}
+        )}
+      </div>
 
-      {/* Navigation Arrows */}
-      {slides.length > 1 && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-black/30 backdrop-blur-sm text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-all opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} className="md:w-8 md:h-8" />
-          </button>
-          
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-black/30 backdrop-blur-sm text-white/70 hover:text-white border border-white/10 hover:border-white/30 transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} className="md:w-8 md:h-8" />
-          </button>
-        </>
-      )}
-
-      {/* Navigation Dots */}
-      {slides.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`transition-all duration-300 rounded-full ${
-                index === currentSlide 
-                  ? 'w-8 h-2.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' 
-                  : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/60'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      {slides.length > 1 && (
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-30">
-          <div 
-            className="h-full bg-white transition-all duration-[4000ms] ease-linear"
-            style={{ 
-              width: isPaused ? '100%' : currentSlide === 0 && !isPaused ? '0%' : '100%',
-              transition: isPaused ? 'none' : 'width 4000ms linear'
-            }}
-          />
-        </div>
-      )}
-    </div>
-  )
+      {/* Status live region untuk perubahan slide interaktif */}
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {hasUserInteracted ? announcement : ''}
+      </p>
+    </section>
+  );
 }

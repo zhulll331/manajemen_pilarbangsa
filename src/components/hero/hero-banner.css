@@ -1,0 +1,148 @@
+/* Scoped CSS khusus Hero Banner (.pb-hero-*). Tidak membocorkan style ke luar hero. */
+
+.pb-hero-shell {
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      color-mix(in srgb, #E31837 6%, var(--color-card)) 0%,
+      var(--color-card) 54%
+    ),
+    var(--color-card);
+  touch-action: pan-y;
+}
+
+.pb-hero-media-fade {
+  background: linear-gradient(
+    to top,
+    var(--color-card) 0%,
+    color-mix(in srgb, var(--color-card) 86%, transparent) 16%,
+    color-mix(in srgb, var(--color-card) 32%, transparent) 38%,
+    transparent 70%
+  );
+}
+
+@media (min-width: 768px) {
+  .pb-hero-media-stage {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgb(0 0 0 / 0.35) 14%,
+      rgb(0 0 0 / 0.88) 30%,
+      #000 44%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgb(0 0 0 / 0.35) 14%,
+      rgb(0 0 0 / 0.88) 30%,
+      #000 44%,
+      #000 100%
+    );
+  }
+
+  .pb-hero-media-fade {
+    background: linear-gradient(
+      to right,
+      var(--color-card) 0%,
+      color-mix(in srgb, var(--color-card) 94%, transparent) 16%,
+      color-mix(in srgb, var(--color-card) 65%, transparent) 32%,
+      color-mix(in srgb, var(--color-card) 18%, transparent) 50%,
+      transparent 68%
+    );
+  }
+}
+
+.pb-hero-photo-layer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pb-hero-photo-layer--active {
+  opacity: 1;
+}
+
+.pb-hero-stagger {
+  opacity: 1;
+  transform: none;
+}
+
+.pb-hero-dot-fill {
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+
+.pb-hero-control-btn {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pb-hero-photo-layer {
+    transition: opacity 750ms ease-in-out;
+  }
+
+  @keyframes pb-hero-kenburns {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.045);
+    }
+  }
+
+  .pb-hero-photo-layer--active .pb-hero-photo-img {
+    animation: pb-hero-kenburns 6.5s ease-out forwards;
+  }
+
+  .pb-hero-shell--paused .pb-hero-photo-layer--active .pb-hero-photo-img {
+    animation-play-state: paused;
+  }
+
+  @keyframes pb-hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .pb-hero-stagger {
+    animation: pb-hero-rise 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .pb-hero-stagger-1 {
+    animation-delay: 0ms;
+  }
+
+  .pb-hero-stagger-2 {
+    animation-delay: 75ms;
+  }
+
+  .pb-hero-stagger-3 {
+    animation-delay: 150ms;
+  }
+
+  .pb-hero-stagger-4 {
+    animation-delay: 225ms;
+  }
+
+  @keyframes pb-hero-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .pb-hero-dot-fill {
+    animation: pb-hero-progress var(--pb-hero-interval, 5500ms) linear forwards;
+  }
+
+  .pb-hero-shell--paused .pb-hero-dot-fill {
+    animation-play-state: paused;
+  }
+}
