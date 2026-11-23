@@ -97,7 +97,7 @@ export default async function TwibbonDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-10 space-y-6">
       {/* Breadcrumb Navigation */}
       <nav
         aria-label="Breadcrumb"
@@ -118,12 +118,12 @@ export default async function TwibbonDetailPage({ params }: PageProps) {
       <TwibbonWorkspaceClient campaign={campaign} />
 
       {/* Back Link */}
-      <div className="pt-4 text-center">
+      <div className="pt-4 border-t border-gray-200">
         <Link
           href="/twibbon"
-          className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-[#E31837] transition-colors p-3 rounded-2xl hover:bg-gray-50"
+          className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm font-bold text-gray-600 hover:text-[#E31837] transition-colors rounded-lg hover:bg-gray-50"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={16} aria-hidden="true" />
           <span>Kembali ke Daftar Twibbon</span>
         </Link>
       </div>

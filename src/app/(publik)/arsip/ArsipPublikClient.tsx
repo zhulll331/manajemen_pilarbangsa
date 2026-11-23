@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { ExternalLink, FolderOpen, Calendar, Archive as ArchiveIcon, Search } from "lucide-react";
-import { ScrollReveal } from "@/components/ScrollReveal";
+import { useState, useMemo } from 'react';
+import { ExternalLink, FolderOpen, Calendar } from 'lucide-react';
+import { PageHeader, Section } from '@/components/ui/PublicPrimitives';
 
 type Archive = {
   id: string;
@@ -13,124 +13,148 @@ type Archive = {
   programs?: { title: string } | null;
 };
 
-const PERIODS = ["Semua", "2022/2023", "2023/2024", "2024/2025", "2025/2026", "2026/2027"];
-const CATEGORIES = ["Semua", "Humas & Kerjasama", "Penalaran & Program Kompetisi", "Riset & Penelitian", "Pengabdian & Advokasi"];
+const PERIODS = ['Semua', '2022/2023', '2023/2024', '2024/2025', '2025/2026', '2026/2027'];
+const CATEGORIES = [
+  'Semua',
+  'Humas & Kerjasama',
+  'Penalaran & Program Kompetisi',
+  'Riset & Penelitian',
+  'Pengabdian & Advokasi',
+];
 
 export function ArsipPublikClient({ archives }: { archives: Archive[] }) {
-  const [selectedPeriod, setSelectedPeriod] = useState("Semua");
-  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [selectedPeriod, setSelectedPeriod] = useState('Semua');
+  const [selectedCategory, setSelectedCategory] = useState('Semua');
 
   const filtered = useMemo(() => {
     return archives.filter((a) => {
-      const matchPeriod = selectedPeriod === "Semua" || a.period === selectedPeriod;
-      const matchCategory = selectedCategory === "Semua" || a.category === selectedCategory;
+      const matchPeriod = selectedPeriod === 'Semua' || a.period === selectedPeriod;
+      const matchCategory = selectedCategory === 'Semua' || a.category === selectedCategory;
       return matchPeriod && matchCategory;
     });
   }, [archives, selectedPeriod, selectedCategory]);
 
   return (
-    <div className="py-12 md:py-16">
-      <ScrollReveal>
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center justify-center p-3 bg-red-50 text-red-600 rounded-full mb-4">
-            <ArchiveIcon size={24} />
-          </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
-            Arsip & <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">Dokumen UKM</span>
-          </h1>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Kumpulan arsip kegiatan, laporan, dan dokumen Unit Kegiatan Mahasiswa Pilar Bangsa dari berbagai periode kepengurusan.
-          </p>
-        </div>
-      </ScrollReveal>
+    <div className="w-full">
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Beranda', href: '/' },
+          { label: 'Arsip UKM' },
+        ]}
+        eyebrow="Dokumentasi & Laporan"
+        title="Arsip & Dokumen UKM"
+        description="Kumpulan arsip kegiatan, laporan pertanggungjawaban, dan dokumen resmi Unit Kegiatan Mahasiswa Pilar Bangsa dari berbagai periode kepengurusan."
+      />
 
-      {/* Filter Section — instant, no reload */}
-      <ScrollReveal delay={0.1}>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-10 max-w-4xl mx-auto">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Search className="w-5 h-5 text-gray-400" /> Filter Arsip
-          </h2>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="w-full md:w-1/2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Periode Kepengurusan</label>
+      <Section tone="white" ariaLabel="Filter dan daftar arsip UKM">
+        <div className="space-y-8">
+          {/* Bar Filter Datar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="arsip-period"
+                className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5"
+              >
+                Periode Kepengurusan
+              </label>
               <select
+                id="arsip-period"
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                className="w-full min-h-[44px] px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-gray-900 outline-none"
               >
-                {PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
+                {PERIODS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
               </select>
             </div>
-            <div className="w-full md:w-1/2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Kategori Divisi</label>
+
+            <div>
+              <label
+                htmlFor="arsip-category"
+                className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5"
+              >
+                Kategori Divisi
+              </label>
               <select
+                id="arsip-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                className="w-full min-h-[44px] px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-gray-900 outline-none"
               >
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
-          {(selectedPeriod !== "Semua" || selectedCategory !== "Semua") && (
-            <p className="text-sm text-gray-500 mt-3">
-              Menampilkan <span className="font-bold text-gray-700">{filtered.length}</span> arsip ditemukan.
-            </p>
-          )}
-        </div>
-      </ScrollReveal>
 
-      {/* Archives Grid */}
-      <ScrollReveal delay={0.2}>
-        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
+            <span>
+              Menampilkan <strong className="text-gray-900">{filtered.length}</strong> dokumen arsip
+            </span>
+          </div>
+
+          {/* Daftar Baris Bergaris */}
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="divide-y divide-gray-200 border-y border-gray-200">
               {filtered.map((archive) => (
-                <div key={archive.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
-                      <FolderOpen size={24} />
+                <div
+                  key={archive.id}
+                  className="py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                      <span className="text-[#E31837]">{archive.category}</span>
+                      <span aria-hidden="true" className="text-gray-300">
+                        •
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-gray-500">
+                        <Calendar size={12} aria-hidden="true" />
+                        <span>{archive.period}</span>
+                      </span>
                     </div>
-                    <span className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
-                      <Calendar size={12} /> {archive.period}
-                    </span>
+
+                    <h2 className="text-lg font-bold text-gray-900 leading-snug">
+                      {archive.title}
+                    </h2>
+
+                    {archive.programs?.title && (
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        Program terkait: {archive.programs.title}
+                      </p>
+                    )}
                   </div>
 
-                  <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{archive.title}</h3>
-                  <div className="text-sm font-medium text-red-600 mb-4">{archive.category}</div>
-
-                  {archive.programs?.title && (
-                    <div className="text-xs text-gray-500 mb-6 bg-gray-50 p-2 rounded-lg border border-gray-100 line-clamp-1">
-                      Terkait: {archive.programs.title}
-                    </div>
-                  )}
-
-                  <div className="mt-auto pt-4 border-t border-gray-100">
+                  <div className="shrink-0">
                     <a
                       href={archive.drive_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl font-semibold transition-colors text-sm"
+                      className="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[44px] px-4 py-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-lg font-semibold text-sm transition-colors"
                     >
-                      Buka Dokumen <ExternalLink size={16} />
+                      <span>Buka Dokumen</span>
+                      <ExternalLink size={15} aria-hidden="true" />
                     </a>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm mb-4">
-                <FolderOpen className="text-gray-400" size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Belum Ada Arsip</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                Belum ada arsip yang dipublikasikan untuk filter yang Anda pilih saat ini.
+            <div className="py-16 border-y border-gray-200 text-center space-y-3">
+              <FolderOpen className="text-gray-300 mx-auto" size={36} aria-hidden="true" />
+              <h2 className="text-lg font-bold text-gray-900">Belum Ada Arsip</h2>
+              <p className="text-gray-600 text-sm max-w-md mx-auto">
+                Belum ada arsip yang dipublikasikan untuk filter periode dan kategori ini.
               </p>
             </div>
           )}
         </div>
-      </ScrollReveal>
+      </Section>
     </div>
   );
 }

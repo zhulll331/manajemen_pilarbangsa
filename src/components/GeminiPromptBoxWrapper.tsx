@@ -10,8 +10,8 @@ const GeminiPromptBoxLazy = dynamic(
     ssr: false,
     loading: () => (
       <div className="w-full max-w-4xl mx-auto">
-        <div className="bg-white border border-gray-200/90 rounded-full py-3 sm:py-4 px-6 sm:px-8 shadow-2xl shadow-gray-200/60 flex items-center gap-4">
-          <div className="flex-1 h-6 bg-gray-100 rounded-full animate-pulse" />
+        <div className="bg-white border border-gray-300 rounded-lg p-3 flex items-center gap-3">
+          <div className="flex-1 h-8 bg-gray-100 rounded animate-pulse" />
         </div>
       </div>
     ),

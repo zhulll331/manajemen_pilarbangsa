@@ -52,7 +52,7 @@ export function HeroSlideContent({ slide }: { slide: HeroSlideItem }) {
       <div className="pb-hero-stagger pb-hero-stagger-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
         <HeroCtaLink
           href={slide.cta_primary_href}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#E31837] hover:bg-red-700 text-white font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-colors w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+          className="inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 rounded-lg bg-[#E31837] hover:bg-red-700 text-white font-semibold text-sm sm:text-base transition-colors w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
         >
           <span>{slide.cta_primary_label}</span>
           <ArrowRight size={17} aria-hidden="true" />
@@ -61,7 +61,7 @@ export function HeroSlideContent({ slide }: { slide: HeroSlideItem }) {
         {slide.cta_secondary_label && slide.cta_secondary_href && (
           <HeroCtaLink
             href={slide.cta_secondary_href}
-            className="inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-[var(--color-card)] hover:bg-[var(--color-background)] text-[var(--color-text-dark)] border border-gray-200 hover:border-gray-300 font-semibold text-sm sm:text-base transition-colors w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+            className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 rounded-lg bg-[var(--color-card)] hover:bg-[var(--color-background)] text-[var(--color-text-dark)] border border-gray-300 hover:border-gray-400 font-semibold text-sm sm:text-base transition-colors w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
           >
             <span>{slide.cta_secondary_label}</span>
           </HeroCtaLink>

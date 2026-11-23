@@ -2,7 +2,8 @@ import React from 'react';
 import { Metadata } from 'next';
 import { fetchPublicTwibbonCampaignList } from '@/lib/twibbon/server-service';
 import TwibbonListClient from './TwibbonListClient';
-import { Sparkles, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import { PageHeader, Section } from '@/components/ui/PublicPrimitives';
 
 export const revalidate = 60;
 
@@ -50,34 +51,28 @@ export default async function TwibbonCatalogPage() {
   const campaigns = await fetchPublicTwibbonCampaignList();
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-      {/* Hero Banner */}
-      <section className="bg-black text-white rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden shadow-2xl">
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#E31837_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-        <div className="relative z-10 max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-red-950/80 text-[#FFD700] text-xs font-bold tracking-widest uppercase border border-red-800/60">
-            <Sparkles className="w-3.5 h-3.5 text-[#FFD700]" />
-            <span>Bebas Iklan • Tanpa Login • 100% Lokal</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-            Twibbon Pilar Bangsa
-          </h1>
-
-          <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-            Pilih bingkai resmi kegiatan UKM Pilar Bangsa, atur posisi foto Anda secara instan di perangkat sendiri, unduh hasil PNG 1080×1080, dan salin caption resmi.
+    <div className="w-full">
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Beranda', href: '/' },
+          { label: 'Twibbon' },
+        ]}
+        eyebrow="Bebas Iklan • Tanpa Login • 100% Lokal"
+        title="Twibbon Pilar Bangsa"
+        description="Pilih bingkai resmi kegiatan UKM Pilar Bangsa, atur posisi foto Anda secara instan di perangkat sendiri, unduh PNG 1080×1080, dan salin caption resmi."
+        meta={
+          <p className="inline-flex items-center gap-2 text-xs sm:text-sm text-[#008000] font-semibold">
+            <ShieldCheck className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>
+              Foto diproses lokal di browser Anda dan tidak diunggah ke server.
+            </span>
           </p>
+        }
+      />
 
-          <div className="pt-1 flex items-center justify-center gap-2 text-xs text-emerald-300 font-semibold">
-            <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>Foto Anda diproses di perangkat ini dan tidak diunggah ke server UKM Pilar Bangsa.</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Daftar Kampanye */}
-      <TwibbonListClient campaigns={campaigns} />
+      <Section tone="white" ariaLabel="Daftar kampanye Twibbon">
+        <TwibbonListClient campaigns={campaigns} />
+      </Section>
     </div>
   );
 }
-

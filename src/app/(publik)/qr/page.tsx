@@ -1,7 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import QrGeneratorClient from '@/components/qr/QrGeneratorClient';
-import { QrCode, ShieldCheck, Sparkles, Zap, CheckCircle2 } from 'lucide-react';
+import { QrCode, ShieldCheck, Zap, CheckCircle2 } from 'lucide-react';
+import { PageHeader, Section, SectionHeading } from '@/components/ui/PublicPrimitives';
 
 export const metadata: Metadata = {
   title: 'QR Code Generator Gratis dengan Logo Tengah | UKM Pilar Bangsa',
@@ -100,88 +101,81 @@ export default function QrGeneratorPage() {
   };
 
   return (
-    <div className="space-y-12 max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-6">
+    <div className="w-full">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Hero Section */}
-      <section className="bg-black text-white rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden shadow-2xl">
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#E31837_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-        <div className="relative z-10 max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-red-950/80 text-[#FFD700] text-xs font-bold tracking-widest uppercase border border-red-800/60">
-            <Sparkles className="w-3.5 h-3.5 text-[#FFD700]" />
-            <span>Direct Scan • Aktif Selamanya • Bebas Iklan</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-            Link to QR Code Generator
-          </h1>
-
-          <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-            Buat QR Code kustom beresolusi tinggi dengan logo resmi UKM Pilar Bangsa, Google, Gemini, WhatsApp, Instagram, Google Maps, atau logo Anda sendiri. Saat di-scan, kamera langsung menuju tautan tujuan.
-          </p>
-
-          <div className="pt-1 flex flex-wrap items-center justify-center gap-4 text-xs text-emerald-300 font-semibold">
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
+      <PageHeader
+        breadcrumbs={[
+          { label: 'Beranda', href: '/' },
+          { label: 'QR Code Generator' },
+        ]}
+        eyebrow="Direct Scan • Aktif Selamanya • Bebas Iklan"
+        title="Link to QR Code Generator"
+        description="Buat QR Code kustom beresolusi tinggi dengan logo resmi UKM Pilar Bangsa, Google, Gemini, WhatsApp, Instagram, Google Maps, atau logo Anda sendiri."
+        meta={
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm font-semibold text-gray-700">
+            <span className="inline-flex items-center gap-1.5 text-[#008000]">
+              <ShieldCheck className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>100% Proses Lokal di Browser</span>
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Zap className="w-4 h-4 shrink-0 text-[#FFD700]" />
-              <span>Unduh PNG 2048px & Vektor SVG</span>
+            <span className="inline-flex items-center gap-1.5 text-gray-700">
+              <Zap className="w-4 h-4 shrink-0 text-[#E31837]" aria-hidden="true" />
+              <span>Unduh PNG 2048px &amp; Vektor SVG</span>
             </span>
           </div>
-        </div>
-      </section>
+        }
+      />
 
-      {/* Main Interactive Studio */}
-      <section aria-label="Studio Kustomisasi QR Code">
+      <Section tone="white" ariaLabel="Studio Kustomisasi QR Code">
         <QrGeneratorClient />
-      </section>
+      </Section>
 
-      {/* SEO & Panduan Singkat */}
-      <section className="bg-gray-50 rounded-3xl border border-gray-100 p-6 sm:p-10 space-y-6">
-        <div className="flex items-center gap-2.5">
-          <QrCode className="w-6 h-6 text-[#E31837]" />
-          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
-            Keunggulan QR Code Generator UKM Pilar Bangsa
-          </h2>
+      <Section tone="muted" bordered ariaLabel="Keunggulan QR Code Generator">
+        <div className="space-y-10">
+          <div className="flex items-start gap-3">
+            <QrCode className="w-6 h-6 text-[#E31837] shrink-0 mt-1" aria-hidden="true" />
+            <SectionHeading
+              title="Keunggulan QR Code Generator UKM Pilar Bangsa"
+              description="Dirancang khusus untuk kebutuhan publikasi kegiatan kampus yang cepat, tahan lama, dan tajam untuk dicetak."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 text-sm sm:text-base text-gray-600 leading-relaxed">
+            <div className="border-t-2 border-[#008000] pt-4 space-y-2">
+              <div className="font-bold text-gray-900 flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-[#008000] shrink-0" aria-hidden="true" />
+                <span>Langsung Menuju Tujuan (Direct Scan)</span>
+              </div>
+              <p>
+                QR Code mengenkode URL asli secara langsung tanpa layanan pemendek perantara. Pengunjung langsung tiba di halaman tujuan tanpa iklan dan QR aktif selamanya.
+              </p>
+            </div>
+
+            <div className="border-t-2 border-[#E31837] pt-4 space-y-2">
+              <div className="font-bold text-gray-900 flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-[#E31837] shrink-0" aria-hidden="true" />
+                <span>Koreksi Kesalahan Level H (30%)</span>
+              </div>
+              <p>
+                Menggunakan standar ISO/IEC 18004 Reed-Solomon Level H yang mampu memulihkan hingga 30% area matriks, sehingga penempatan logo di tengah tetap cepat dipindai.
+              </p>
+            </div>
+
+            <div className="border-t-2 border-gray-400 pt-4 space-y-2">
+              <div className="font-bold text-gray-900 flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-amber-600 shrink-0" aria-hidden="true" />
+                <span>Kualitas Cetak Banner &amp; Spanduk</span>
+              </div>
+              <p>
+                Mendukung pengunduhan PNG Ultra HD (2048×2048 piksel) maupun SVG Vektor murni yang tajam untuk dicetak pada poster kegiatan, sertifikat, maupun media sosial.
+              </p>
+            </div>
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-600 leading-relaxed">
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 space-y-2">
-            <div className="font-bold text-gray-900 flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-[#008000]" />
-              <span>Langsung Menuju Tujuan (Direct Scan)</span>
-            </div>
-            <p>
-              QR Code mengenkode URL asli secara langsung tanpa layanan pemendek perantara. Pengunjung yang memindai barcode akan langsung tiba di halaman tujuan tanpa jeda iklan dan QR tidak akan pernah kadaluarsa.
-            </p>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 space-y-2">
-            <div className="font-bold text-gray-900 flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-[#E31837]" />
-              <span>Koreksi Kesalahan Level H (30%)</span>
-            </div>
-            <p>
-              Menggunakan standar ISO/IEC 18004 Reed-Solomon Level H yang mampu memulihkan hingga 30% area matriks, sehingga penempatan logo di tengah barcode tetap sangat cepat dipindai oleh semua kamera ponsel.
-            </p>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 space-y-2">
-            <div className="font-bold text-gray-900 flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-[#D97706]" />
-              <span>Kualitas Cetak Banner & Spanduk</span>
-            </div>
-            <p>
-              Mendukung pengunduhan dalam format PNG Ultra HD (2048×2048 piksel) maupun SVG Vektor murni yang tajam untuk dicetak pada poster kegiatan, ID card kepanitiaan, sertifikat, maupun media sosial.
-            </p>
-          </div>
-        </div>
-      </section>
+      </Section>
     </div>
   );
 }

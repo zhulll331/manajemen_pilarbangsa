@@ -213,97 +213,99 @@ export function HeroSlider({ initialSlides }: { initialSlides?: HeroSlideItem[] 
       style={{ '--pb-hero-interval': `${AUTOPLAY_INTERVAL_MS}ms` } as React.CSSProperties}
       className={`pb-hero-shell ${
         isAutoplayPaused ? 'pb-hero-shell--paused' : ''
-      } relative w-full overflow-hidden rounded-3xl border border-gray-100 shadow-xl my-2 md:min-h-[460px] lg:min-h-[530px] xl:min-h-[550px] flex flex-col md:flex-row`}
+      } relative w-full overflow-hidden border-b border-gray-200 md:min-h-[480px] lg:min-h-[540px] flex flex-col md:flex-row`}
     >
       {/* Foto besar di kanan pada desktop/tablet (dan di atas pada mobile) tanpa bingkai keras */}
       <HeroSlideMedia slides={activeSlides} currentIndex={safeIndex} />
 
-      {/* Kolom kiri: blok teks terang + CTA + kontrol slider */}
-      <div className="relative z-20 w-full md:w-[58%] lg:w-[55%] flex flex-col justify-between px-5 pt-2 pb-6 sm:px-8 sm:pb-8 md:py-10 md:pl-10 md:pr-6 lg:py-12 lg:pl-14 lg:pr-8">
-        <div
-          key={activeSlide.id}
-          role="group"
-          aria-roledescription="slide"
-          aria-label={`Slide ${safeIndex + 1} dari ${activeSlides.length}`}
-          aria-live={isAutoplayPaused ? 'polite' : 'off'}
-          className="my-auto py-1 sm:py-2"
-        >
-          <HeroSlideContent slide={activeSlide} />
-        </div>
-
-        {activeSlides.length > 1 && (
-          <div className="mt-6 pt-4 flex items-center justify-between gap-4 border-t border-gray-100/80 max-w-md">
-            {/* Indikator titik / progress */}
-            <div className="flex items-center gap-1.5" role="group" aria-label="Pilih slide">
-              {activeSlides.map((slideItem, index) => {
-                const isActive = index === safeIndex;
-                return (
-                  <button
-                    key={slideItem.id}
-                    type="button"
-                    onClick={() => goToSlide(index, true)}
-                    aria-label={`Pilih slide ${index + 1}: ${slideItem.title}`}
-                    aria-current={isActive ? 'true' : undefined}
-                    className="pb-hero-control-btn group inline-flex items-center justify-center min-w-[24px] min-h-[24px] px-1 rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
-                  >
-                    {isActive ? (
-                      <span
-                        aria-hidden="true"
-                        className="relative block w-8 h-2 rounded-full bg-gray-200 overflow-hidden ring-1 ring-[#E31837]/25"
-                      >
-                        <span
-                          key={`dot-progress-${safeIndex}`}
-                          className="pb-hero-dot-fill block h-full w-full rounded-full bg-[#E31837]"
-                        />
-                      </span>
-                    ) : (
-                      <span
-                        aria-hidden="true"
-                        className="block w-2.5 h-2.5 rounded-full bg-gray-300 group-hover:bg-gray-400 transition-colors"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Kontrol Pause + Panah Kiri/Kanan */}
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setIsManuallyPaused((prev) => !prev)}
-                aria-label={
-                  isManuallyPaused ? 'Jalankan putar otomatis slide' : 'Jeda putar otomatis slide'
-                }
-                className="pb-hero-control-btn w-9 h-9 rounded-full border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
-              >
-                {isManuallyPaused ? (
-                  <Play size={14} aria-hidden="true" />
-                ) : (
-                  <Pause size={14} aria-hidden="true" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => prevSlide(true)}
-                aria-label="Slide sebelumnya"
-                className="pb-hero-control-btn w-9 h-9 rounded-full border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
-              >
-                <ChevronLeft size={17} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => nextSlide(true)}
-                aria-label="Slide berikutnya"
-                className="pb-hero-control-btn w-9 h-9 rounded-full border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
-              >
-                <ChevronRight size={17} aria-hidden="true" />
-              </button>
-            </div>
+      {/* Kontainer teks rata dengan max-w-6xl agar sejajar dengan seluruh section di halaman */}
+      <div className="relative z-20 w-full max-w-6xl mx-auto px-5 sm:px-8 flex flex-col justify-between">
+        <div className="w-full md:w-[56%] lg:w-[52%] flex-1 flex flex-col justify-between pt-4 pb-8 md:py-12 lg:py-16 md:pr-8">
+          <div
+            key={activeSlide.id}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`Slide ${safeIndex + 1} dari ${activeSlides.length}`}
+            aria-live={isAutoplayPaused ? 'polite' : 'off'}
+            className="my-auto py-1 sm:py-2"
+          >
+            <HeroSlideContent slide={activeSlide} />
           </div>
-        )}
+
+          {activeSlides.length > 1 && (
+            <div className="mt-6 pt-4 flex items-center justify-between gap-4 border-t border-gray-200/80 max-w-md">
+              {/* Indikator titik / progress */}
+              <div className="flex items-center gap-1.5" role="group" aria-label="Pilih slide">
+                {activeSlides.map((slideItem, index) => {
+                  const isActive = index === safeIndex;
+                  return (
+                    <button
+                      key={slideItem.id}
+                      type="button"
+                      onClick={() => goToSlide(index, true)}
+                      aria-label={`Pilih slide ${index + 1}: ${slideItem.title}`}
+                      aria-current={isActive ? 'true' : undefined}
+                      className="pb-hero-control-btn group inline-flex items-center justify-center min-w-[24px] min-h-[24px] px-1 rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+                    >
+                      {isActive ? (
+                        <span
+                          aria-hidden="true"
+                          className="relative block w-8 h-2 rounded-full bg-gray-200 overflow-hidden ring-1 ring-[#E31837]/25"
+                        >
+                          <span
+                            key={`dot-progress-${safeIndex}`}
+                            className="pb-hero-dot-fill block h-full w-full rounded-full bg-[#E31837]"
+                          />
+                        </span>
+                      ) : (
+                        <span
+                          aria-hidden="true"
+                          className="block w-2.5 h-2.5 rounded-full bg-gray-300 group-hover:bg-gray-400 transition-colors"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Kontrol Pause + Panah Kiri/Kanan */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsManuallyPaused((prev) => !prev)}
+                  aria-label={
+                    isManuallyPaused ? 'Jalankan putar otomatis slide' : 'Jeda putar otomatis slide'
+                  }
+                  className="pb-hero-control-btn w-9 h-9 rounded-lg border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+                >
+                  {isManuallyPaused ? (
+                    <Play size={14} aria-hidden="true" />
+                  ) : (
+                    <Pause size={14} aria-hidden="true" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => prevSlide(true)}
+                  aria-label="Slide sebelumnya"
+                  className="pb-hero-control-btn w-9 h-9 rounded-lg border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+                >
+                  <ChevronLeft size={17} aria-hidden="true" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => nextSlide(true)}
+                  aria-label="Slide berikutnya"
+                  className="pb-hero-control-btn w-9 h-9 rounded-lg border border-gray-200 bg-[var(--color-card)] text-[var(--color-text-dark)] hover:border-[#E31837] hover:text-[#E31837] inline-flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E31837]"
+                >
+                  <ChevronRight size={17} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Status live region untuk perubahan slide interaktif */}

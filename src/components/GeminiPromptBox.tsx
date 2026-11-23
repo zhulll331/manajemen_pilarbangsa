@@ -116,38 +116,38 @@ export function GeminiPromptBox() {
       <AnimatePresence>
         {messages.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="bg-white/80 backdrop-blur-md border border-gray-200/80 rounded-3xl p-6 shadow-xl space-y-6 max-h-[500px] overflow-y-auto text-sm sm:text-base leading-relaxed"
+            exit={{ opacity: 0, y: 12 }}
+            className="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 space-y-5 max-h-[460px] overflow-y-auto text-sm sm:text-base leading-relaxed"
           >
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex gap-3.5 items-start ${
+                className={`flex gap-3 items-start ${
                   msg.sender === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 shadow-sm flex items-center justify-center bg-white border border-gray-100">
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-white border border-gray-200">
                   <Image
                     src={msg.sender === "user" ? "/logoikonai_user.svg" : "/logoikonai_chatbot.svg"}
                     alt={msg.sender === "user" ? "User" : "Pilar Asisten"}
-                    width={36}
-                    height={36}
+                    width={32}
+                    height={32}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div
-                  className={`max-w-[85%] px-5 py-4 rounded-3xl shadow-sm ${
+                  className={`max-w-[85%] px-4 py-3 rounded-lg ${
                     msg.sender === "user"
-                      ? "bg-blue-600 text-white rounded-br-none font-medium"
-                      : "bg-gray-50 text-gray-800 border border-gray-200/60 rounded-bl-none"
+                      ? "bg-gray-900 text-white font-medium"
+                      : "bg-white text-gray-800 border border-gray-200"
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words">
                     {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
                       if (part.startsWith('**') && part.endsWith('**')) {
-                        return <strong key={i} className={msg.sender === "user" ? "font-extrabold text-white" : "font-extrabold text-black"}>{part.slice(2, -2)}</strong>;
+                        return <strong key={i} className={msg.sender === "user" ? "font-bold text-white" : "font-bold text-black"}>{part.slice(2, -2)}</strong>;
                       }
                       return <span key={i}>{part}</span>;
                     })}
@@ -157,20 +157,20 @@ export function GeminiPromptBox() {
             ))}
 
             {isLoading && (
-              <div className="flex gap-3.5 items-start">
-                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 shadow-sm flex items-center justify-center bg-white border border-gray-100">
+              <div className="flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-white border border-gray-200">
                   <Image
                     src="/logoikonai_chatbot.svg"
                     alt="Pilar Asisten"
-                    width={36}
-                    height={36}
+                    width={32}
+                    height={32}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="bg-gray-50 text-gray-800 border border-gray-200/60 px-6 py-4 rounded-3xl rounded-bl-none shadow-sm flex items-center space-x-2">
-                  <div className="w-2.5 h-2.5 bg-green-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-2.5 h-2.5 bg-green-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-2.5 h-2.5 bg-green-600 rounded-full animate-bounce"></div>
+                <div className="bg-white text-gray-800 border border-gray-200 px-4 py-3 rounded-lg flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-[#008000] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 bg-[#008000] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 bg-[#008000] rounded-full animate-bounce"></div>
                 </div>
               </div>
             )}
@@ -179,31 +179,31 @@ export function GeminiPromptBox() {
         )}
       </AnimatePresence>
 
-      {/* Kotak Prompt / Pencarian Minimalis */}
+      {/* Form Input Pertanyaan Sederhana */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           handleSend();
         }}
-        className="bg-white border border-gray-200/90 rounded-full py-3 sm:py-4 px-6 sm:px-8 shadow-2xl shadow-gray-200/60 transition-all duration-300 hover:shadow-gray-300/80 flex items-center gap-4 relative"
+        className="bg-white border border-gray-300 focus-within:border-gray-900 rounded-lg p-2.5 sm:p-3 transition-colors flex items-center gap-3 relative"
       >
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder={placeholderText}
-          className="flex-1 bg-transparent border-none outline-none text-base sm:text-lg text-gray-800 placeholder-gray-500 py-1 font-normal w-full"
+          aria-label="Tanyakan seputar UKM Pilar Bangsa"
+          className="flex-1 bg-transparent border-none outline-none text-base text-gray-800 placeholder-gray-500 px-2 py-1.5 font-normal w-full"
         />
-        {inputText.trim() && (
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="p-2.5 bg-[#008000] hover:bg-[#006600] text-white rounded-full transition-colors shadow-md flex items-center justify-center cursor-pointer disabled:bg-gray-300 shrink-0"
-            title="Kirim Pertanyaan"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        )}
+        <button
+          type="submit"
+          disabled={isLoading || !inputText.trim()}
+          className="min-h-[40px] px-4 py-2 bg-[#008000] hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold text-sm cursor-pointer disabled:cursor-not-allowed shrink-0"
+          title="Kirim Pertanyaan"
+        >
+          <Send className="w-4 h-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Kirim</span>
+        </button>
       </form>
     </div>
   );

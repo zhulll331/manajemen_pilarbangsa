@@ -1,193 +1,206 @@
-import React, { Suspense } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { HeroSlider } from '@/components/HeroSlider'
-import { HeroSliderSkeleton } from '@/components/hero/HeroSliderSkeleton'
-import { getHeroSlides } from '@/lib/heroSlides'
-import { PilarPhotoMarquee } from '@/components/PilarPhotoMarquee'
-import { TimelineRoadmap } from '@/components/TimelineRoadmap'
-import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper'
-import { ScrollReveal } from '@/components/ScrollReveal'
-import { PilarLoader } from '@/components/PilarLoader'
-import { createClient } from '@supabase/supabase-js'
-import { ArrowRight, Newspaper, Calendar, Sparkles, MapPin, CheckCircle2 } from 'lucide-react'
-import { PublicEvent } from '@/types/events'
-import { normalizeEventTimestamps, formatEventDateWib } from '@/utils/eventDate'
+import React, { Suspense } from 'react';
+import Link from 'next/link';
+import { HeroSlider } from '@/components/HeroSlider';
+import { HeroSliderSkeleton } from '@/components/hero/HeroSliderSkeleton';
+import { getHeroSlides } from '@/lib/heroSlides';
+import { PilarPhotoMarquee } from '@/components/PilarPhotoMarquee';
+import { TimelineRoadmap } from '@/components/TimelineRoadmap';
+import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper';
+import { PilarLoader } from '@/components/PilarLoader';
+import { LinkButton, Section, SectionHeading } from '@/components/ui/PublicPrimitives';
+import { createClient } from '@supabase/supabase-js';
+import { ArrowRight, Calendar, MapPin, CheckCircle2 } from 'lucide-react';
+import { PublicEvent } from '@/types/events';
+import { normalizeEventTimestamps, formatEventDateWib } from '@/utils/eventDate';
 
 export const metadata = {
   title: 'Pilar Bangsa Digital Office | UKM Pilar Bangsa Untag Banyuwangi',
-  description: 'Wadah Transformasi & Kolaborasi Mahasiswa Universitas 17 Agustus 1945 (Untag) Banyuwangi. Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel.',
-  keywords: ['UKM Pilar Bangsa', 'Untag Banyuwangi', 'Pilar Bangsa Digital Office', 'Universitas 17 Agustus 1945 Banyuwangi', 'Organisasi Mahasiswa', 'Sistem Manajemen Pilar Bangsa'],
-}
+  description:
+    'Wadah Transformasi & Kolaborasi Mahasiswa Universitas 17 Agustus 1945 (Untag) Banyuwangi. Mewujudkan tata kelola organisasi yang modern, transparan, dan akuntabel.',
+  keywords: [
+    'UKM Pilar Bangsa',
+    'Untag Banyuwangi',
+    'Pilar Bangsa Digital Office',
+    'Universitas 17 Agustus 1945 Banyuwangi',
+    'Organisasi Mahasiswa',
+    'Sistem Manajemen Pilar Bangsa',
+  ],
+};
 
 interface NewsItem {
-  id: string
-  title: string
-  url: string
-  image_url: string
-  excerpt?: string
-  published_at?: string
-  created_at?: string
-  author?: string
-  category?: string
+  id: string;
+  title: string;
+  url: string;
+  image_url: string;
+  excerpt?: string;
+  published_at?: string;
+  created_at?: string;
+  author?: string;
+  category?: string;
 }
 
-// Fetch kegiatan sorotan beranda (hanya 1 kegiatan terbit bertanda is_featured = true)
 async function getFeaturedEvent(): Promise<PublicEvent | null> {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!supabaseUrl || !supabaseKey) return null
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return null;
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase
       .from('public_events')
       .select('*')
       .eq('is_featured', true)
       .eq('publish_status', 'published')
-      .maybeSingle()
+      .maybeSingle();
 
-    if (error || !data) return null
-    return normalizeEventTimestamps(data as PublicEvent)
+    if (error || !data) return null;
+    return normalizeEventTimestamps(data as PublicEvent);
   } catch (err) {
-    console.warn('Gagal fetch featured event untuk beranda:', err)
-    return null
+    console.warn('Gagal fetch featured event untuk beranda:', err);
+    return null;
   }
 }
 
-// Fetch berita gabungan dari Portal Media (Berita UKM) dan input Humas internal (news_links)
 async function getNews(): Promise<NewsItem[]> {
   const mediaApiUrl =
     process.env.NEXT_PUBLIC_MEDIA_API_URL ||
-    'https://www.mediapilarbangsa.web.id/api/berita-ukm?limit=6'
+    'https://www.mediapilarbangsa.web.id/api/berita-ukm?limit=6';
 
-  // 1. Fetch dari Portal Media
   const fetchMedia = async (): Promise<NewsItem[]> => {
     try {
       const res = await fetch(mediaApiUrl, {
-        signal: AbortSignal.timeout(2000), // Batas maksimal 2 detik agar tidak pernah memblokir navigasi
-        next: { revalidate: 60 }, // Otomatis cek data baru setiap 60 detik
-      })
+        signal: AbortSignal.timeout(2000),
+        next: { revalidate: 60 },
+      });
       if (res.ok) {
-        const data = await res.json()
+        const data: unknown = await res.json();
         if (Array.isArray(data)) {
-          return data
+          return data as NewsItem[];
         }
       }
     } catch (err) {
-      console.warn('Gagal fetch berita dari portal media:', err)
+      console.warn('Gagal fetch berita dari portal media:', err);
     }
-    return []
-  }
+    return [];
+  };
 
-  // 2. Fetch dari Supabase news_links (input internal Humas)
   const fetchHumas = async (): Promise<NewsItem[]> => {
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       if (supabaseUrl && supabaseKey) {
-        const supabase = createClient(supabaseUrl, supabaseKey)
+        const supabase = createClient(supabaseUrl, supabaseKey);
         const { data, error } = await supabase
           .from('news_links')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(6)
-        if (!error && data) {
-          return data.map((item: any) => ({
-            ...item,
-            category: item.category || 'Warta UKM',
-          }))
+          .limit(6);
+        if (!error && Array.isArray(data)) {
+          return data.map((raw) => {
+            const item = raw as NewsItem;
+            return {
+              ...item,
+              category: item.category || 'Warta UKM',
+            };
+          });
         }
       }
     } catch (err) {
-      console.error('Gagal fetch berita dari Supabase Humas:', err)
+      console.error('Gagal fetch berita dari Supabase Humas:', err);
     }
-    return []
-  }
+    return [];
+  };
 
-  // Jalankan fetch keduanya secara paralel
-  const [mediaNews, humasNews] = await Promise.all([
-    fetchMedia(),
-    fetchHumas(),
-  ])
+  const [mediaNews, humasNews] = await Promise.all([fetchMedia(), fetchHumas()]);
 
-  // Gabungkan dan hilangkan duplikasi URL
-  const combined = [...mediaNews, ...humasNews]
-  const seenUrls = new Set<string>()
-  const uniqueNews: NewsItem[] = []
+  const combined = [...mediaNews, ...humasNews];
+  const seenUrls = new Set<string>();
+  const uniqueNews: NewsItem[] = [];
 
   for (const item of combined) {
-    const key = (item.url || item.id || '').trim().toLowerCase()
+    const key = (item.url || item.id || '').trim().toLowerCase();
     if (key && !seenUrls.has(key)) {
-      seenUrls.add(key)
-      uniqueNews.push(item)
+      seenUrls.add(key);
+      uniqueNews.push(item);
     }
   }
 
-  // Urutkan berdasarkan tanggal terbaru (published_at atau created_at)
   uniqueNews.sort((a, b) => {
-    const dateA = new Date(a.published_at || a.created_at || 0).getTime()
-    const dateB = new Date(b.published_at || b.created_at || 0).getTime()
-    return dateB - dateA
-  })
+    const dateA = new Date(a.published_at || a.created_at || 0).getTime();
+    const dateB = new Date(b.published_at || b.created_at || 0).getTime();
+    return dateB - dateA;
+  });
 
-  return uniqueNews.slice(0, 9)
+  return uniqueNews.slice(0, 6);
 }
 
-
+async function HeroBannerSection() {
+  const slides = await getHeroSlides();
+  return <HeroSlider initialSlides={slides} />;
+}
 
 async function BeritaGrid() {
   const newsList = await getNews();
 
   if (newsList.length === 0) {
     return (
-      <div className="text-center p-12 bg-gray-50 rounded-3xl border border-gray-100">
-        <p className="text-gray-500">Belum ada berita terbaru saat ini.</p>
+      <div className="py-10 border-t border-gray-200 text-gray-500 text-base">
+        Belum ada berita terbaru saat ini.
       </div>
     );
   }
 
   return (
-    <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="divide-y divide-gray-200 md:divide-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8">
       {newsList.map((news) => (
-        <a 
-          key={news.id} 
+        <a
+          key={news.id}
           href={news.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="snap-center shrink-0 w-[85vw] sm:w-[350px] md:w-auto bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col"
+          className="group flex items-start gap-4 py-5 md:py-0 md:flex-col md:gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E31837] rounded-lg"
         >
-          <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-gray-100">
-            <img 
-              src={news.image_url || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop'} 
+          <div className="relative w-28 h-20 sm:w-32 sm:h-24 md:w-full md:h-48 shrink-0 overflow-hidden rounded-lg bg-gray-200">
+            <img
+              src={
+                news.image_url ||
+                'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=800&auto=format&fit=crop'
+              }
               alt={news.title}
+              width={640}
+              height={360}
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            {news.category && (
-              <span className="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                {news.category}
-              </span>
-            )}
           </div>
-          <div className="p-6 flex flex-col flex-grow">
-            {news.published_at && (
-              <span className="text-xs text-gray-400 font-medium mb-2">
-                {new Date(news.published_at).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-                {news.author ? ` • ${news.author}` : ''}
-              </span>
-            )}
-            <h3 className="font-bold text-gray-900 text-lg leading-snug group-hover:text-[#E31837] transition-colors line-clamp-3 mb-4">
+
+          <div className="flex flex-col flex-grow min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 font-semibold mb-1.5">
+              {news.category && (
+                <span className="text-[#E31837] uppercase tracking-wider">{news.category}</span>
+              )}
+              {news.category && news.published_at && <span aria-hidden="true">•</span>}
+              {news.published_at && (
+                <span>
+                  {new Date(news.published_at).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+              )}
+            </div>
+
+            <h3 className="font-bold text-gray-900 text-base md:text-lg leading-snug group-hover:text-[#E31837] transition-colors line-clamp-3">
               {news.title}
             </h3>
-            <div className="mt-auto flex items-center text-sm font-semibold text-[#008000] group-hover:text-[#E31837] transition-colors">
-              Baca selengkapnya
-              <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+
+            <div className="hidden md:flex mt-3 pt-2 items-center text-sm font-semibold text-gray-700 group-hover:text-[#E31837] transition-colors">
+              <span>Baca selengkapnya</span>
+              <ArrowRight
+                className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform"
+                aria-hidden="true"
+              />
             </div>
           </div>
         </a>
@@ -196,131 +209,113 @@ async function BeritaGrid() {
   );
 }
 
-async function HeroBannerSection() {
-  const slides = await getHeroSlides();
-  return <HeroSlider initialSlides={slides} />;
-}
-
 export default async function BerandaPage() {
   const featuredEvent = await getFeaturedEvent();
 
   return (
-    <div className="space-y-24 overflow-hidden">
-      {/* Hero Banner Section */}
-      <section>
-        <Suspense fallback={<HeroSliderSkeleton />}>
-          <HeroBannerSection />
-        </Suspense>
-      </section>
+    <div className="w-full">
+      {/* 1. Hero Banner Penuh Lebar */}
+      <Suspense fallback={<HeroSliderSkeleton />}>
+        <HeroBannerSection />
+      </Suspense>
 
-      {/* Featured Event Section (Hanya tampil jika ada kegiatan sorotan yang terbit) */}
+      {/* 2. Sorotan Kegiatan Utama (Pita Hitam Penuh Lebar) */}
       {featuredEvent && (
-        <ScrollReveal direction="up">
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-black via-gray-950 to-neutral-900 border border-gray-800 shadow-2xl p-6 sm:p-10 md:p-12 text-white">
-              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#FFD700_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
-              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                <div className="space-y-4 max-w-2xl">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/80 text-[#FFD700] text-xs font-bold uppercase tracking-wider border border-red-800/60 shadow-sm">
-                    <Sparkles size={14} className="text-[#FFD700]" />
-                    <span>Sorotan Kegiatan Utama</span>
-                  </div>
+        <Section tone="dark" ariaLabel="Sorotan kegiatan utama">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#FFD700]">
+                Sorotan Kegiatan Utama
+              </p>
 
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
-                    {featuredEvent.title}
-                  </h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight text-white">
+                {featuredEvent.title}
+              </h2>
 
-                  {featuredEvent.summary && (
-                    <p className="text-gray-300 text-sm sm:text-base leading-relaxed line-clamp-3">
-                      {featuredEvent.summary}
-                    </p>
-                  )}
+              {featuredEvent.summary && (
+                <p className="text-gray-300 text-sm sm:text-base leading-relaxed line-clamp-3">
+                  {featuredEvent.summary}
+                </p>
+              )}
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-300 pt-2 font-medium">
-                    {featuredEvent.starts_at && (
-                      <div className="flex items-center gap-1.5">
-                        <Calendar size={15} className="text-[#FFD700]" />
-                        <span>
-                          {formatEventDateWib(featuredEvent.starts_at, {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </div>
-                    )}
-                    {featuredEvent.location && (
-                      <div className="flex items-center gap-1.5">
-                        <MapPin size={15} className="text-[#E31837]" />
-                        <span>{featuredEvent.location}</span>
-                      </div>
-                    )}
-                    {featuredEvent.registration_status === 'open' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-900/60 text-emerald-300 text-xs font-semibold border border-emerald-700/50">
-                        <CheckCircle2 size={12} /> Pendaftaran Dibuka
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="shrink-0 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
-                  <Link
-                    href={`/kegiatan/${featuredEvent.slug}`}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-[#E31837] hover:bg-red-700 text-white font-extrabold text-base shadow-lg hover:shadow-red-900/50 transition-all duration-300 hover:-translate-y-0.5"
-                  >
+              <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-300 pt-1 font-medium">
+                {featuredEvent.starts_at && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={15} className="text-[#FFD700]" aria-hidden="true" />
                     <span>
-                      {featuredEvent.registration_status === 'open'
-                        ? 'Lihat Info & Daftar'
-                        : 'Lihat Informasi Kegiatan'}
+                      {formatEventDateWib(featuredEvent.starts_at, {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
                     </span>
-                    <ArrowRight size={18} />
-                  </Link>
-
-                  <Link
-                    href="/twibbon/diklat-kepemimpinan-2026"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-[#008000] hover:bg-green-700 text-white font-bold text-sm shadow-md transition-all"
-                  >
-                    <Sparkles size={16} />
-                    <span>Pasang Twibbon Diklat</span>
-                  </Link>
-
-                  <Link
-                    href="/kegiatan"
-                    className="inline-flex items-center justify-center px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition-all"
-                  >
-                    Semua Kegiatan
-                  </Link>
-                </div>
+                  </div>
+                )}
+                {featuredEvent.location && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin size={15} className="text-[#E31837]" aria-hidden="true" />
+                    <span>{featuredEvent.location}</span>
+                  </div>
+                )}
+                {featuredEvent.registration_status === 'open' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-900/60 text-emerald-300 text-xs font-semibold border border-emerald-700/50">
+                    <CheckCircle2 size={12} aria-hidden="true" /> Pendaftaran Dibuka
+                  </span>
+                )}
               </div>
             </div>
-          </section>
-        </ScrollReveal>
+
+            <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <LinkButton
+                href={`/kegiatan/${featuredEvent.slug}`}
+                variant="primary"
+                className="w-full sm:w-auto"
+              >
+                <span>
+                  {featuredEvent.registration_status === 'open'
+                    ? 'Lihat Info & Daftar'
+                    : 'Lihat Informasi Kegiatan'}
+                </span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </LinkButton>
+
+              <LinkButton
+                href="/kegiatan"
+                variant="dark-secondary"
+                className="w-full sm:w-auto"
+              >
+                <span>Semua Kegiatan</span>
+              </LinkButton>
+            </div>
+          </div>
+        </Section>
       )}
 
+      {/* 3. Marquee Dokumentasi Foto */}
       <PilarPhotoMarquee />
 
-      {/* Timeline Roadmap Section */}
-      <ScrollReveal direction="up">
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <TimelineRoadmap />
-        </section>
-      </ScrollReveal>
+      {/* 4. Timeline Roadmap Program Kerja */}
+      <Section tone="white" ariaLabel="Timeline roadmap program kerja">
+        <TimelineRoadmap />
+      </Section>
 
-      {/* Berita Seputar UKM Section */}
-      <ScrollReveal direction="up" delay={0.2}>
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-12">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-red-50 text-[#E31837] text-xs font-bold tracking-widest uppercase border border-red-100">
-              <Newspaper className="w-4 h-4" />
-              <span>Kabar Terkini</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
-              Berita Seputar UKM
-            </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Ikuti terus perkembangan dan kegiatan terbaru dari UKM Pilar Bangsa.
-            </p>
+      {/* 5. Berita Seputar UKM */}
+      <Section tone="muted" bordered ariaLabel="Berita seputar UKM">
+        <div className="space-y-8 md:space-y-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <SectionHeading
+              eyebrow="Kabar Terkini"
+              title="Berita Seputar UKM"
+              description="Ikuti terus perkembangan, liputan, dan kegiatan terbaru dari UKM Pilar Bangsa."
+            />
+            <Link
+              href="/kegiatan"
+              className="inline-flex items-center gap-1.5 text-sm font-bold text-[#E31837] hover:underline underline-offset-4 shrink-0"
+            >
+              <span>Agenda Resmi UKM</span>
+              <ArrowRight size={15} aria-hidden="true" />
+            </Link>
           </div>
 
           <Suspense
@@ -333,60 +328,48 @@ export default async function BerandaPage() {
           >
             <BeritaGrid />
           </Suspense>
-        </section>
-      </ScrollReveal>
+        </div>
+      </Section>
 
-      {/* Call to Action Section */}
-      <ScrollReveal direction="up">
-        <section className="bg-black text-white rounded-3xl p-12 md:p-20 text-center relative overflow-hidden shadow-2xl mx-4 sm:mx-6 lg:mx-8 max-w-7xl xl:mx-auto">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#E31837_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-          <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-              Transparansi Program Kerja & Dokumentasi
+      {/* 6. Call to Action Program Kerja (Pita Hitam Penuh Lebar) */}
+      <Section tone="dark" ariaLabel="Transparansi program kerja">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="max-w-2xl space-y-3">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#FFD700]">
+              Akuntabilitas Organisasi
+            </p>
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+              Transparansi Program Kerja &amp; Dokumentasi
             </h2>
-            <p className="text-gray-300 text-lg sm:text-xl leading-relaxed">
-              Sebagai wujud akuntabilitas, seluruh kegiatan dan dokumentasi proker UKM Pilar Bangsa dapat dipantau secara langsung oleh publik.
+            <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
+              Seluruh kegiatan, status pelaksanaan, dan dokumentasi program kerja UKM Pilar Bangsa dapat dipantau secara langsung oleh publik.
             </p>
-            <div>
-              <Link 
-                href="/program-kerja" 
-                className="inline-flex items-center space-x-3 bg-white text-black font-extrabold px-9 py-4 rounded-2xl shadow-xl hover:bg-gray-100 transition-all duration-300 hover:-translate-y-1 text-lg"
-              >
-                <span>Lihat Daftar Program Kerja</span>
-              </Link>
-            </div>
           </div>
-        </section>
-      </ScrollReveal>
 
-      {/* AI Co-Pilot / Gemini Prompt Box Section */}
-      <ScrollReveal direction="up">
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center space-y-3 mb-8">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-green-50 text-[#008000] text-xs sm:text-sm font-bold tracking-wider uppercase border border-green-200">
-              <span>✨ AI CO-PILOT UKM PILAR BANGSA</span>
-            </div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              Tanyakan Apapun Seputar Proker & Organisasi
-            </h3>
-            <p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
-              Pilar Asisten AI didukung oleh model Google Gemini mutakhir untuk menjawab pertanyaan Anda berdasarkan dokumen AD/ART dan data real-time Supabase.
-            </p>
+          <div className="shrink-0">
+            <LinkButton
+              href="/program-kerja"
+              variant="dark-primary"
+              className="w-full sm:w-auto"
+            >
+              <span>Lihat Daftar Program Kerja</span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </LinkButton>
           </div>
+        </div>
+      </Section>
+
+      {/* 7. AI Co-Pilot / Gemini Prompt Box */}
+      <Section tone="white" containerSize="narrow" ariaLabel="Pilar Asisten AI">
+        <div className="space-y-6">
+          <SectionHeading
+            eyebrow="AI Co-Pilot UKM Pilar Bangsa"
+            title="Tanyakan Apapun Seputar Proker & Organisasi"
+            description="Didukung model AI dengan akses ke dokumen AD/ART dan data real-time organisasi untuk membantu menjawab pertanyaan Anda."
+          />
           <GeminiPromptBoxWrapper />
-        </section>
-      </ScrollReveal>
-      
-      {/* Global Style for hiding scrollbar in Webkit */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}} />
+        </div>
+      </Section>
     </div>
-  )
+  );
 }

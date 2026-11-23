@@ -18,6 +18,30 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/tentang',
+        destination: '/tentang-kami',
+        permanent: true,
+      },
+      {
+        source: '/publik',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/publik/tentang',
+        destination: '/tentang-kami',
+        permanent: true,
+      },
+      {
+        source: '/publik/program-kerja',
+        destination: '/program-kerja',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     // Header keamanan HTTP standar (anti-clickjacking, nosniff, referrer, permissions, COOP, HSTS)
     // serta cache header untuk aset statis gambar publik (tanpa menyentuh /_next/static/ agar hot-reload dev aman)

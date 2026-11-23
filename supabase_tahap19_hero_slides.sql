@@ -54,7 +54,41 @@ CREATE POLICY "Hero slides deletable by authenticated"
   TO authenticated
   USING (true);
 
--- Seed 3 data contoh bertema kegiatan UKM/organisasi mahasiswa (idempoten)
+-- Salin data lama dari public.banners (jika ada) agar gambar unggahan Humas tetap terbawa
+DO $$
+BEGIN
+  IF to_regclass('public.banners') IS NOT NULL
+     AND NOT EXISTS (SELECT 1 FROM public.hero_slides) THEN
+    INSERT INTO public.hero_slides (
+      image_url,
+      badge,
+      title,
+      description,
+      cta_primary_label,
+      cta_primary_href,
+      cta_secondary_label,
+      cta_secondary_href,
+      sort_order,
+      is_active,
+      created_at
+    )
+    SELECT
+      COALESCE(NULLIF(trim(image_url), ''), 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=80'),
+      COALESCE(NULLIF(trim(badge), ''), 'Transformasi Digital'),
+      COALESCE(NULLIF(trim(title), ''), 'Pilar Bangsa Digital Office'),
+      COALESCE(NULLIF(trim(description), ''), NULLIF(trim(subtitle), ''), ''),
+      'Lihat Program Kerja',
+      '/program-kerja',
+      'Pelajari Lebih Lanjut',
+      '/tentang-kami',
+      ROW_NUMBER() OVER (ORDER BY id ASC),
+      true,
+      COALESCE(created_at, timezone('utc', now()))
+    FROM public.banners;
+  END IF;
+END $$;
+
+-- Seed 3 data contoh bertema kegiatan UKM/organisasi mahasiswa (hanya jika hero_slides masih kosong)
 INSERT INTO public.hero_slides (
   image_url,
   badge,
