@@ -4,6 +4,8 @@ import { CheckCircle2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { StrukturPimpinan } from '@/components/StrukturPimpinan';
 import { PageHeader, Section, SectionHeading } from '@/components/ui/PublicPrimitives';
+import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 async function getStrukturPimpinan() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -47,9 +49,11 @@ export default async function TentangPage() {
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#E31837]">
               Titik Mula Sejarah &amp; Transformasi Digital
             </p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              Berdiri Sejak 20 April 2021, Bertransformasi Digital pada 2026/2027
-            </h2>
+            <SplitWordsHeading
+              as="h2"
+              text="Berdiri Sejak 20 April 2021, Bertransformasi Digital pada 2026/2027"
+              className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight"
+            />
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
               UKM Pilar Bangsa lahir dari refleksi para aktivis mahasiswa pada{' '}
               <span className="font-bold text-[#E31837]">20 April 2021</span>. Berangkat dari semangat juang untuk menghadirkan wadah organisasi kemahasiswaan yang progresif, independen, dan berakar pada nilai-nilai luhur kebangsaan.
@@ -111,16 +115,18 @@ export default async function TentangPage() {
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#E31837]">
                 Filosofi Logo
               </p>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-                UKM Pilar Bangsa
-              </h2>
+              <SplitWordsHeading
+                as="h2"
+                text="UKM Pilar Bangsa"
+                className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight"
+              />
               <p className="text-gray-600 text-base leading-relaxed">
                 Logo UKM Pilar Bangsa menggambarkan fondasi kebangsaan yang kokoh, semangat Tri Dharma Perguruan Tinggi, serta cita-cita luhur Trisakti Bung Karno.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-0 lg:divide-x lg:divide-gray-200 border-y border-gray-200 py-10">
+          <GsapCardGroup className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-0 lg:divide-x lg:divide-gray-200 border-y border-gray-200 py-10">
             {/* 01: 4 Pondasi */}
             <div className="lg:pr-8 space-y-6">
               <div className="space-y-1">
@@ -248,7 +254,7 @@ export default async function TentangPage() {
                 </div>
               </dl>
             </div>
-          </div>
+          </GsapCardGroup>
 
           <div className="max-w-3xl space-y-2">
             <h3 className="text-lg font-extrabold text-gray-900 uppercase tracking-wide">
@@ -270,7 +276,7 @@ export default async function TentangPage() {
             description="Sinergi antara tanggung jawab insan akademis dengan visi besar bapak bangsa untuk mencapai kejayaan Indonesia."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
+          <GsapCardGroup className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
             {/* Tri Dharma Perguruan Tinggi */}
             <div className="border-t-2 border-[#008000] pt-6 space-y-5">
               <div>
@@ -344,7 +350,7 @@ export default async function TentangPage() {
                 </li>
               </ol>
             </div>
-          </div>
+          </GsapCardGroup>
         </div>
       </Section>
     </div>

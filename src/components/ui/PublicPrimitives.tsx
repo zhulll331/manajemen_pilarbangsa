@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
 
 export interface ContainerProps {
   children: React.ReactNode;
@@ -104,12 +105,12 @@ export function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2
+      <SplitWordsHeading
+        as="h2"
         id={headingId}
+        text={title}
         className={`text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight ${titleColor}`}
-      >
-        {title}
-      </h2>
+      />
       {description && (
         <p className={`text-base leading-relaxed ${descColor}`}>{description}</p>
       )}
@@ -184,9 +185,12 @@ export function PageHeader({
             </p>
           )}
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-[1.15]">
-            {title}
-          </h1>
+          <SplitWordsHeading
+            as="h1"
+            immediate
+            text={title}
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-[1.15]"
+          />
 
           {description && (
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl">

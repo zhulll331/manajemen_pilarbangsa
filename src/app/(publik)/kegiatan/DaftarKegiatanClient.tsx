@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PublicEvent } from '@/types/events';
 import { normalizeEventTimestamps, formatEventDateWib } from '@/utils/eventDate';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 import { 
   Calendar, 
   MapPin, 
@@ -169,7 +170,10 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <GsapCardGroup
+          triggerKey={`${activeTab}-${searchQuery}-${filteredEvents.length}`}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
           {filteredEvents.map((ev) => {
             const hasBanner = Boolean(ev.banner_url);
             const isRegOpen = ev.registration_status === 'open';
@@ -180,7 +184,7 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
               <Link
                 key={ev.id}
                 href={`/kegiatan/${ev.slug}`}
-                className="group flex flex-col border-b border-gray-200 pb-6 md:border-b-0 md:pb-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E31837] rounded-lg"
+                className="group pb-card-hover flex flex-col border-b border-gray-200 pb-6 md:border-b-0 md:pb-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E31837] rounded-lg"
               >
                 {/* Cover Image */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg bg-gray-100">
@@ -262,7 +266,7 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
               </Link>
             );
           })}
-        </div>
+        </GsapCardGroup>
       )}
     </div>
   );

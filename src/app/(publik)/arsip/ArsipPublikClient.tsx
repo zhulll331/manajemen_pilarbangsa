@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ExternalLink, FolderOpen, Calendar } from 'lucide-react';
 import { PageHeader, Section } from '@/components/ui/PublicPrimitives';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 type Archive = {
   id: string;
@@ -101,7 +102,12 @@ export function ArsipPublikClient({ archives }: { archives: Archive[] }) {
 
           {/* Daftar Baris Bergaris */}
           {filtered.length > 0 ? (
-            <div className="divide-y divide-gray-200 border-y border-gray-200">
+            <GsapCardGroup
+              triggerKey={`${selectedPeriod}-${selectedCategory}-${filtered.length}`}
+              yOffset={16}
+              stagger={0.05}
+              className="divide-y divide-gray-200 border-y border-gray-200"
+            >
               {filtered.map((archive) => (
                 <div
                   key={archive.id}
@@ -143,7 +149,7 @@ export function ArsipPublikClient({ archives }: { archives: Archive[] }) {
                   </div>
                 </div>
               ))}
-            </div>
+            </GsapCardGroup>
           ) : (
             <div className="py-16 border-y border-gray-200 text-center space-y-3">
               <FolderOpen className="text-gray-300 mx-auto" size={36} aria-hidden="true" />

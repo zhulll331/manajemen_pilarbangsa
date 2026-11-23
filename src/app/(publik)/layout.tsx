@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import { ShareButton } from '@/components/ShareButton';
 import { PublikNavbar } from '@/components/PublikNavbar';
+import { SmoothScrollProvider } from '@/components/motion/SmoothScrollProvider';
 import PublikLoading from './loading';
 
 export default function PublikLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-900 selection:bg-gray-900 selection:text-white [overflow-anchor:none]">
+    <SmoothScrollProvider>
+      <div className="min-h-screen flex flex-col bg-white text-gray-900 selection:bg-gray-900 selection:text-white [overflow-anchor:none]">
       <a href="#publik-main" className="publik-skip-link">
         Langsung ke konten utama
       </a>
@@ -230,6 +232,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </SmoothScrollProvider>
   );
 }

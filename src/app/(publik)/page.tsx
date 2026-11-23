@@ -8,6 +8,8 @@ import { TimelineRoadmap } from '@/components/TimelineRoadmap';
 import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper';
 import { PilarLoader } from '@/components/PilarLoader';
 import { LinkButton, Section, SectionHeading } from '@/components/ui/PublicPrimitives';
+import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 import { createClient } from '@supabase/supabase-js';
 import { ArrowRight, Calendar, MapPin, CheckCircle2 } from 'lucide-react';
 import { PublicEvent } from '@/types/events';
@@ -151,14 +153,14 @@ async function BeritaGrid() {
   }
 
   return (
-    <div className="divide-y divide-gray-200 md:divide-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8">
+    <GsapCardGroup className="divide-y divide-gray-200 md:divide-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8">
       {newsList.map((news) => (
         <a
           key={news.id}
           href={news.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-start gap-4 py-5 md:py-0 md:flex-col md:gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E31837] rounded-lg"
+          className="group pb-card-hover flex items-start gap-4 py-5 md:py-0 md:flex-col md:gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E31837] rounded-lg"
         >
           <div className="relative w-28 h-20 sm:w-32 sm:h-24 md:w-full md:h-48 shrink-0 overflow-hidden rounded-lg bg-gray-200">
             <img
@@ -205,7 +207,7 @@ async function BeritaGrid() {
           </div>
         </a>
       ))}
-    </div>
+    </GsapCardGroup>
   );
 }
 
@@ -228,9 +230,11 @@ export default async function BerandaPage() {
                 Sorotan Kegiatan Utama
               </p>
 
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight text-white">
-                {featuredEvent.title}
-              </h2>
+              <SplitWordsHeading
+                as="h2"
+                text={featuredEvent.title}
+                className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight text-white"
+              />
 
               {featuredEvent.summary && (
                 <p className="text-gray-300 text-sm sm:text-base leading-relaxed line-clamp-3">
@@ -338,9 +342,11 @@ export default async function BerandaPage() {
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#FFD700]">
               Akuntabilitas Organisasi
             </p>
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
-              Transparansi Program Kerja &amp; Dokumentasi
-            </h2>
+            <SplitWordsHeading
+              as="h2"
+              text="Transparansi Program Kerja & Dokumentasi"
+              className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white"
+            />
             <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
               Seluruh kegiatan, status pelaksanaan, dan dokumentasi program kerja UKM Pilar Bangsa dapat dipantau secara langsung oleh publik.
             </p>

@@ -199,3 +199,45 @@ dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
 }
+
+/* ===== Public Motion Utilities (GSAP + Lenis Complementary CSS) ===== */
+.pb-card-hover {
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .pb-card-hover {
+    transition:
+      transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .pb-card-hover:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.pb-fade-in {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes pb-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pb-fade-in {
+    animation: pb-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}

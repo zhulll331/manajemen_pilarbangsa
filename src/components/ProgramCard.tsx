@@ -54,7 +54,7 @@ export function ProgramCard({ program }: { program: ProgramWork }) {
   };
 
   return (
-    <article className="bg-white rounded-lg overflow-hidden border border-gray-200 flex flex-col group transition-colors hover:border-gray-300">
+    <article className="bg-white rounded-lg overflow-hidden border border-gray-200 flex flex-col group pb-card-hover transition-colors hover:border-gray-300 hover:shadow-md">
       <div className="relative w-full aspect-[16/10] overflow-hidden bg-gray-100">
         <img
           src={directImageUrl}

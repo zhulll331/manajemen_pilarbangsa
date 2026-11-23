@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, ExternalLink } from 'lucide-react';
 import { Section, SectionHeading } from '@/components/ui/PublicPrimitives';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 interface StrukturData {
   pembina: {
@@ -158,15 +159,15 @@ export function StrukturPimpinan({ initialData }: StrukturPimpinanProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+          <GsapCardGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
             {ketuaUmum.map((tokoh, idx) => (
-              <div key={tokoh.id || idx} className="space-y-3">
+              <div key={tokoh.id || idx} className="group pb-card-hover space-y-3">
                 <div className="aspect-[4/5] w-full rounded-lg overflow-hidden relative bg-gray-200">
                   <Image
                     src={convertGoogleDriveUrl(tokoh.foto)}
                     alt={tokoh.nama}
                     fill
-                    className="object-cover"
+                    className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px"
                   />
                 </div>
@@ -196,7 +197,7 @@ export function StrukturPimpinan({ initialData }: StrukturPimpinanProps) {
                 </div>
               </div>
             ))}
-          </div>
+          </GsapCardGroup>
         </div>
       </div>
     </Section>

@@ -6,6 +6,8 @@ import { ProgramCard, ProgramWork } from '@/components/ProgramCard';
 import { createClient } from '@/utils/supabase/client';
 import { PilarLoader } from '@/components/PilarLoader';
 import { PageHeader, Section } from '@/components/ui/PublicPrimitives';
+import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 interface RawProgramRow {
   id: string;
@@ -211,11 +213,14 @@ export default function ProgramKerjaPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <GsapCardGroup
+              triggerKey={`${selectedDivision}-${selectedStatus}-${searchQuery}-${filteredPrograms.length}`}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
               {filteredPrograms.map((program) => (
                 <ProgramCard key={program.id} program={program} />
               ))}
-            </div>
+            </GsapCardGroup>
           )}
         </div>
       </Section>
@@ -226,9 +231,11 @@ export default function ProgramKerjaPage() {
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#FFD700]">
             Keterbukaan Publik
           </p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Transparansi Informasi Publik
-          </h2>
+          <SplitWordsHeading
+            as="h2"
+            text="Transparansi Informasi Publik"
+            className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white"
+          />
           <p className="text-gray-300 text-base leading-relaxed">
             Sesuai dengan pedoman keterbukaan informasi, Biro Humas &amp; Kerjasama secara rutin memperbarui status pelaksanaan program kerja dari seluruh divisi dan mengunggah dokumentasi pelaksanaannya ke portal ini.
           </p>

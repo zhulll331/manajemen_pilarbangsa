@@ -3,12 +3,20 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Send } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatMessage {
   sender: "user" | "ai";
   text: string;
 }
+
+const PLACEHOLDERS = [
+  "Tanyakan seputar UKM Pilar Bangsa...",
+  "AI Pilar Asisten siap membantu Anda...",
+  "Apa saja tugas dari Ketua Umum?",
+  "Apa saja divisi di UKM Pilar Bangsa?",
+  "Jelaskan visi dan misi organisasi ini...",
+  "Sebutkan tugas dari divisi Humas!",
+];
 
 export function GeminiPromptBox() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -18,21 +26,13 @@ export function GeminiPromptBox() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const placeholders = [
-    "Tanyakan seputar UKM Pilar Bangsa...",
-    "AI Pilar Asisten siap membantu Anda...",
-    "Apa saja tugas dari Ketua Umum?",
-    "Apa saja divisi di UKM Pilar Bangsa?",
-    "Jelaskan visi dan misi organisasi ini...",
-    "Sebutkan tugas dari divisi Humas!"
-  ];
   const [placeholderText, setPlaceholderText] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const currentString = placeholders[placeholderIndex];
+    const currentString = PLACEHOLDERS[placeholderIndex];
     let timeout: NodeJS.Timeout;
 
     if (isDeleting) {
@@ -42,8 +42,10 @@ export function GeminiPromptBox() {
           setCharIndex(charIndex - 1);
         }, 50);
       } else {
-        setIsDeleting(false);
-        setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+        timeout = setTimeout(() => {
+          setIsDeleting(false);
+          setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
+        }, 0);
       }
     } else {
       if (charIndex < currentString.length) {
@@ -97,7 +99,7 @@ export function GeminiPromptBox() {
       }
 
       setMessages((prev) => [...prev, { sender: "ai", text: data.response }]);
-    } catch (error: any) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
@@ -113,14 +115,11 @@ export function GeminiPromptBox() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* Bagian Riwayat Percakapan (Muncul jika ada pesan) */}
-      <AnimatePresence>
-        {messages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            className="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 space-y-5 max-h-[460px] overflow-y-auto text-sm sm:text-base leading-relaxed"
-          >
+      {messages.length > 0 && (
+        <div
+          data-lenis-prevent
+          className="pb-fade-in bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 space-y-5 max-h-[460px] overflow-y-auto text-sm sm:text-base leading-relaxed"
+        >
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -175,9 +174,8 @@ export function GeminiPromptBox() {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* Form Input Pertanyaan Sederhana */}
       <form

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import type { TwibbonPublicCampaignCard } from '@/types/twibbon';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 import { createSampleDiklatFrameCanvas } from '@/lib/twibbon/renderer';
 import { formatEventDateWib } from '@/utils/eventDate';
 import {
@@ -74,7 +75,7 @@ export default function TwibbonListClient({ campaigns }: TwibbonListClientProps)
     return (
       <article
         key={campaign.id}
-        className={`group bg-white rounded-lg border border-gray-200 overflow-hidden transition-colors flex flex-col ${
+        className={`group pb-card-hover bg-white rounded-lg border border-gray-200 overflow-hidden transition-colors flex flex-col hover:shadow-md ${
           isArchivedSection
             ? 'opacity-85 hover:opacity-100'
             : 'hover:border-gray-300'
@@ -185,9 +186,9 @@ export default function TwibbonListClient({ campaigns }: TwibbonListClientProps)
             <span className="text-xs font-bold text-gray-600">{activeCampaigns.length} Kampanye</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <GsapCardGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {activeCampaigns.map((c) => renderCard(c, false))}
-          </div>
+          </GsapCardGroup>
         </section>
       ) : (
         <div className="border-y border-gray-200 py-10 text-center">
@@ -215,9 +216,9 @@ export default function TwibbonListClient({ campaigns }: TwibbonListClientProps)
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <GsapCardGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {archivedCampaigns.map((c) => renderCard(c, true))}
-          </div>
+          </GsapCardGroup>
         </section>
       )}
     </div>

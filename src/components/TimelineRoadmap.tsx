@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, CalendarPlus, AlertCircle } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { PilarLoader } from '@/components/PilarLoader';
+import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
+import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 const PERIOD_START_MONTH: number = 7; // 7 = Juli
 
@@ -239,9 +241,11 @@ export function TimelineRoadmap() {
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#E31837]">
           Timeline Kegiatan Organisasi
         </p>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-          Perjalanan Kami: Periode {periodLabel}
-        </h2>
+        <SplitWordsHeading
+          as="h2"
+          text={`Perjalanan Kami: Periode ${periodLabel}`}
+          className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight"
+        />
         <p className="text-base text-gray-600 leading-relaxed">
           Peta jalan pelaksanaan seluruh program kerja unggulan UKM Pilar Bangsa selama satu periode kepengurusan penuh secara real-time.
         </p>
@@ -304,7 +308,13 @@ export function TimelineRoadmap() {
           </div>
         </div>
       ) : (
-        <ol className="relative border-l-2 border-gray-200 ml-2.5 space-y-8 pt-1">
+        <GsapCardGroup
+          as="ol"
+          triggerKey={`${divisionFilter}-${monthFilter}-${filteredEvents.length}`}
+          yOffset={18}
+          stagger={0.055}
+          className="relative border-l-2 border-gray-200 ml-2.5 space-y-8 pt-1"
+        >
           {filteredEvents.map((event) => {
             const calUrl = generateGoogleCalendarUrl(event);
             const meta = getStatusMeta(event.status);
@@ -358,7 +368,7 @@ export function TimelineRoadmap() {
               </li>
             );
           })}
-        </ol>
+        </GsapCardGroup>
       )}
     </div>
   );
