@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Save, CalendarCheck, Download, Sparkles, Loader2, Bot } from "lucide-react";
+import Link from "next/link";
+import { Save, CalendarCheck, Download, Sparkles, Loader2, Bot, AlertTriangle } from "lucide-react";
 import * as XLSX from "xlsx";
 import { AttendanceSelectionSummary } from "@/components/AttendanceSelectionSummary";
+import { detectSp2AlertsForAgenda, normalizeWarningLevel } from "@/lib/members/discipline";
 import { simpanPresensiMassal, parsePresensiAI, isGeminiConfigured } from "./actions";
 
 interface Member {
@@ -13,6 +15,8 @@ interface Member {
   faculty: string | null;
   generation: string | null;
   status: string;
+  warning_level?: string | null;
+  sp1_issued_at?: string | null;
 }
 
 interface Agenda {
@@ -31,10 +35,12 @@ export default function PresensiPengurusClient({
   allAttendance,
   agendas,
   members,
+  isLocked = false,
 }: {
   allAttendance: AttendanceRecord[];
   agendas: Agenda[];
   members: Member[];
+  isLocked?: boolean;
 }) {
   const [selectedAgenda, setSelectedAgenda] = useState<string>("");
   const [filterDivisi, setFilterDivisi] = useState<string>("Semua");
@@ -60,10 +66,14 @@ export default function PresensiPengurusClient({
   const faculties = ["Semua", ...Array.from(new Set(members.map(m => m.faculty).filter(Boolean)))];
   const generations = ["Semua", ...Array.from(new Set(members.map(m => m.generation).filter(Boolean)))];
 
-  // When agenda changes, load existing attendance data
+  const cohortIdSet = useMemo(() => new Set(members.map((m) => m.id)), [members]);
+
+  // When agenda changes, load existing attendance data strictly for this cohort
   useEffect(() => {
     if (selectedAgenda) {
-      const existing = allAttendance.filter(a => a.agenda_id === selectedAgenda);
+      const existing = allAttendance.filter(
+        (a) => a.agenda_id === selectedAgenda && cohortIdSet.has(a.member_id)
+      );
       const newMap: Record<string, string> = {};
       existing.forEach(a => {
         newMap[a.member_id] = a.status;
@@ -73,7 +83,29 @@ export default function PresensiPengurusClient({
     } else {
       setAttendanceMap({});
     }
-  }, [selectedAgenda, allAttendance]);
+  }, [selectedAgenda, allAttendance, cohortIdSet]);
+
+  const selectedAgendaObj = useMemo(
+    () => agendas.find((a) => a.id === selectedAgenda),
+    [agendas, selectedAgenda]
+  );
+
+  const sp2TriggeredMembers = useMemo(
+    () =>
+      selectedAgenda
+        ? detectSp2AlertsForAgenda({
+            agendaDate: selectedAgendaObj?.date || "",
+            members,
+            attendanceMap,
+          })
+        : [],
+    [selectedAgenda, selectedAgendaObj, members, attendanceMap]
+  );
+
+  const sp2TriggeredIdSet = useMemo(
+    () => new Set(sp2TriggeredMembers.map((m) => m.id)),
+    [sp2TriggeredMembers]
+  );
 
   // Filter members
   const filteredMembers = useMemo(() => {
@@ -149,14 +181,22 @@ export default function PresensiPengurusClient({
     setIsSaving(true);
     setSaveMessage({ text: "", type: "" });
 
-    const payload = Object.keys(attendanceMap).map(memberId => ({
-      member_id: memberId,
-      status: attendanceMap[memberId]
-    }));
+    const payload = Object.keys(attendanceMap)
+      .filter((memberId) => cohortIdSet.has(memberId))
+      .map(memberId => ({
+        member_id: memberId,
+        status: attendanceMap[memberId]
+      }));
 
     try {
-      await simpanPresensiMassal(selectedAgenda, payload);
-      setSaveMessage({ text: "Presensi berhasil disimpan!", type: "success" });
+      await simpanPresensiMassal(selectedAgenda, payload, members.map((m) => m.id));
+      setSaveMessage({
+        text:
+          sp2TriggeredMembers.length > 0
+            ? `Presensi disimpan! PERHATIAN: ${sp2TriggeredMembers.length} pengurus berstatus SP 1 tercatat Alpa dan siap ditindaklanjuti ke SP 2.`
+            : "Presensi berhasil disimpan!",
+        type: sp2TriggeredMembers.length > 0 ? "warning" : "success",
+      });
     } catch (error: any) {
       setSaveMessage({ text: error.message || "Gagal menyimpan.", type: "error" });
     } finally {
@@ -295,6 +335,31 @@ export default function PresensiPengurusClient({
 
       {/* AI Mass Attendance Panel */}
       {selectedAgenda && <AttendanceSelectionSummary memberIds={filteredMembers.map(member => member.id)} statuses={attendanceMap} />}
+      {selectedAgenda && sp2TriggeredMembers.length > 0 && (
+        <div
+          role="alert"
+          className="bg-red-50 border border-red-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={20} className="text-red-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-red-900">
+              <p className="font-bold">
+                Peringatan SP 2: {sp2TriggeredMembers.length} Pengurus SP 1 Tercatat Alpa
+              </p>
+              <p className="text-xs text-red-800 mt-0.5">
+                {sp2TriggeredMembers.map((m) => m.name).join(", ")} — memenuhi syarat
+                eksekusi SP 2 (Diberhentikan) setelah menerima SP 1.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/kedisiplinan"
+            className="shrink-0 px-4 py-2 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors text-center"
+          >
+            Tindaklanjuti &amp; Eksekusi SP 2 →
+          </Link>
+        </div>
+      )}
       {selectedAgenda && hasGemini && (
         <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
           <button 
@@ -389,9 +454,35 @@ export default function PresensiPengurusClient({
                 ) : (
                   filteredMembers.map((member) => {
                     const status = attendanceMap[member.id];
+                    const isSp1 = normalizeWarningLevel(member.warning_level) === "sp1";
+                    const triggersSp2 = sp2TriggeredIdSet.has(member.id);
                     return (
-                      <tr key={member.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                        <td className="py-3 px-4 font-medium text-gray-800">{member.name}</td>
+                      <tr
+                        key={member.id}
+                        className={`border-b border-gray-50 last:border-0 transition-colors ${
+                          triggersSp2
+                            ? "bg-red-50/60 hover:bg-red-50"
+                            : "hover:bg-gray-50/50"
+                        }`}
+                      >
+                        <td className="py-3 px-4 font-medium text-gray-800">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span>{member.name}</span>
+                            {isSp1 && (
+                              <span
+                                title={`SP 1 berlaku sejak ${member.sp1_issued_at || "-"}`}
+                                className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200"
+                              >
+                                SP 1
+                              </span>
+                            )}
+                            {triggersSp2 && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-600 text-white">
+                                Picu SP 2
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3 px-4 text-xs">
                           <span className="text-gray-500">{member.division || '-'}</span> • <span className="text-gray-500">{member.faculty || '-'}</span> • <span className="text-gray-500">{member.generation || '-'}</span>
                         </td>
@@ -429,7 +520,15 @@ export default function PresensiPengurusClient({
 
           <div className="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
             {saveMessage.text ? (
-              <span className={`text-sm font-medium ${saveMessage.type === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+              <span
+                className={`text-sm font-medium ${
+                  saveMessage.type === "error"
+                    ? "text-red-600"
+                    : saveMessage.type === "warning"
+                    ? "text-amber-700"
+                    : "text-green-600"
+                }`}
+              >
                 {saveMessage.text}
               </span>
             ) : <span className="hidden sm:block" />}
@@ -453,7 +552,7 @@ export default function PresensiPengurusClient({
               </button>
               <button
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || isLocked}
                 className="w-full sm:w-auto px-6 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSaving ? "Menyimpan..." : (

@@ -122,12 +122,18 @@ test('canAccessDashboardPath and getDefaultDashboardPath enforce role routes pro
   assert.equal(getDefaultDashboardPath('bendahara'), '/dashboard/bendahara');
   assert.equal(getDefaultDashboardPath('humas'), '/dashboard/humas/berita');
 
-  // Period management allowed only for ketua & sekretaris
+  // Period & Discipline management allowed only for ketua & sekretaris
   assert.equal(canAccessDashboardPath('ketua', '/dashboard/periode'), true);
   assert.equal(canAccessDashboardPath('sekretaris', '/dashboard/periode'), true);
   assert.equal(canAccessDashboardPath('bendahara', '/dashboard/periode'), false);
   assert.equal(canAccessDashboardPath('humas', '/dashboard/periode'), false);
   assert.equal(canAccessDashboardPath('ketua', '/dashboard/periode-foo'), false);
+
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/kedisiplinan'), true);
+  assert.equal(canAccessDashboardPath('sekretaris', '/dashboard/kedisiplinan'), true);
+  assert.equal(canAccessDashboardPath('bendahara', '/dashboard/kedisiplinan'), false);
+  assert.equal(canAccessDashboardPath('humas', '/dashboard/kedisiplinan'), false);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/kedisiplinan-x'), false);
 
   // Ketua synchronized cross-role read/review paths vs restricted paths
   assert.equal(canAccessDashboardPath('ketua', '/dashboard/sekretaris/anggota'), true);

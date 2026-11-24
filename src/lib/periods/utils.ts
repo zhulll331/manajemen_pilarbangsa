@@ -256,6 +256,9 @@ export function canAccessDashboardPath(role: string, pathname: string): boolean 
   if (matchesRoutePrefix(pathname, '/dashboard/periode')) {
     return canManagePeriodsRole(role);
   }
+  if (matchesRoutePrefix(pathname, '/dashboard/kedisiplinan')) {
+    return canManagePeriodsRole(role);
+  }
 
   switch (role.toLowerCase()) {
     case 'ketua':

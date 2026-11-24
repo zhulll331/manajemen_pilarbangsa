@@ -7,24 +7,36 @@ import { requireWritablePeriod } from '@/lib/periods/server'
 import { formatPeriodErrorMessage } from '@/lib/periods/utils'
 
 // Keep old actions if needed, or remove them. We'll replace with simpanPresensiMassal.
-export async function simpanPresensiMassal(agenda_id: string, presensiData: { member_id: string, status: string }[]) {
+export async function simpanPresensiMassal(
+  agenda_id: string,
+  presensiData: { member_id: string, status: string }[],
+  cohortMemberIds?: string[]
+) {
   const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
 
   if (!agenda_id) throw new Error("Agenda belum dipilih")
 
-  // Delete all existing attendance for this agenda first (scoped by active period)
-  let deleteQuery = supabase
-    .from('attendance')
-    .delete()
-    .eq('agenda_id', agenda_id);
-  if (schemaReady && periodId) {
-    deleteQuery = deleteQuery.eq('period_id', periodId);
+  const idsToReplace =
+    cohortMemberIds && cohortMemberIds.length > 0
+      ? cohortMemberIds
+      : presensiData.map((p) => p.member_id);
+
+  // Hapus hanya baris presensi milik kohort yang sedang disimpan agar Presensi Anggota dan Pengurus pada agenda sama tidak saling menimpa
+  if (idsToReplace.length > 0) {
+    let deleteQuery = supabase
+      .from('attendance')
+      .delete()
+      .eq('agenda_id', agenda_id)
+      .in('member_id', idsToReplace);
+    if (schemaReady && periodId) {
+      deleteQuery = deleteQuery.eq('period_id', periodId);
+    }
+
+    const { error: deleteError } = await deleteQuery;
+
+    if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + formatPeriodErrorMessage(deleteError, deleteError.message))
   }
-
-  const { error: deleteError } = await deleteQuery;
-
-  if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + formatPeriodErrorMessage(deleteError, deleteError.message))
 
   // Insert the new ones
   if (presensiData.length > 0) {

@@ -12,9 +12,18 @@ function sleep(ms: number) {
 }
 
 // Keep old actions if needed, or remove them. We'll replace with simpanPresensiMassal.
-export async function simpanPresensiMassal(agenda_id: string, presensiData: { member_id: string, status: string }[]) {
+export async function simpanPresensiMassal(
+  agenda_id: string,
+  presensiData: { member_id: string, status: string }[],
+  cohortMemberIds?: string[]
+) {
   const { periodId, schemaReady } = await requireWritablePeriod();
   if (!agenda_id) throw new Error("Agenda belum dipilih")
+
+  const idsToReplace =
+    cohortMemberIds && cohortMemberIds.length > 0
+      ? cohortMemberIds
+      : presensiData.map((p) => p.member_id);
 
   const MAX_RETRIES = 3;
   let lastError: Error | null = null;
@@ -23,17 +32,20 @@ export async function simpanPresensiMassal(agenda_id: string, presensiData: { me
     try {
       const supabase = await createClient()
 
-      let deleteQuery = supabase
-        .from('attendance')
-        .delete()
-        .eq('agenda_id', agenda_id);
-      if (schemaReady && periodId) {
-        deleteQuery = deleteQuery.eq('period_id', periodId);
+      if (idsToReplace.length > 0) {
+        let deleteQuery = supabase
+          .from('attendance')
+          .delete()
+          .eq('agenda_id', agenda_id)
+          .in('member_id', idsToReplace);
+        if (schemaReady && periodId) {
+          deleteQuery = deleteQuery.eq('period_id', periodId);
+        }
+
+        const { error: deleteError } = await deleteQuery;
+
+        if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + formatPeriodErrorMessage(deleteError, deleteError.message))
       }
-
-      const { error: deleteError } = await deleteQuery;
-
-      if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + formatPeriodErrorMessage(deleteError, deleteError.message))
 
       // Insert the new ones
       if (presensiData.length > 0) {

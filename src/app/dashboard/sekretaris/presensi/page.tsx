@@ -4,13 +4,13 @@ import PresensiClient from "./PresensiClient";
 
 export default async function PresensiPage() {
   const supabase = await createClient();
-  const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
+  const { selectedPeriod, isLocked, schemaReady } = await getSelectedPeriodForDashboard();
 
   let qAttendance = supabase.from("attendance").select("agenda_id, member_id, status");
   let qAgendas = supabase.from("agendas").select("id, title, date").order("date", { ascending: false });
   let qMembers = supabase
     .from("members")
-    .select("id, name, division, faculty, generation, status")
+    .select("*")
     .eq("status", "Aktif")
     .order("name");
 
@@ -39,6 +39,7 @@ export default async function PresensiPage() {
         allAttendance={attendance || []}
         agendas={agendas || []}
         members={members || []}
+        isLocked={isLocked}
       />
     </div>
   );

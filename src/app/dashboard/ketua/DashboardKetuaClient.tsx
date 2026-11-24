@@ -17,6 +17,7 @@ const CartesianGrid = dynamic(() => import("recharts").then(mod => mod.Cartesian
 const Tooltip = dynamic(() => import("recharts").then(mod => mod.Tooltip), { ssr: false });
 
 interface DashboardKetuaClientProps {
+  disciplineAlert?: React.ReactNode;
   attendanceOverview?: React.ReactNode;
   totalAnggota: number;
   programBerjalan: number;
@@ -28,6 +29,7 @@ interface DashboardKetuaClientProps {
 }
 
 export default function DashboardKetuaClient({
+  disciplineAlert,
   attendanceOverview,
   totalAnggota,
   programBerjalan,
@@ -78,6 +80,7 @@ export default function DashboardKetuaClient({
       </div>
 
       {/* Charts Row */}
+      {disciplineAlert}
       {attendanceOverview}
       <div className="grid grid-cols-1 gap-6">
         <ChartCard title="Progress Program Kerja per Divisi">
@@ -133,7 +136,7 @@ export default function DashboardKetuaClient({
               ))}
             </div>
           </div>
-          <Link 
+          <Link
             href="/dashboard/ketua/evaluasi"
             className="w-full mt-4 py-2 text-sm font-medium text-[var(--color-primary)] hover:bg-blue-50 rounded-xl transition-colors border border-blue-100 text-center block"
           >

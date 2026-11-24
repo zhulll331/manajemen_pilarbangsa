@@ -33,6 +33,7 @@ interface ArchiveLetter {
 }
 
 interface DashboardSekretarisClientProps {
+  disciplineAlert?: React.ReactNode;
   attendanceOverview?: React.ReactNode;
   totalAnggota: number;
   suratMasuk: number;
@@ -45,6 +46,7 @@ interface DashboardSekretarisClientProps {
 }
 
 export default function DashboardSekretarisClient({
+  disciplineAlert,
   attendanceOverview,
   totalAnggota,
   suratMasuk,
@@ -65,6 +67,7 @@ export default function DashboardSekretarisClient({
         <SummaryCard title="Notulensi Rapat" value={totalNotulensi} icon={<ClipboardList size={24} />} color="primary" />
       </div>
 
+      {disciplineAlert}
       {attendanceOverview}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Tabel Anggota Terbaru */}

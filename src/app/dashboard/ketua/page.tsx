@@ -4,6 +4,7 @@ import { aggregateFinancialData } from "@/utils/finance";
 import { Suspense } from "react";
 import { AttendanceOverview } from "@/components/AttendanceOverview";
 import { AttendanceCardsSkeleton } from "@/components/AttendanceCards";
+import { DisciplineAlertBanner } from "@/components/DisciplineAlertBanner";
 import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 
 export const dynamic = "force-dynamic";
@@ -97,6 +98,11 @@ export default async function DashboardKetua() {
 
   return (
     <DashboardKetuaClient
+      disciplineAlert={
+        <Suspense fallback={null}>
+          <DisciplineAlertBanner period={selectedPeriod} schemaReady={schemaReady} />
+        </Suspense>
+      }
       attendanceOverview={<Suspense fallback={<AttendanceCardsSkeleton />}><AttendanceOverview periodId={pid} /></Suspense>}
       totalAnggota={totalAnggota || 0}
       programBerjalan={programBerjalan}

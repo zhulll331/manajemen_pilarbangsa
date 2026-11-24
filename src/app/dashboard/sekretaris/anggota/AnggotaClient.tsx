@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   CheckCircle2,
   Lock,
   Plus,
   Search,
+  ShieldAlert,
   Sparkles,
   UserX,
   Users,
@@ -16,6 +18,7 @@ import { DeleteConfirm } from "@/components/DeleteConfirm";
 import { DataTable, type Column } from "@/components/DataTable";
 import { ImportCSVModal } from "@/components/ImportCSVModal";
 import type { BulkDismissItem } from "@/lib/members/dismissal";
+import { normalizeWarningLevel } from "@/lib/members/discipline";
 import { AiDismissMembersModal } from "./AiDismissMembersModal";
 import {
   BulkDismissMembersModal,
@@ -42,6 +45,11 @@ interface Member {
   status: string;
   status_note?: string | null;
   status_updated_at?: string | null;
+  warning_level?: string | null;
+  sp1_issued_at?: string | null;
+  sp1_note?: string | null;
+  sp2_issued_at?: string | null;
+  sp2_note?: string | null;
 }
 
 const divisions = ["Pendidikan", "Sosial", "Kewirausahaan", "Seni Budaya"];
@@ -72,6 +80,7 @@ export default function AnggotaClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
   const [divisionFilter, setDivisionFilter] = useState("Semua");
+  const [warningFilter, setWarningFilter] = useState("Semua");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bannerMsg, setBannerMsg] = useState<{ type: "success" | "error"; text: string } | null>(
     null
@@ -87,9 +96,11 @@ export default function AnggotaClient({
       const matchesStatus = statusFilter === "Semua" || m.status === statusFilter;
       const matchesDivision =
         divisionFilter === "Semua" || m.division === divisionFilter;
-      return matchesQuery && matchesStatus && matchesDivision;
+      const level = normalizeWarningLevel(m.warning_level);
+      const matchesWarning = warningFilter === "Semua" || level === warningFilter;
+      return matchesQuery && matchesStatus && matchesDivision && matchesWarning;
     });
-  }, [members, searchQuery, statusFilter, divisionFilter]);
+  }, [members, searchQuery, statusFilter, divisionFilter, warningFilter]);
 
   const dismissibleFilteredIds = useMemo(
     () => filteredMembers.filter((m) => m.status !== "Diberhentikan").map((m) => m.id),
@@ -125,16 +136,24 @@ export default function AnggotaClient({
     {
       key: "name",
       label: "Nama",
-      render: (m) => (
-        <div>
-          <span className="font-medium text-gray-900">{m.name}</span>
-          {m.status === "Diberhentikan" && m.status_note && (
-            <p className="text-xs text-red-600/80 mt-0.5 max-w-xs line-clamp-2" title={m.status_note}>
-              Ket: {m.status_note}
-            </p>
-          )}
-        </div>
-      ),
+      render: (m) => {
+        const level = normalizeWarningLevel(m.warning_level);
+        return (
+          <div>
+            <span className="font-medium text-gray-900">{m.name}</span>
+            {level === "sp1" && m.status !== "Diberhentikan" && (
+              <p className="text-xs text-amber-700 mt-0.5 max-w-xs line-clamp-2" title={m.sp1_note || undefined}>
+                SP 1 ({m.sp1_issued_at || "-"}){m.sp1_note ? `: ${m.sp1_note}` : ""}
+              </p>
+            )}
+            {m.status === "Diberhentikan" && m.status_note && (
+              <p className="text-xs text-red-600/80 mt-0.5 max-w-xs line-clamp-2" title={m.status_note}>
+                Ket: {m.status_note}
+              </p>
+            )}
+          </div>
+        );
+      },
     },
     { key: "nim", label: "NIM" },
     { key: "faculty", label: "Fakultas" },
@@ -144,23 +163,44 @@ export default function AnggotaClient({
     {
       key: "status",
       label: "Status",
-      render: (m) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-            m.status === "Pengurus Aktif"
-              ? "bg-purple-100 text-purple-700"
-              : m.status === "Aktif"
-              ? "bg-green-100 text-green-700"
-              : m.status === "Cuti"
-              ? "bg-yellow-100 text-yellow-700"
-              : m.status === "Diberhentikan"
-              ? "bg-red-100 text-red-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {m.status}
-        </span>
-      ),
+      render: (m) => {
+        const level = normalizeWarningLevel(m.warning_level);
+        return (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                m.status === "Pengurus Aktif"
+                  ? "bg-purple-100 text-purple-700"
+                  : m.status === "Aktif"
+                  ? "bg-green-100 text-green-700"
+                  : m.status === "Cuti"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : m.status === "Diberhentikan"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {m.status}
+            </span>
+            {level === "sp1" && m.status !== "Diberhentikan" && (
+              <span
+                title={`SP 1 berlaku sejak ${m.sp1_issued_at || "-"}${m.sp1_note ? ` — ${m.sp1_note}` : ""}`}
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 whitespace-nowrap"
+              >
+                SP 1
+              </span>
+            )}
+            {level === "sp2" && (
+              <span
+                title={`SP 2 berlaku sejak ${m.sp2_issued_at || "-"}${m.sp2_note ? ` — ${m.sp2_note}` : ""}`}
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-600 text-white whitespace-nowrap"
+              >
+                SP 2
+              </span>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -256,33 +296,42 @@ export default function AnggotaClient({
           </div>
         </div>
 
-        {!isLocked && (
-          <div className="flex flex-wrap gap-2.5">
-            <button
-              type="button"
-              onClick={() => setShowAiDismiss(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium hover:bg-amber-100 transition-colors shadow-xs"
-            >
-              <Sparkles size={16} />
-              AI Pilah Pemberhentian
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-xs"
-            >
-              Import CSV
-            </button>
-            <button
-              type="button"
-              onClick={openCreateModal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-sm font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-xs"
-            >
-              <Plus size={18} />
-              Tambah Anggota
-            </button>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2.5">
+          <Link
+            href="/dashboard/kedisiplinan"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-amber-200 text-amber-800 rounded-xl text-sm font-medium hover:bg-amber-50 transition-colors shadow-xs"
+          >
+            <ShieldAlert size={16} />
+            Rekap Absensi &amp; SP
+          </Link>
+          {!isLocked && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowAiDismiss(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium hover:bg-amber-100 transition-colors shadow-xs"
+              >
+                <Sparkles size={16} />
+                AI Pilah Pemberhentian
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowImport(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-xs"
+              >
+                Import CSV
+              </button>
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-sm font-medium hover:bg-[var(--color-secondary)] transition-colors shadow-xs"
+              >
+                <Plus size={18} />
+                Tambah Anggota
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Feedback Banner */}
@@ -351,6 +400,16 @@ export default function AnggotaClient({
                 {d}
               </option>
             ))}
+          </select>
+          <select
+            value={warningFilter}
+            onChange={(e) => setWarningFilter(e.target.value)}
+            aria-label="Filter status SP anggota"
+            className="px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white text-gray-700 outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          >
+            <option value="Semua">Semua Status SP</option>
+            <option value="sp1">SP 1 Aktif</option>
+            <option value="sp2">Diberhentikan SP 2</option>
           </select>
         </div>
 

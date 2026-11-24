@@ -1,4 +1,4 @@
-import { Archive, Brain, Calendar, CalendarCheck, Camera, ClipboardList, FileText, FolderOpen, History, Image, LayoutDashboard, QrCode, Users, Wallet } from "lucide-react";
+import { Archive, Brain, Calendar, CalendarCheck, Camera, ClipboardList, FileText, FolderOpen, History, Image, LayoutDashboard, QrCode, ShieldAlert, Users, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface DashboardMenuItem { href: string; label: string; icon: LucideIcon }
@@ -11,6 +11,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
     { href: "/dashboard/sekretaris/agenda", label: "Agenda Organisasi", icon: Calendar },
     { href: "/dashboard/sekretaris/presensi", label: "Presensi Anggota", icon: CalendarCheck },
     { href: "/dashboard/sekretaris/presensi-pengurus", label: "Presensi Pengurus", icon: CalendarCheck },
+    { href: "/dashboard/kedisiplinan", label: "Rekap Absensi & SP", icon: ShieldAlert },
     { href: "/dashboard/sekretaris/arsip-lama", label: "Arsip Lama", icon: Archive },
     { href: "/dashboard/sekretaris/evaluasi", label: "Evaluasi", icon: FileText },
     { href: "/dashboard/periode", label: "Periode Kepengurusan", icon: History },
@@ -36,6 +37,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
   ketua: [
     { href: "/dashboard/ketua", label: "Ringkasan", icon: LayoutDashboard },
     { href: "/dashboard/sekretaris/anggota", label: "Data Anggota", icon: Users },
+    { href: "/dashboard/kedisiplinan", label: "Rekap Absensi & SP", icon: ShieldAlert },
     { href: "/dashboard/ketua/program", label: "Program Kerja", icon: ClipboardList },
     { href: "/dashboard/ketua/evaluasi", label: "Evaluasi", icon: FileText },
     { href: "/dashboard/bendahara/laporan", label: "Laporan Keuangan", icon: Wallet },
@@ -66,6 +68,9 @@ export function getDashboardPageTitle(pathname: string, role: string): string {
   }
   if (pathname === "/dashboard/periode" || pathname.startsWith("/dashboard/periode/")) {
     return "Periode Kepengurusan";
+  }
+  if (pathname === "/dashboard/kedisiplinan" || pathname.startsWith("/dashboard/kedisiplinan/")) {
+    return "Rekap Absensi & SP";
   }
   return "Ringkasan";
 }
