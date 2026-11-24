@@ -3,6 +3,8 @@ import DashboardBendaharaClient from "./DashboardBendaharaClient";
 import { aggregateFinancialData, calculateUnpaidMembersCount } from "@/utils/finance";
 import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardBendahara() {
   const supabase = await createClient();
   const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();

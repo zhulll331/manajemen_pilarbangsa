@@ -201,6 +201,9 @@ export function buildVirtualFallbackPeriod(now: Date = new Date()): Organization
   };
 }
 
+const DIVISI_ROLES = new Set(['divisi', 'admin_divisi', 'riset', 'penalaran', 'pengabdian']);
+const DIVISI_EMAIL_KEYWORDS = ['riset', 'penalaran', 'pengabdian', 'divisi', 'wakilketua'];
+
 export function resolveEffectiveRole(
   rawRole: string | null | undefined,
   email: string | null | undefined
@@ -211,7 +214,10 @@ export function resolveEffectiveRole(
   if (normalizedEmail.includes('humas') || normalizedRole === 'humas') {
     return 'humas';
   }
-  if (normalizedEmail.includes('divisi') || normalizedRole === 'divisi') {
+  if (
+    DIVISI_ROLES.has(normalizedRole) ||
+    DIVISI_EMAIL_KEYWORDS.some((kw) => normalizedEmail.includes(kw))
+  ) {
     return 'divisi';
   }
   if (normalizedRole) {
@@ -223,4 +229,53 @@ export function resolveEffectiveRole(
 export function canManagePeriodsRole(role: string): boolean {
   const normalized = role.toLowerCase();
   return normalized === 'ketua' || normalized === 'sekretaris';
+}
+
+export function getDefaultDashboardPath(role: string): string {
+  switch (role.toLowerCase()) {
+    case 'sekretaris':
+      return '/dashboard/sekretaris';
+    case 'bendahara':
+      return '/dashboard/bendahara';
+    case 'humas':
+      return '/dashboard/humas/berita';
+    case 'ketua':
+    default:
+      return '/dashboard/ketua';
+  }
+}
+
+function matchesRoutePrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+export function canAccessDashboardPath(role: string, pathname: string): boolean {
+  if (matchesRoutePrefix(pathname, '/dashboard/profil')) {
+    return true;
+  }
+  if (matchesRoutePrefix(pathname, '/dashboard/periode')) {
+    return canManagePeriodsRole(role);
+  }
+
+  switch (role.toLowerCase()) {
+    case 'ketua':
+      return (
+        matchesRoutePrefix(pathname, '/dashboard/ketua') ||
+        matchesRoutePrefix(pathname, '/dashboard/sekretaris/anggota') ||
+        matchesRoutePrefix(pathname, '/dashboard/sekretaris/agenda') ||
+        matchesRoutePrefix(pathname, '/dashboard/bendahara/laporan') ||
+        matchesRoutePrefix(pathname, '/dashboard/humas/twibbon') ||
+        matchesRoutePrefix(pathname, '/dashboard/humas/momen')
+      );
+    case 'sekretaris':
+      return matchesRoutePrefix(pathname, '/dashboard/sekretaris');
+    case 'bendahara':
+      return matchesRoutePrefix(pathname, '/dashboard/bendahara');
+    case 'humas':
+      return matchesRoutePrefix(pathname, '/dashboard/humas');
+    case 'divisi':
+      return true;
+    default:
+      return false;
+  }
 }

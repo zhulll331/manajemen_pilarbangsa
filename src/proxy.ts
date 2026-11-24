@@ -1,5 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  canAccessDashboardPath,
+  getDefaultDashboardPath,
+  resolveEffectiveRole,
+} from '@/lib/periods/utils'
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -33,10 +38,11 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  let {
-    data: { user },
+  const {
+    data: { user: initialUser },
     error: authError
   } = await supabase.auth.getUser()
+  let user = initialUser
 
   if (authError) {
     console.error('🔴 AUTH ERROR IN PROXY (getUser):', authError.message);
@@ -67,43 +73,11 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    let userRole = profile?.role
-    const email = user.email?.toLowerCase() || ''
+    const userRole = resolveEffectiveRole(profile?.role, user.email)
 
-    if (email.includes('humas') || userRole === 'humas') {
-      userRole = 'humas'
-    } else if (!userRole) {
-      userRole = 'ketua'
-    }
-
-    // Biarkan akses ke /dashboard/profil untuk semua role
-    if (pathname === '/dashboard/profil') {
-      return supabaseResponse
-    }
-
-    // Cek apakah userRole sesuai dengan pathname
-    if (
-      userRole === 'ketua' &&
-      !pathname.startsWith('/dashboard/ketua') &&
-      !pathname.startsWith('/dashboard/humas/twibbon')
-    ) {
+    if (!canAccessDashboardPath(userRole, pathname)) {
       const url = request.nextUrl.clone()
-      url.pathname = '/dashboard/ketua'
-      return NextResponse.redirect(url)
-    }
-    if (userRole === 'sekretaris' && !pathname.startsWith('/dashboard/sekretaris')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard/sekretaris'
-      return NextResponse.redirect(url)
-    }
-    if (userRole === 'bendahara' && !pathname.startsWith('/dashboard/bendahara')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard/bendahara'
-      return NextResponse.redirect(url)
-    }
-    if (userRole === 'humas' && !pathname.startsWith('/dashboard/humas')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard/humas/berita'
+      url.pathname = getDefaultDashboardPath(userRole)
       return NextResponse.redirect(url)
     }
   }

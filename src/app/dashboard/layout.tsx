@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { DashboardLayoutClient } from "@/components/DashboardLayoutClient";
 import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
+import { resolveEffectiveRole } from "@/lib/periods/utils";
 import "./dashboard.css";
 
 export default async function DashboardLayout({
@@ -30,28 +31,7 @@ export default async function DashboardLayout({
   }
 
   const profile = profileResult.data;
-
-  let userRole = profile?.role;
-  const email = user.email?.toLowerCase() || '';
-
-  if (email.includes('humas') || userRole === 'humas') {
-    userRole = 'humas';
-  } else if (
-    userRole === 'divisi' ||
-    userRole === 'admin_divisi' ||
-    userRole === 'riset' ||
-    userRole === 'penalaran' ||
-    userRole === 'pengabdian' ||
-    email.includes('riset') ||
-    email.includes('penalaran') ||
-    email.includes('pengabdian') ||
-    email.includes('divisi') ||
-    email.includes('wakilketua')
-  ) {
-    userRole = 'divisi';
-  } else if (!userRole) {
-    userRole = 'ketua';
-  }
+  const userRole = resolveEffectiveRole(profile?.role, user.email);
 
   return (
     <DashboardLayoutClient 

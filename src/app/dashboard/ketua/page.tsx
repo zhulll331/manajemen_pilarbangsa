@@ -6,21 +6,30 @@ import { AttendanceOverview } from "@/components/AttendanceOverview";
 import { AttendanceCardsSkeleton } from "@/components/AttendanceCards";
 import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardKetua() {
   const supabase = await createClient();
   const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
   const pid = schemaReady ? selectedPeriod.id : null;
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const startDate = new Date(year, month, 1);
-  const endDate = new Date(year, month + 1, 0);
-  const startOfMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-01`;
-  const endOfMonth = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, "0")}-${String(endDate.getDate()).padStart(2, "0")}`;
+  const todayWib = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const [wibYearStr, wibMonthStr] = todayWib.split("-");
+  const lastDayOfMonth = new Date(
+    Date.UTC(Number(wibYearStr), Number(wibMonthStr), 0)
+  ).getUTCDate();
+  const startOfMonth = `${wibYearStr}-${wibMonthStr}-01`;
+  const endOfMonth = `${wibYearStr}-${wibMonthStr}-${String(lastDayOfMonth).padStart(2, "0")}`;
 
-  let qAnggota = supabase.from("members").select("*", { count: "exact", head: true }).eq("status", "Aktif");
-  let qProgramBerjalan = supabase.from("programs").select("*", { count: "exact", head: true }).eq("status", "Berjalan");
+  let qAnggota = supabase
+    .from("members")
+    .select("*", { count: "exact", head: true })
+    .or("status.is.null,status.neq.Diberhentikan");
   let qAgendaBulan = supabase.from("agendas").select("*", { count: "exact", head: true }).gte("date", startOfMonth).lte("date", endOfMonth);
   let qTx = supabase.from("finance_transactions").select("type, amount, transaction_date");
   let qDues = supabase.from("dues").select("amount, status, payment_date").eq("status", "Lunas");
@@ -31,7 +40,6 @@ export default async function DashboardKetua() {
 
   if (pid) {
     qAnggota = qAnggota.eq("period_id", pid);
-    qProgramBerjalan = qProgramBerjalan.eq("period_id", pid);
     qAgendaBulan = qAgendaBulan.eq("period_id", pid);
     qTx = qTx.eq("period_id", pid);
     qDues = qDues.eq("period_id", pid);
@@ -43,7 +51,6 @@ export default async function DashboardKetua() {
 
   const [
     { count: totalAnggota },
-    { count: programBerjalan },
     { count: agendaBulanIni },
     { data: transactions },
     { data: dues },
@@ -53,7 +60,6 @@ export default async function DashboardKetua() {
     { data: evaluations },
   ] = await Promise.all([
     qAnggota,
-    qProgramBerjalan,
     qAgendaBulan,
     qTx,
     qDues,
@@ -65,13 +71,21 @@ export default async function DashboardKetua() {
 
   const { saldoKas } = aggregateFinancialData(transactions || [], dues || []);
 
+  let programBerjalan = 0;
   const divisionMap: Record<string, number> = {};
   if (programs) {
     programs.forEach((p) => {
-      if (!divisionMap[p.division]) divisionMap[p.division] = 0;
-      if (p.status === "Selesai") divisionMap[p.division] += 100;
-      else if (p.status === "Berjalan") divisionMap[p.division] += 50;
-      else divisionMap[p.division] += 10;
+      const divName = (p.division || "").trim() || "Umum";
+      const statusLower = (p.status || "").toLowerCase();
+      if (!divisionMap[divName]) divisionMap[divName] = 0;
+      if (statusLower.includes("selesai")) {
+        divisionMap[divName] += 100;
+      } else if (statusLower.includes("jalan")) {
+        programBerjalan += 1;
+        divisionMap[divName] += 50;
+      } else {
+        divisionMap[divName] += 10;
+      }
     });
   }
   const programData = Object.entries(divisionMap).map(([name, progress]) => ({ name, progress }));
@@ -85,7 +99,7 @@ export default async function DashboardKetua() {
     <DashboardKetuaClient
       attendanceOverview={<Suspense fallback={<AttendanceCardsSkeleton />}><AttendanceOverview periodId={pid} /></Suspense>}
       totalAnggota={totalAnggota || 0}
-      programBerjalan={programBerjalan || 0}
+      programBerjalan={programBerjalan}
       agendaBulanIni={agendaBulanIni || 0}
       saldoKas={saldoKas}
       programData={programData}

@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 
 import {
   buildVirtualFallbackPeriod,
+  canAccessDashboardPath,
   canManagePeriodsRole,
   formatPeriodErrorMessage,
   generateMonthsForPeriod,
+  getDefaultDashboardPath,
   inferDefaultPeriodInfo,
   isPeriodLockedError,
   isSchemaMissingError,
@@ -101,6 +103,46 @@ test('role authority permits both ketua and sekretaris only', () => {
   assert.equal(canManagePeriodsRole(resolveEffectiveRole('ketua', 'humas@ukm.id')), false);
   assert.equal(canManagePeriodsRole(resolveEffectiveRole('bendahara', 'bendahara@ukm.id')), false);
   assert.equal(canManagePeriodsRole(resolveEffectiveRole('ketua', 'divisi.sosial@ukm.id')), false);
+});
+
+test('resolveEffectiveRole handles divisi, wakilketua, riset, and default fallback', () => {
+  assert.equal(resolveEffectiveRole('ketua', 'riset@ukm.id'), 'divisi');
+  assert.equal(resolveEffectiveRole('ketua', 'wakilketua@ukm.id'), 'divisi');
+  assert.equal(resolveEffectiveRole('penalaran', 'user@ukm.id'), 'divisi');
+  assert.equal(resolveEffectiveRole('pengabdian', 'user@ukm.id'), 'divisi');
+  assert.equal(resolveEffectiveRole(null, 'unknown@ukm.id'), 'ketua');
+  assert.equal(resolveEffectiveRole('sekretaris', 'sekretaris@ukm.id'), 'sekretaris');
+  assert.equal(resolveEffectiveRole('bendahara', 'bendahara@ukm.id'), 'bendahara');
+  assert.equal(resolveEffectiveRole('ketua', 'humas@ukm.id'), 'humas');
+});
+
+test('canAccessDashboardPath and getDefaultDashboardPath enforce role routes properly', () => {
+  assert.equal(getDefaultDashboardPath('ketua'), '/dashboard/ketua');
+  assert.equal(getDefaultDashboardPath('sekretaris'), '/dashboard/sekretaris');
+  assert.equal(getDefaultDashboardPath('bendahara'), '/dashboard/bendahara');
+  assert.equal(getDefaultDashboardPath('humas'), '/dashboard/humas/berita');
+
+  // Period management allowed only for ketua & sekretaris
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/periode'), true);
+  assert.equal(canAccessDashboardPath('sekretaris', '/dashboard/periode'), true);
+  assert.equal(canAccessDashboardPath('bendahara', '/dashboard/periode'), false);
+  assert.equal(canAccessDashboardPath('humas', '/dashboard/periode'), false);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/periode-foo'), false);
+
+  // Ketua synchronized cross-role read/review paths vs restricted paths
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/sekretaris/anggota'), true);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/sekretaris/agenda'), true);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/bendahara/laporan'), true);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/humas/twibbon'), true);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/humas/momen'), true);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/profil'), true);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/bendahara/transaksi'), false);
+  assert.equal(canAccessDashboardPath('ketua', '/dashboard/humas/banner'), false);
+
+  // Sekretaris restrictions
+  assert.equal(canAccessDashboardPath('sekretaris', '/dashboard/sekretaris/anggota'), true);
+  assert.equal(canAccessDashboardPath('sekretaris', '/dashboard/ketua'), false);
+  assert.equal(canAccessDashboardPath('sekretaris', '/dashboard/bendahara'), false);
 });
 
 test('error detectors classify schema missing and locked period errors accurately', () => {

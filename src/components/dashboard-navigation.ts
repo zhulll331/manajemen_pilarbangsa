@@ -35,8 +35,10 @@ const menus: Record<string, DashboardMenuItem[]> = {
   ],
   ketua: [
     { href: "/dashboard/ketua", label: "Ringkasan", icon: LayoutDashboard },
+    { href: "/dashboard/sekretaris/anggota", label: "Data Anggota", icon: Users },
     { href: "/dashboard/ketua/program", label: "Program Kerja", icon: ClipboardList },
     { href: "/dashboard/ketua/evaluasi", label: "Evaluasi", icon: FileText },
+    { href: "/dashboard/bendahara/laporan", label: "Laporan Keuangan", icon: Wallet },
     { href: "/dashboard/humas/twibbon", label: "Kelola Twibbon", icon: Image },
     { href: "/qr", label: "QR Code Generator", icon: QrCode },
     { href: "/dashboard/periode", label: "Periode Kepengurusan", icon: History },
@@ -49,4 +51,21 @@ export function getRoleLabel(role: string) {
 }
 export function isDashboardMenuActive(pathname: string, href: string) {
   return pathname === href || (href.split("/").length > 3 && pathname.startsWith(`${href}/`));
+}
+export function getDashboardPageTitle(pathname: string, role: string): string {
+  const ownMatch = getDashboardMenu(role).find((i) => isDashboardMenuActive(pathname, i.href));
+  if (ownMatch) return ownMatch.label;
+
+  const anyMatch = Object.values(menus)
+    .flat()
+    .find((i) => isDashboardMenuActive(pathname, i.href));
+  if (anyMatch) return anyMatch.label;
+
+  if (pathname === "/dashboard/profil" || pathname.startsWith("/dashboard/profil/")) {
+    return "Profil Akun";
+  }
+  if (pathname === "/dashboard/periode" || pathname.startsWith("/dashboard/periode/")) {
+    return "Periode Kepengurusan";
+  }
+  return "Ringkasan";
 }

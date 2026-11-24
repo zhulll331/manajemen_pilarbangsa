@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Users, ClipboardList, Calendar, Wallet, TrendingUp, FileText, Star, Eye, EyeOff } from "lucide-react";
+import { Users, ClipboardList, Calendar, Wallet, Star, Eye, EyeOff } from "lucide-react";
 import { SummaryCard } from "@/components/SummaryCard";
 import { ChartCard } from "@/components/ChartCard";
 import { StorageWidget } from "@/components/StorageWidget";
@@ -52,9 +52,9 @@ export default function DashboardKetuaClient({
         <Link href="/dashboard/ketua/program" className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Program Berjalan" value={programBerjalan.toString()} icon={<ClipboardList size={24} />} color="green" />
         </Link>
-        <div className="block hover:scale-[1.02] transition-transform">
+        <Link href="/dashboard/sekretaris/agenda" className="block hover:scale-[1.02] transition-transform">
           <SummaryCard title="Agenda Bulan Ini" value={agendaBulanIni.toString()} icon={<Calendar size={24} />} color="yellow" />
-        </div>
+        </Link>
         <Link href="/dashboard/bendahara/laporan" className="block hover:scale-[1.02] transition-transform">
           <div className="admin-stat bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
             <div className="flex items-center justify-between mb-3">

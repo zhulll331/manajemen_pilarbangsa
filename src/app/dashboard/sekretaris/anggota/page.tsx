@@ -2,6 +2,8 @@ import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 import { createClient } from "@/utils/supabase/server";
 import AnggotaClient from "./AnggotaClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AnggotaPage() {
   const supabase = await createClient();
   const { selectedPeriod, isLocked, schemaReady } =

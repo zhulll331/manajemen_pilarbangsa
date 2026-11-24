@@ -5,12 +5,14 @@ import { AttendanceOverview } from "@/components/AttendanceOverview";
 import { AttendanceCardsSkeleton } from "@/components/AttendanceCards";
 import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardSekretaris() {
   const supabase = await createClient();
   const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
   const pid = schemaReady ? selectedPeriod.id : null;
 
-  let qAnggota = supabase.from("members").select("*", { count: "exact", head: true }).neq("status", "Diberhentikan");
+  let qAnggota = supabase.from("members").select("*", { count: "exact", head: true }).or("status.is.null,status.neq.Diberhentikan");
   let qMasuk = supabase.from("letters").select("*", { count: "exact", head: true }).in("letter_type", ["Surat Masuk", "Masuk"]);
   let qKeluar = supabase.from("letters").select("*", { count: "exact", head: true }).in("letter_type", ["Surat Keluar", "Keluar"]);
   let qNotulensi = supabase.from("minutes").select("*", { count: "exact", head: true });
@@ -61,7 +63,12 @@ export default async function DashboardSekretaris() {
   const ukmDates = (rawRecentLetters || [])
     .filter(l => isUkm(l.letter_number) && l.date)
     .map(l => new Date(l.date).getTime());
-  const maxUkmDate = ukmDates.length > 0 ? Math.max(...ukmDates) : Date.now();
+  const maxUkmDate =
+    ukmDates.length > 0
+      ? Math.max(...ukmDates)
+      : rawRecentLetters?.[0]?.date
+      ? new Date(rawRecentLetters[0].date).getTime()
+      : 0;
 
   const recentLetters = (rawRecentLetters || []).toSorted((a, b) => {
     const isUkmA = isUkm(a.letter_number);

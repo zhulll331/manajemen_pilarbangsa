@@ -16,6 +16,7 @@ import {
   getAuthenticatedDashboardContext,
 } from '@/lib/periods/server';
 import { isSchemaMissingError, validateNewPeriodInput } from '@/lib/periods/utils';
+import { aggregateFinancialData } from '@/utils/finance';
 import { createClient } from '@/utils/supabase/server';
 
 export async function selectDashboardPeriodAction(periodId: string): Promise<{
@@ -98,6 +99,7 @@ export async function getClosingSummaryAction(periodId?: string): Promise<{
       lettersRes,
       minutesRes,
       financeRes,
+      paidDuesRes,
       momentsRes,
       eventsRes,
     ] = await Promise.all([
@@ -106,7 +108,12 @@ export async function getClosingSummaryAction(periodId?: string): Promise<{
       supabase.from('agendas').select('id', { count: 'exact', head: true }).eq('period_id', pid),
       supabase.from('letters').select('id', { count: 'exact', head: true }).eq('period_id', pid),
       supabase.from('minutes').select('id', { count: 'exact', head: true }).eq('period_id', pid),
-      supabase.from('finance_transactions').select('type, amount').eq('period_id', pid),
+      supabase.from('finance_transactions').select('type, amount, transaction_date').eq('period_id', pid),
+      supabase
+        .from('dues')
+        .select('amount, status, payment_date')
+        .eq('period_id', pid)
+        .eq('status', 'Lunas'),
       supabase.from('moment_photos').select('id', { count: 'exact', head: true }).eq('period_id', pid),
       supabase.from('public_events').select('id', { count: 'exact', head: true }).eq('period_id', pid),
     ]);
@@ -118,16 +125,11 @@ export async function getClosingSummaryAction(periodId?: string): Promise<{
     ).length;
 
     const financeRows = financeRes.data || [];
-    let financialIncome = 0;
-    let financialExpense = 0;
-    for (const tx of financeRows) {
-      const amount = Number(tx.amount) || 0;
-      if (tx.type === 'Pemasukan') {
-        financialIncome += amount;
-      } else {
-        financialExpense += amount;
-      }
-    }
+    const {
+      totalPemasukan: financialIncome,
+      totalPengeluaran: financialExpense,
+      saldoKas: financialBalance,
+    } = aggregateFinancialData(financeRows, paidDuesRes.data || []);
 
     return {
       schemaReady: true,
@@ -147,7 +149,7 @@ export async function getClosingSummaryAction(periodId?: string): Promise<{
         },
         financialIncome,
         financialExpense,
-        financialBalance: financialIncome - financialExpense,
+        financialBalance,
       },
     };
   } catch (err) {

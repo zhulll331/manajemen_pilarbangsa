@@ -2,9 +2,11 @@ import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 import { createClient } from "@/utils/supabase/server";
 import ProgramClient from "./ProgramClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProgramPage() {
   const supabase = await createClient();
-  const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
+  const { selectedPeriod, isLocked, schemaReady } = await getSelectedPeriodForDashboard();
 
   let query = supabase
     .from("programs")
@@ -26,7 +28,7 @@ export default async function ProgramPage() {
         </p>
       </div>
 
-      <ProgramClient programs={programs || []} />
+      <ProgramClient programs={programs || []} isLocked={isLocked} />
     </div>
   );
 }

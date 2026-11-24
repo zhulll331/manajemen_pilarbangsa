@@ -7,7 +7,7 @@ import { ArrowUpRight, CalendarClock, Lock, Menu, Search, X } from "lucide-react
 import { selectDashboardPeriodAction } from "@/app/dashboard/periode/actions";
 import type { OrganizationPeriod } from "@/lib/periods/types";
 import { canManagePeriodsRole } from "@/lib/periods/utils";
-import { getDashboardMenu, getRoleLabel, isDashboardMenuActive } from "./dashboard-navigation";
+import { getDashboardMenu, getDashboardPageTitle, getRoleLabel } from "./dashboard-navigation";
 
 export function Header({
   role = "ketua",
@@ -30,7 +30,7 @@ export function Header({
   const router = useRouter();
   const [switchingPeriod, startTransition] = useTransition();
   const items = getDashboardMenu(role);
-  const current = items.find((i) => isDashboardMenuActive(pathname, i.href))?.label || "Ringkasan";
+  const current = getDashboardPageTitle(pathname, role);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);

@@ -8,7 +8,13 @@ import { DataTable } from "@/components/DataTable";
 import { ImportCSVModal } from "@/components/ImportCSVModal";
 import { tambahProgram, editProgram, hapusProgram, importProgramBatch, parseProgramKerja } from "./actions";
 
-export default function ProgramClient({ programs }: { programs: any[] }) {
+export default function ProgramClient({
+  programs,
+  isLocked = false,
+}: {
+  programs: any[];
+  isLocked?: boolean;
+}) {
   const [filter, setFilter] = useState("Semua");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -34,9 +40,14 @@ export default function ProgramClient({ programs }: { programs: any[] }) {
     end_date: ""
   });
 
-  const filteredData = filter === "Semua" 
-    ? programs 
-    : programs.filter((p) => p.status === filter);
+  const filteredData = filter === "Semua"
+    ? programs
+    : programs.filter((p) => {
+        const s = (p.status || "").toLowerCase();
+        if (filter === "Berjalan") return s.includes("jalan");
+        if (filter === "Belum Dimulai") return s.includes("belum");
+        return p.status === filter;
+      });
 
   const openAdd = () => {
     setSelectedData(null);
@@ -215,16 +226,18 @@ export default function ProgramClient({ programs }: { programs: any[] }) {
           value={row.status}
           onChange={(e) => handleStatusChange(row.id, e.target.value, row)}
           onClick={(e) => e.stopPropagation()}
-          disabled={isLoading}
+          disabled={isLoading || isLocked}
           className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 w-max font-medium outline-none cursor-pointer appearance-none border-none pr-6 bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2212%22%20height%3D%2212%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22currentColor%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] transition-all disabled:opacity-50 ${
             row.status === 'Selesai' ? 'bg-green-100 text-green-700 focus:ring-2 focus:ring-green-500' : 
-            row.status === 'Berjalan' ? 'bg-blue-100 text-blue-700 focus:ring-2 focus:ring-blue-500' : 
-            row.status === 'Belum Dimulai' ? 'bg-gray-100 text-gray-700 focus:ring-2 focus:ring-gray-500' :
+            (row.status === 'Berjalan' || row.status === 'Sedang Berjalan') ? 'bg-blue-100 text-blue-700 focus:ring-2 focus:ring-blue-500' : 
+            (row.status === 'Belum Dimulai' || row.status === 'Belum Mulai') ? 'bg-gray-100 text-gray-700 focus:ring-2 focus:ring-gray-500' :
             'bg-orange-100 text-orange-700 focus:ring-2 focus:ring-orange-500'
           }`}
         >
+          {row.status === "Belum Mulai" && <option value="Belum Mulai">Belum Mulai</option>}
           <option value="Belum Dimulai">Belum Dimulai</option>
           <option value="Berjalan">Berjalan</option>
+          <option value="Sedang Berjalan">Sedang Berjalan</option>
           <option value="Tertunda">Tertunda</option>
           <option value="Selesai">Selesai</option>
         </select>
@@ -261,28 +274,30 @@ export default function ProgramClient({ programs }: { programs: any[] }) {
           ))}
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <button
-            onClick={() => setIsImportOpen(true)}
-            className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors w-full sm:w-auto font-medium"
-          >
-            Import CSV
-          </button>
-          <button
-            onClick={openAdd}
-            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors w-full sm:w-auto font-medium shadow-md shadow-blue-200"
-          >
-            <Plus size={20} />
-            Tambah Program
-          </button>
-        </div>
+        {!isLocked && (
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => setIsImportOpen(true)}
+              className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors w-full sm:w-auto font-medium"
+            >
+              Import CSV
+            </button>
+            <button
+              onClick={openAdd}
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors w-full sm:w-auto font-medium shadow-md shadow-blue-200"
+            >
+              <Plus size={20} />
+              Tambah Program
+            </button>
+          </div>
+        )}
       </div>
 
       <DataTable pagination pageSize={10} 
         data={filteredData}
         columns={columns}
-        onEdit={openEdit}
-        onDelete={openDelete}
+        onEdit={isLocked ? undefined : openEdit}
+        onDelete={isLocked ? undefined : openDelete}
         emptyMessage={`Belum ada data program kerja ${filter === 'Semua' ? '' : filter.toLowerCase()}.`}
       />
 
@@ -404,6 +419,7 @@ export default function ProgramClient({ programs }: { programs: any[] }) {
                 >
                   <option value="Belum Dimulai">Belum Dimulai</option>
                   <option value="Berjalan">Berjalan</option>
+                  <option value="Sedang Berjalan">Sedang Berjalan</option>
                   <option value="Tertunda">Tertunda</option>
                   <option value="Selesai">Selesai</option>
                 </select>

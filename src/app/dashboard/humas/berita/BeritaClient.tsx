@@ -26,7 +26,7 @@ export default function BeritaClient({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     url: "",
@@ -63,14 +63,14 @@ export default function BeritaClient({
           .from("news_links")
           .update(formData)
           .eq("id", editingId);
-        
+
         if (error) throw error;
       } else {
         const payload = periodId ? { ...formData, period_id: periodId } : formData;
         const { error } = await supabase
           .from("news_links")
           .insert([payload]);
-        
+
         if (error) throw error;
       }
 
@@ -94,11 +94,11 @@ export default function BeritaClient({
   const handleDelete = async (id: string) => {
     if (isLocked) return;
     if (!confirm("Hapus tautan berita ini?")) return;
-    
+
     try {
       const { error } = await supabase.from("news_links").delete().eq("id", id);
       if (error) throw error;
-      
+
       setData(data.filter(n => n.id !== id));
       router.refresh();
     } catch (error) {
@@ -133,16 +133,16 @@ export default function BeritaClient({
                 <LinkIcon size={14} />
                 <span>{news.url}</span>
               </a>
-              
+
               {!isLocked && (
                 <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end gap-2">
-                  <button 
+                  <button
                     onClick={() => handleOpenModal(news)}
                     className="p-2 text-gray-500 hover:bg-gray-100 hover:text-[var(--color-primary)] rounded-lg transition-colors"
                   >
                     <Edit2 size={18} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(news.id)}
                     className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
                   >
@@ -170,7 +170,7 @@ export default function BeritaClient({
                 {editingId ? "Edit Berita" : "Tambah Berita Baru"}
               </h3>
             </div>
-            
+
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Judul Berita</label>

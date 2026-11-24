@@ -3,6 +3,8 @@ import { createClient } from "@/utils/supabase/server";
 import LaporanClient from "./LaporanClient";
 import { aggregateFinancialData } from "@/utils/finance";
 
+export const dynamic = "force-dynamic";
+
 export default async function LaporanPage() {
   const supabase = await createClient();
   const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();

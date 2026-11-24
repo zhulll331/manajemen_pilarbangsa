@@ -92,20 +92,31 @@ export async function getAuthenticatedDashboardContext() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, email, full_name, division_name')
+    .select('*')
     .eq('id', user.id)
     .maybeSingle();
 
-  const email = user.email || profile?.email || '';
-  const role = resolveEffectiveRole(profile?.role, email);
+  const profileRecord = (profile as Record<string, unknown> | null) ?? null;
+  const email =
+    user.email ||
+    (typeof profileRecord?.email === 'string' ? profileRecord.email : '') ||
+    '';
+  const rawRole = typeof profileRecord?.role === 'string' ? profileRecord.role : null;
+  const role = resolveEffectiveRole(rawRole, email);
+  const fullName =
+    typeof profileRecord?.full_name === 'string' && profileRecord.full_name
+      ? profileRecord.full_name
+      : null;
+  const divisionName =
+    typeof profileRecord?.division_name === 'string' ? profileRecord.division_name : null;
 
   return {
     supabase,
     user,
     role,
     email,
-    name: profile?.full_name || email || 'Pengurus',
-    divisionName: profile?.division_name || null,
+    name: fullName || email || 'Pengurus',
+    divisionName,
   };
 }
 
