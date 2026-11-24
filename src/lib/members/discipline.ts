@@ -487,7 +487,8 @@ export function buildSp1AiPrompts(
 }
 
 function extractJsonObject(rawAiText: string): string {
-  const stripped = rawAiText
+  const withoutThink = rawAiText.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  const stripped = withoutThink
     .replace(/```json\s*/gi, '')
     .replace(/```\s*/g, '')
     .trim();
@@ -628,4 +629,145 @@ export function normalizeBulkDisciplineItems(
     }
   }
   return Array.from(byId.values());
+}
+
+function normalizeSp1MatchText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/['’`]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function fallbackParseSp1List(
+  rawText: string,
+  candidates: DisciplineMemberInput[]
+): AiSp1ParseResult {
+  const lines = rawText.split(/\r?\n/);
+  const eligibleSet = new Set<string>(DISCIPLINE_ELIGIBLE_STATUSES);
+  const seenIds = new Set<string>();
+  const matched: AiMatchedSp1[] = [];
+  const unmatched: AiUnmatchedSp1[] = [];
+
+  for (const rawLine of lines) {
+    const trimmedLine = rawLine.trim();
+    if (!trimmedLine) continue;
+    if (/^(?:daftar\s+)?(?:anggota\s+)?sp\s*1\b.*:?$/i.test(trimmedLine)) {
+      continue;
+    }
+
+    const withoutBullet = trimmedLine
+      .replace(/^\d+[.)]\s*/, '')
+      .replace(/^[-•*]\s+/, '')
+      .trim();
+    if (!withoutBullet) continue;
+
+    let leftPart = withoutBullet;
+    let notePart = '';
+    const delimMatch = withoutBullet.match(/^(.+?)\s+(?:[-–—]+|:)\s*(.+)$/);
+    if (delimMatch) {
+      leftPart = delimMatch[1].trim();
+      notePart = sanitizeDisciplineNote(delimMatch[2]);
+    } else {
+      const parenTail = withoutBullet.match(/^(.+?)\s+\(([^)]*alpa[^)]*)\)$/i);
+      if (parenTail) {
+        leftPart = parenTail[1].trim();
+        notePart = sanitizeDisciplineNote(parenTail[2]);
+      }
+    }
+
+    const hints: string[] = [];
+    const cleanName = leftPart
+      .replace(/\(([^)]+)\)/g, (_, inner: string) => {
+        const h = normalizeSp1MatchText(inner);
+        if (h) hints.push(h);
+        return ' ';
+      })
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const queryNorm = normalizeSp1MatchText(cleanName);
+    if (!queryNorm) continue;
+
+    const narrow = (pool: DisciplineMemberInput[]) => {
+      if (pool.length <= 1 || hints.length === 0) return pool;
+      const filtered = pool.filter((c) => {
+        const hay = normalizeSp1MatchText(
+          `${c.name} ${c.division || ''} ${c.faculty || ''} ${c.nim || ''}`
+        );
+        return hints.some((h) => hay.includes(h));
+      });
+      return filtered.length > 0 ? filtered : pool;
+    };
+
+    const exact = narrow(
+      candidates.filter((c) => {
+        const cNim = normalizeSp1MatchText(c.nim || '');
+        const cName = normalizeSp1MatchText(c.name.replace(/\([^)]*\)/g, ' '));
+        return (cNim && cNim === queryNorm) || cName === queryNorm;
+      })
+    );
+
+    let chosen: DisciplineMemberInput | null = exact.length === 1 ? exact[0] : null;
+    let ambiguous = exact.length > 1;
+
+    if (!chosen && !ambiguous) {
+      const qTokens = queryNorm.split(' ').filter(Boolean);
+      const tokenMatches = narrow(
+        candidates.filter((c) => {
+          const cTokens = normalizeSp1MatchText(c.name.replace(/\([^)]*\)/g, ' '))
+            .split(' ')
+            .filter(Boolean);
+          return qTokens.every((qt) => cTokens.includes(qt));
+        })
+      );
+      if (tokenMatches.length === 1) chosen = tokenMatches[0];
+      else if (tokenMatches.length > 1) ambiguous = true;
+    }
+
+    if (!chosen) {
+      unmatched.push({
+        raw_name: withoutBullet.slice(0, 140),
+        note: ambiguous
+          ? 'Nama ambigu (lebih dari satu anggota cocok), silakan pilih manual.'
+          : 'Data tidak ditemukan pada daftar anggota periode ini.',
+      });
+      continue;
+    }
+
+    if (!eligibleSet.has(chosen.status)) {
+      unmatched.push({
+        raw_name: chosen.name,
+        note: `Anggota berstatus ${chosen.status}, bukan anggota/pengurus aktif.`,
+      });
+      continue;
+    }
+
+    const level = normalizeWarningLevel(chosen.warning_level);
+    if (level === 'sp1') {
+      unmatched.push({
+        raw_name: chosen.name,
+        note: 'Sudah tercatat berstatus SP 1 aktif.',
+      });
+      continue;
+    }
+    if (level === 'sp2') {
+      unmatched.push({
+        raw_name: chosen.name,
+        note: 'Sudah berstatus SP 2 (Diberhentikan).',
+      });
+      continue;
+    }
+
+    if (seenIds.has(chosen.id)) continue;
+    seenIds.add(chosen.id);
+    matched.push({
+      member_id: chosen.id,
+      note: notePart,
+      matched_from: withoutBullet.slice(0, 120),
+    });
+  }
+
+  return { matched, unmatched };
 }

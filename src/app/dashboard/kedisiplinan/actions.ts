@@ -6,6 +6,7 @@ import { executeAiChatWithFailover } from '@/lib/ai/router';
 import { invalidateKnowledgeCache } from '@/lib/ai/knowledge';
 import {
   buildSp1AiPrompts,
+  fallbackParseSp1List,
   getTodayWibDateString,
   isValidIsoDateString,
   normalizeAiSp1Response,
@@ -87,20 +88,51 @@ export async function parseDaftarSp1AI(rawText: string): Promise<{
       })
     );
 
-    const { systemPrompt, userMessage } = buildSp1AiPrompts(rawText, candidates);
-    const aiResult = await executeAiChatWithFailover({
-      systemPrompt,
-      userMessage,
-      history: [],
-    });
+    const hasAiKey = Boolean(
+      process.env.GEMINI_API_KEY ||
+        process.env.GROQ_API_KEY ||
+        process.env.OPENROUTER_API_KEY
+    );
 
-    const parsed = normalizeAiSp1Response(aiResult.text, candidates);
+    if (hasAiKey) {
+      try {
+        const { systemPrompt, userMessage } = buildSp1AiPrompts(rawText, candidates);
+        const aiResult = await executeAiChatWithFailover({
+          systemPrompt,
+          userMessage,
+          history: [],
+          jsonMode: true,
+          maxTokens: 4096,
+          validateResponse: (text) => {
+            try {
+              normalizeAiSp1Response(text, candidates);
+              return true;
+            } catch {
+              return false;
+            }
+          },
+        });
+
+        const parsed = normalizeAiSp1Response(aiResult.text, candidates);
+        return {
+          success: true,
+          provider: aiResult.provider,
+          model: aiResult.model,
+          matched: parsed.matched,
+          unmatched: parsed.unmatched,
+        };
+      } catch (aiErr) {
+        console.warn('[AI-Pilah-SP1] Semua provider AI gagal, beralih ke parser lokal:', aiErr);
+      }
+    }
+
+    const fallback = fallbackParseSp1List(rawText, candidates);
     return {
       success: true,
-      provider: aiResult.provider,
-      model: aiResult.model,
-      matched: parsed.matched,
-      unmatched: parsed.unmatched,
+      provider: 'Pencocokan Cerdas Lokal',
+      model: 'auto-fallback',
+      matched: fallback.matched,
+      unmatched: fallback.unmatched,
     };
   } catch (err) {
     return {

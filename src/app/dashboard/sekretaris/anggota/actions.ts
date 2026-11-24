@@ -6,6 +6,7 @@ import { executeAiChatWithFailover } from '@/lib/ai/router';
 import { invalidateKnowledgeCache } from '@/lib/ai/knowledge';
 import {
   buildDismissalAiPrompts,
+  fallbackParseMemberStatusList,
   normalizeAiDismissalResponse,
   normalizeBulkDismissItems,
   sanitizeDismissalReason,
@@ -14,6 +15,7 @@ import {
   type AiUnmatchedDismissal,
   type BulkDismissItem,
   type DismissibleMemberCandidate,
+  type MemberTargetStatus,
 } from '@/lib/members/dismissal';
 import { requireWritablePeriod } from '@/lib/periods/server';
 import { formatPeriodErrorMessage, isSchemaMissingError } from '@/lib/periods/utils';
@@ -219,7 +221,7 @@ export async function parsePemberhentianAnggotaAI(rawText: string): Promise<{
     const supabase = await createClient();
     let query = supabase
       .from('members')
-      .select('id, name, nim, division, status')
+      .select('id, name, nim, faculty, study_program, division, status')
       .order('name', { ascending: true });
 
     if (schemaReady && periodId) {
@@ -238,31 +240,64 @@ export async function parsePemberhentianAnggotaAI(rawText: string): Promise<{
       id: String(row.id),
       name: String(row.name || ''),
       nim: String(row.nim || ''),
+      faculty: row.faculty ? String(row.faculty) : '',
+      study_program: row.study_program ? String(row.study_program) : '',
       division: String(row.division || ''),
       status: String(row.status || 'Aktif'),
     }));
 
-    const { systemPrompt, userMessage } = buildDismissalAiPrompts(rawText, candidates);
-    const aiResult = await executeAiChatWithFailover({
-      systemPrompt,
-      userMessage,
-      history: [],
-    });
+    const hasAiKey = Boolean(
+      process.env.GEMINI_API_KEY ||
+        process.env.GROQ_API_KEY ||
+        process.env.OPENROUTER_API_KEY
+    );
 
-    const parsed = normalizeAiDismissalResponse(aiResult.text, candidates);
+    if (hasAiKey) {
+      try {
+        const { systemPrompt, userMessage } = buildDismissalAiPrompts(rawText, candidates);
+        const aiResult = await executeAiChatWithFailover({
+          systemPrompt,
+          userMessage,
+          history: [],
+          jsonMode: true,
+          maxTokens: 4096,
+          validateResponse: (text) => {
+            try {
+              normalizeAiDismissalResponse(text, candidates);
+              return true;
+            } catch {
+              return false;
+            }
+          },
+        });
+
+        const parsed = normalizeAiDismissalResponse(aiResult.text, candidates);
+        return {
+          success: true,
+          provider: aiResult.provider,
+          model: aiResult.model,
+          matched: parsed.matched,
+          unmatched: parsed.unmatched,
+        };
+      } catch (aiErr) {
+        console.warn('[AI-Pilah-Status] Semua provider AI gagal, beralih ke parser lokal:', aiErr);
+      }
+    }
+
+    const fallback = fallbackParseMemberStatusList(rawText, candidates);
     return {
       success: true,
-      provider: aiResult.provider,
-      model: aiResult.model,
-      matched: parsed.matched,
-      unmatched: parsed.unmatched,
+      provider: 'Pencocokan Cerdas Lokal',
+      model: 'auto-fallback',
+      matched: fallback.matched,
+      unmatched: fallback.unmatched,
     };
   } catch (err) {
     return {
       success: false,
       error: formatPeriodErrorMessage(
         err,
-        'Gagal memilah daftar pemberhentian dengan AI.'
+        'Gagal memilah daftar perubahan status anggota.'
       ),
     };
   }
@@ -271,12 +306,13 @@ export async function parsePemberhentianAnggotaAI(rawText: string): Promise<{
 export async function berhentikanAnggotaMassal(items: BulkDismissItem[]): Promise<{
   success: boolean;
   updatedCount: number;
+  statusCounts: Record<MemberTargetStatus, number>;
 }> {
   const { periodId, schemaReady } = await requireWritablePeriod();
   const normalized = normalizeBulkDismissItems(items);
 
   if (normalized.length === 0) {
-    throw new Error('Pilih minimal satu anggota untuk diberhentikan.');
+    throw new Error('Pilih minimal satu anggota untuk diproses.');
   }
   if (normalized.length > 200) {
     throw new Error('Maksimal 200 anggota dapat diproses sekaligus dalam satu batch.');
@@ -285,18 +321,33 @@ export async function berhentikanAnggotaMassal(items: BulkDismissItem[]): Promis
   const supabase = await createClient();
   const nowIso = new Date().toISOString();
 
-  // Kelompokkan alasan identik untuk efisiensi query, tetap dukung alasan berbeda per anggota.
-  const allSameReason = normalized.every((i) => i.reason === normalized[0].reason);
+  const statusCounts: Record<MemberTargetStatus, number> = {
+    Diberhentikan: 0,
+    Alumni: 0,
+    Cuti: 0,
+  };
+  for (const item of normalized) {
+    statusCounts[item.targetStatus] += 1;
+  }
 
-  if (allSameReason) {
+  const allSameTargetAndReason = normalized.every(
+    (i) =>
+      i.targetStatus === normalized[0].targetStatus &&
+      i.reason === normalized[0].reason
+  );
+
+  if (allSameTargetAndReason) {
     const ids = normalized.map((i) => i.memberId);
+    const targetStatus = normalized[0].targetStatus;
+    const targetNote =
+      targetStatus === 'Diberhentikan' ? normalized[0].reason || null : null;
     const payload: Record<string, unknown> = schemaReady
       ? {
-          status: 'Diberhentikan',
-          status_note: normalized[0].reason || null,
-          status_updated_at: nowIso,
+          status: targetStatus,
+          status_note: targetNote,
+          status_updated_at: targetStatus === 'Diberhentikan' ? nowIso : null,
         }
-      : { status: 'Diberhentikan' };
+      : { status: targetStatus };
 
     let query = supabase.from('members').update(payload).in('id', ids);
     if (schemaReady && periodId) {
@@ -307,7 +358,7 @@ export async function berhentikanAnggotaMassal(items: BulkDismissItem[]): Promis
     if (error && isSchemaMissingError(error)) {
       const retry = await supabase
         .from('members')
-        .update({ status: 'Diberhentikan' })
+        .update({ status: targetStatus })
         .in('id', ids);
       error = retry.error;
     }
@@ -321,13 +372,17 @@ export async function berhentikanAnggotaMassal(items: BulkDismissItem[]): Promis
       const chunk = normalized.slice(i, i + CHUNK_SIZE);
       await Promise.all(
         chunk.map(async (item) => {
+          const targetStatus = item.targetStatus;
+          const targetNote =
+            targetStatus === 'Diberhentikan' ? item.reason || null : null;
           const payload: Record<string, unknown> = schemaReady
             ? {
-                status: 'Diberhentikan',
-                status_note: item.reason || null,
-                status_updated_at: nowIso,
+                status: targetStatus,
+                status_note: targetNote,
+                status_updated_at:
+                  targetStatus === 'Diberhentikan' ? nowIso : null,
               }
-            : { status: 'Diberhentikan' };
+            : { status: targetStatus };
 
           let q = supabase.from('members').update(payload).eq('id', item.memberId);
           if (schemaReady && periodId) {
@@ -338,7 +393,7 @@ export async function berhentikanAnggotaMassal(items: BulkDismissItem[]): Promis
           if (error && isSchemaMissingError(error)) {
             const retry = await supabase
               .from('members')
-              .update({ status: 'Diberhentikan' })
+              .update({ status: targetStatus })
               .eq('id', item.memberId);
             error = retry.error;
           }
@@ -353,5 +408,5 @@ export async function berhentikanAnggotaMassal(items: BulkDismissItem[]): Promis
 
   invalidateKnowledgeCache();
   revalidatePath('/dashboard', 'layout');
-  return { success: true, updatedCount: normalized.length };
+  return { success: true, updatedCount: normalized.length, statusCounts };
 }

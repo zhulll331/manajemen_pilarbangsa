@@ -17,6 +17,7 @@
 
 html {
   scroll-padding-top: 6rem;
+  color-scheme: light;
 }
 
 body {
@@ -191,6 +192,9 @@ body {
 dialog:modal {
   overscroll-behavior: contain;
   margin: auto;
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #111827;
 }
 
 dialog::backdrop {

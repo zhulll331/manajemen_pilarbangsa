@@ -121,7 +121,8 @@ export function BulkDismissMembersModal({
         pressedOutsideRef.current = false;
       }}
       {...({ closedby: loading ? "none" : "any" } as Record<string, string>)}
-      className="bg-white rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain p-0 border-0 text-left"
+      style={{ colorScheme: "light" }}
+      className="bg-white text-gray-900 rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain p-0 border-0 text-left"
     >
       <div className="sticky top-0 bg-white flex items-center justify-between p-6 pb-4 border-b border-gray-100 rounded-t-2xl z-10">
         <div className="flex items-center gap-3">
@@ -185,7 +186,7 @@ export function BulkDismissMembersModal({
               value={sharedReason}
               onChange={(e) => setSharedReason(e.target.value)}
               placeholder="Contoh: Diberhentikan berdasarkan rapat evaluasi / SP3"
-              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
+              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
             />
             {useDifferentReasons && (
               <button
@@ -239,7 +240,7 @@ export function BulkDismissMembersModal({
                       }))
                     }
                     placeholder={`Keterangan pemberhentian untuk ${member.name}...`}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                   />
                 )}
               </div>

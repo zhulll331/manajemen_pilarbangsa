@@ -266,9 +266,15 @@ export default function AnggotaClient({
     setSelectedIds((prev) => prev.filter((id) => !dismissedSet.has(id)));
     setShowBulkDismiss(false);
     setShowAiDismiss(false);
+    const breakdown = (Object.entries(res.statusCounts) as Array<[string, number]>)
+      .filter(([, count]) => count > 0)
+      .map(([status, count]) => `${count} ${status}`)
+      .join(", ");
     setBannerMsg({
       type: "success",
-      text: `${res.updatedCount} anggota berhasil ditandai berstatus Diberhentikan.`,
+      text: breakdown
+        ? `${res.updatedCount} anggota berhasil diperbarui (${breakdown}).`
+        : `${res.updatedCount} anggota berhasil diperbarui.`,
     });
   };
 

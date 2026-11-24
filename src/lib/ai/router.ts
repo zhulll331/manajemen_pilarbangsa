@@ -1,10 +1,9 @@
 /**
  * Multi-Provider AI Failover Router
- * Menjamin ketersediaan chatbot dengan mencoba provider secara berjenjang:
+ * Menjamin ketersediaan chatbot dan parser JSON dengan mencoba provider secara berjenjang:
  * 1. Google Gemini (Pintar, kuota 15 RPM / 1500 RPD)
- * 2. Groq Cloud (Inferensi kilat ~7ms, model Qwen 27B / GPT-OSS)
+ * 2. Groq Cloud (Inferensi kilat)
  * 3. OpenRouter (Multi-model free tier)
- * 4. Fallback ramah jika seluruh layanan sedang limit
  */
 
 export interface ChatMessage {
@@ -12,31 +11,41 @@ export interface ChatMessage {
   content: string;
 }
 
-interface RouterOptions {
+export interface RouterOptions {
   systemPrompt: string;
   userMessage: string;
   history?: ChatMessage[];
+  jsonMode?: boolean;
+  maxTokens?: number;
+  validateResponse?: (text: string) => boolean;
 }
 
-interface ProviderResult {
+export interface ProviderResult {
   text: string;
   provider: string;
   model: string;
+}
+
+function toErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 // 1. Google Gemini Provider
 async function callGemini(
   systemPrompt: string,
   userMessage: string,
-  history: ChatMessage[] = []
+  history: ChatMessage[] = [],
+  jsonMode = false,
+  maxTokens?: number
 ): Promise<ProviderResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan");
 
-  // Format pesan percakapan untuk Gemini
-  const contents: any[] = [];
+  const contents: Array<{
+    role: "user" | "model";
+    parts: Array<{ text: string }>;
+  }> = [];
 
-  // Tambahkan riwayat percakapan sebelumnya jika ada
   for (const h of history) {
     contents.push({
       role: h.role === "assistant" ? "model" : "user",
@@ -44,27 +53,33 @@ async function callGemini(
     });
   }
 
-  // Tambahkan pesan terbaru user
   contents.push({
     role: "user",
     parts: [{ text: userMessage }],
   });
+
+  const generationConfig: Record<string, unknown> = {
+    temperature: jsonMode ? 0.1 : 0.2,
+    maxOutputTokens: maxTokens ?? (jsonMode ? 4096 : 2048),
+  };
+
+  if (jsonMode) {
+    generationConfig.responseMimeType = "application/json";
+    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  }
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(12000), // 12s timeout
+      signal: AbortSignal.timeout(jsonMode ? 25000 : 12000),
       body: JSON.stringify({
         contents,
         systemInstruction: {
           parts: [{ text: systemPrompt }],
         },
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 2048,
-        },
+        generationConfig,
       }),
     }
   );
@@ -74,7 +89,11 @@ async function callGemini(
     throw new Error(`Gemini HTTP ${response.status}: ${JSON.stringify(errJson)}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as {
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string }> };
+    }>;
+  };
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text || text.trim() === "") {
     throw new Error("Gemini menghasilkan respons kosong");
@@ -87,24 +106,38 @@ async function callGemini(
 async function callGroq(
   systemPrompt: string,
   userMessage: string,
-  history: ChatMessage[] = []
+  history: ChatMessage[] = [],
+  jsonMode = false,
+  maxTokens?: number
 ): Promise<ProviderResult> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY tidak ditemukan");
 
-  const signal = AbortSignal.timeout(10000); // 10s total budget across fallback models
+  const signal = AbortSignal.timeout(jsonMode ? 18000 : 10000);
   const messages = [
     { role: "system", content: systemPrompt },
     ...history.map((h) => ({ role: h.role, content: h.content })),
     { role: "user", content: userMessage },
   ];
 
-  // Coba model dengan batas token tinggi di Groq
-  const preferredModels = ["groq/compound-mini", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
-  let lastError: any = null;
+  const preferredModels = jsonMode
+    ? ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "qwen/qwen3-32b"]
+    : ["groq/compound-mini", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
+  let lastError: unknown = null;
 
   for (const modelName of preferredModels) {
     try {
+      const payload: Record<string, unknown> = {
+        model: modelName,
+        messages,
+        temperature: jsonMode ? 0.1 : 0.2,
+        max_tokens: maxTokens ?? (jsonMode ? 4096 : 1500),
+      };
+
+      if (jsonMode) {
+        payload.response_format = { type: "json_object" };
+      }
+
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -112,12 +145,7 @@ async function callGroq(
           "Content-Type": "application/json",
         },
         signal,
-        body: JSON.stringify({
-          model: modelName,
-          messages,
-          temperature: 0.2,
-          max_tokens: 1500,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -125,28 +153,34 @@ async function callGroq(
         throw new Error(`Groq (${modelName}) HTTP ${response.status}: ${JSON.stringify(errJson)}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
       const text = data.choices?.[0]?.message?.content;
       if (!text || text.trim() === "") {
         throw new Error(`Groq (${modelName}) respons kosong`);
       }
 
       return { text: text.trim(), provider: "Groq Cloud", model: modelName };
-    } catch (subErr: any) {
+    } catch (subErr: unknown) {
       lastError = subErr;
-      console.warn(`[AI-Router] Groq model ${modelName} gagal:`, subErr.message);
+      console.warn(`[AI-Router] Groq model ${modelName} gagal:`, toErrorMessage(subErr));
       if (signal.aborted) break;
     }
   }
 
-  throw lastError || new Error("Semua model Groq gagal merespon");
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Semua model Groq gagal merespon");
 }
 
 // 3. OpenRouter Provider (Fallback Model Gratis)
 async function callOpenRouter(
   systemPrompt: string,
   userMessage: string,
-  history: ChatMessage[] = []
+  history: ChatMessage[] = [],
+  jsonMode = false,
+  maxTokens?: number
 ): Promise<ProviderResult> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY tidak ditemukan");
@@ -165,7 +199,7 @@ async function callOpenRouter(
       "HTTP-Referer": "https://pilarbangsa.my.id",
       "X-Title": "Pilar Bangsa Management",
     },
-    signal: AbortSignal.timeout(18000), // 18s timeout untuk antrean free tier
+    signal: AbortSignal.timeout(jsonMode ? 22000 : 18000),
     body: JSON.stringify({
       models: [
         "google/gemini-2.0-flash-exp:free",
@@ -173,8 +207,8 @@ async function callOpenRouter(
         "nvidia/nemotron-3-ultra-550b-a55b:free",
       ],
       messages,
-      temperature: 0.2,
-      max_tokens: 1800,
+      temperature: jsonMode ? 0.1 : 0.2,
+      max_tokens: maxTokens ?? (jsonMode ? 4096 : 1800),
     }),
   });
 
@@ -183,7 +217,10 @@ async function callOpenRouter(
     throw new Error(`OpenRouter HTTP ${response.status}: ${JSON.stringify(errJson)}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as {
+    model?: string;
+    choices?: Array<{ message?: { content?: string } }>;
+  };
   const text = data.choices?.[0]?.message?.content;
   if (!text || text.trim() === "") {
     throw new Error("OpenRouter menghasilkan respons kosong");
@@ -197,46 +234,52 @@ async function callOpenRouter(
 }
 
 /**
- * Eksekusi chat dengan failover otomatis
+ * Eksekusi chat dengan failover otomatis + validasi opsional agar JSON gagal otomatis failover
  */
 export async function executeAiChatWithFailover({
   systemPrompt,
   userMessage,
   history = [],
+  jsonMode = false,
+  maxTokens,
+  validateResponse,
 }: RouterOptions): Promise<ProviderResult> {
   const errors: { provider: string; error: string }[] = [];
 
-  // 1. Coba Google Gemini
-  try {
-    const res = await callGemini(systemPrompt, userMessage, history);
-    console.log(`[AI-Router] Dilayani oleh: ${res.provider} (${res.model})`);
-    return res;
-  } catch (err: any) {
-    console.warn("[AI-Router] Gemini gagal/limit:", err.message);
-    errors.push({ provider: "Google Gemini", error: err.message });
-  }
+  const runProvider = async (
+    label: string,
+    fn: () => Promise<ProviderResult>
+  ): Promise<ProviderResult | null> => {
+    try {
+      const res = await fn();
+      if (validateResponse && !validateResponse(res.text)) {
+        throw new Error(`${res.provider} mengembalikan format respons tidak valid`);
+      }
+      console.log(`[AI-Router] Dilayani oleh: ${res.provider} (${res.model})`);
+      return res;
+    } catch (err: unknown) {
+      const msg = toErrorMessage(err);
+      console.warn(`[AI-Router] ${label} gagal/limit:`, msg);
+      errors.push({ provider: label, error: msg });
+      return null;
+    }
+  };
 
-  // 2. Coba Groq Cloud
-  try {
-    const res = await callGroq(systemPrompt, userMessage, history);
-    console.log(`[AI-Router] Dilayani oleh: ${res.provider} (${res.model})`);
-    return res;
-  } catch (err: any) {
-    console.warn("[AI-Router] Groq gagal/limit:", err.message);
-    errors.push({ provider: "Groq Cloud", error: err.message });
-  }
+  const geminiRes = await runProvider("Google Gemini", () =>
+    callGemini(systemPrompt, userMessage, history, jsonMode, maxTokens)
+  );
+  if (geminiRes) return geminiRes;
 
-  // 3. Coba OpenRouter
-  try {
-    const res = await callOpenRouter(systemPrompt, userMessage, history);
-    console.log(`[AI-Router] Dilayani oleh: ${res.provider} (${res.model})`);
-    return res;
-  } catch (err: any) {
-    console.warn("[AI-Router] OpenRouter gagal/limit:", err.message);
-    errors.push({ provider: "OpenRouter", error: err.message });
-  }
+  const groqRes = await runProvider("Groq Cloud", () =>
+    callGroq(systemPrompt, userMessage, history, jsonMode, maxTokens)
+  );
+  if (groqRes) return groqRes;
 
-  // 4. Semua provider gagal -> Lempar error yang nanti ditangkap oleh route handler
+  const openRouterRes = await runProvider("OpenRouter", () =>
+    callOpenRouter(systemPrompt, userMessage, history, jsonMode, maxTokens)
+  );
+  if (openRouterRes) return openRouterRes;
+
   throw new Error(
     `Semua provider AI sedang mengalami limit/gangguan: ${JSON.stringify(errors)}`
   );

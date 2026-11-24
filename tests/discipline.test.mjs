@@ -6,6 +6,7 @@ import {
   buildSp1AiPrompts,
   detectSp2AlertsForAgenda,
   evaluateAttendanceDiscipline,
+  fallbackParseSp1List,
   getDefaultQuarterKey,
   normalizeAiSp1Response,
   normalizeBulkDisciplineItems,
@@ -164,4 +165,14 @@ test('SP1 AI prompt builder & normalizer filter active non-SP1 members and handl
     { memberId: '', note: 'empty' },
   ]);
   assert.deepEqual(deduped, [{ memberId: 'u1', note: 'Alpa 4x', alpaCount: 5 }]);
+
+  const fallback = fallbackParseSp1List(
+    '1. Budi Santoso - Alpa 4x\n2. Siti Aminah\n3. Nama Tidak Ada',
+    candidates
+  );
+  assert.deepEqual(fallback.matched, [
+    { member_id: 'u1', note: 'Alpa 4x', matched_from: 'Budi Santoso - Alpa 4x' },
+  ]);
+  assert.equal(fallback.unmatched.length, 2);
+  assert.match(fallback.unmatched[1].note, /Data tidak ditemukan/i);
 });

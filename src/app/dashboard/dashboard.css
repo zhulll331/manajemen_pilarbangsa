@@ -1,5 +1,6 @@
 /* All overrides are scoped to the authenticated workspace. Public pages keep their theme. */
 .admin-shell {
+  color-scheme: light;
   --color-primary: #c81735;
   --color-secondary: #167047;
   --color-background: #f4f3ef;
@@ -87,7 +88,13 @@
 .admin-shell table th { color: #697164; font-size: 10px; letter-spacing: .65px; font-weight: 600; }
 .admin-shell table td { border-color: #eef0e9; }
 .admin-shell table tbody tr:hover { background-color: #f5f7f0; }
-.admin-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) { border-color: #dedfd7; }
+.admin-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  border-color: #dedfd7;
+  background-color: #ffffff;
+  color: #111827;
+  caret-color: #111827;
+}
+.admin-shell .admin-search input { background-color: transparent; }
 .admin-shell :is(input, select, textarea)::placeholder { color: #81857c; }
 .admin-shell :is(button, a).bg-blue-600, .admin-shell :is(button, a).bg-blue-500 { background-color: #c81735; }
 .admin-shell :is(button, a).bg-blue-600:hover, .admin-shell :is(button, a).bg-blue-500:hover { background-color: #a6132c; }

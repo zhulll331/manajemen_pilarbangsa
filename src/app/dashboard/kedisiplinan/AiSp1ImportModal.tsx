@@ -232,7 +232,8 @@ export function AiSp1ImportModal({
         pressedOutsideRef.current = false;
       }}
       {...({ closedby: busy ? "none" : "any" } as Record<string, string>)}
-      className="bg-white rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-y-auto overscroll-contain p-0 border-0 text-left"
+      style={{ colorScheme: "light" }}
+      className="bg-white text-gray-900 rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-y-auto overscroll-contain p-0 border-0 text-left"
     >
       <div className="sticky top-0 bg-white flex items-center justify-between p-6 pb-4 border-b border-gray-100 rounded-t-2xl z-10">
         <div className="flex items-center gap-3">
@@ -261,14 +262,11 @@ export function AiSp1ImportModal({
 
       <div className="p-6 space-y-5">
         {!aiConfigured && (
-          <div
-            role="alert"
-            className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-sm text-amber-800"
-          >
-            <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600" />
+          <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2.5 text-xs text-blue-800">
+            <Sparkles size={16} className="shrink-0 mt-0.5 text-blue-600" />
             <span>
-              Kunci API AI gratis (GEMINI_API_KEY / GROQ_API_KEY / OPENROUTER_API_KEY)
-              belum terdeteksi di server. Gunakan tombol &quot;Input SP 1 Manual&quot; terlebih dahulu.
+              API key AI eksternal tidak terdeteksi — sistem akan menggunakan{" "}
+              <strong>Pencocokan Cerdas Lokal</strong> secara otomatis untuk memilah daftar SP 1 Anda.
             </span>
           </div>
         )}
@@ -300,11 +298,11 @@ export function AiSp1ImportModal({
                 placeholder={
                   "Contoh:\nDaftar SP 1 hasil rekapan kemarin:\n1. Budi Santoso (alpa 4x)\n2. Siti Aisyah - alpa 5 kali di rapat divisi\n3. Andi Pratama"
                 }
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition resize-y"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition resize-y"
               />
               <p className="text-xs text-gray-500 mt-1.5">
-                Menggunakan AI gratis bawaan (Gemini → Groq → OpenRouter). Anda bisa mengatur
-                tanggal berlaku SP 1 dan meninjau setiap baris sebelum disimpan.
+                Menggunakan AI gratis bawaan dengan fallback lokal otomatis. Anda bisa mengatur
+                tanggal berlaku SP 1 dan tetap melanjutkan jika ada nama yang tidak terdaftar.
               </p>
             </div>
 
@@ -319,12 +317,12 @@ export function AiSp1ImportModal({
               </button>
               <button
                 type="button"
-                disabled={busy || !aiConfigured || rawText.trim().length < 3}
+                disabled={busy || rawText.trim().length < 3}
                 onClick={handleAnalyze}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-secondary)] transition-colors disabled:opacity-50"
               >
                 <Sparkles size={16} />
-                {analyzing ? "AI sedang memilah..." : "Analisis dengan AI"}
+                {analyzing ? "Sedang memilah..." : "Analisis Daftar SP 1"}
               </button>
             </div>
           </div>
@@ -470,51 +468,86 @@ export function AiSp1ImportModal({
 
             {unmatchedRows.length > 0 && (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-amber-800">
-                  Tidak Cocok / Sudah Berstatus SP ({unmatchedRows.length})
-                </p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-amber-900">
+                    Data Tidak Ditemukan / Dilewati ({unmatchedRows.length})
+                  </p>
+                  {selectedCount > 0 && (
+                    <p className="text-xs text-amber-800 mt-0.5">
+                      Anda tetap dapat melanjutkan penerbitan SP 1 untuk{" "}
+                      <strong>{selectedCount} anggota yang ditemukan</strong>, atau abaikan/cocokkan manual item berikut.
+                    </p>
+                  )}
+                </div>
                 <div className="space-y-2.5">
-                  {unmatchedRows.map((item, idx) => (
-                    <div
-                      key={`${item.raw_name}-${idx}`}
-                      className="p-3 bg-white border border-amber-100 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-                    >
-                      <div className="text-xs space-y-0.5">
-                        <p className="font-semibold text-gray-900">{item.raw_name}</p>
-                        <p className="text-amber-700">{item.note}</p>
-                      </div>
-                      {eligibleManualMembers.length > 0 && (
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <select
-                            value={manualMatchTarget[idx] || ""}
-                            onChange={(e) =>
-                              setManualMatchTarget((prev) => ({
-                                ...prev,
-                                [idx]: e.target.value,
-                              }))
-                            }
-                            aria-label={`Cocokkan manual ${item.raw_name}`}
-                            className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white max-w-[180px]"
-                          >
-                            <option value="">Pilih anggota...</option>
-                            {eligibleManualMembers.map((m) => (
-                              <option key={m.id} value={m.id}>
-                                {m.name} ({m.nim || "-"})
-                              </option>
-                            ))}
-                          </select>
+                  {unmatchedRows.map((item, idx) => {
+                    const isNotFound = item.note.toLowerCase().includes("tidak ditemukan");
+                    return (
+                      <div
+                        key={`${item.raw_name}-${idx}`}
+                        className="p-3 bg-white border border-amber-100 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                      >
+                        <div className="text-xs space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                isNotFound
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {isNotFound ? "Data Tidak Ditemukan" : "Dilewati"}
+                            </span>
+                            <p className="font-semibold text-gray-900">{item.raw_name}</p>
+                          </div>
+                          <p className="text-amber-700">{item.note}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                          {eligibleManualMembers.length > 0 && (
+                            <>
+                              <select
+                                value={manualMatchTarget[idx] || ""}
+                                onChange={(e) =>
+                                  setManualMatchTarget((prev) => ({
+                                    ...prev,
+                                    [idx]: e.target.value,
+                                  }))
+                                }
+                                aria-label={`Cocokkan manual ${item.raw_name}`}
+                                className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs bg-white text-gray-900 max-w-[180px]"
+                              >
+                                <option value="">Pilih anggota...</option>
+                                {eligibleManualMembers.map((m) => (
+                                  <option key={m.id} value={m.id}>
+                                    {m.name} ({m.nim || "-"})
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                disabled={!manualMatchTarget[idx]}
+                                onClick={() => handleAssignUnmatched(idx)}
+                                className="px-2.5 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 disabled:opacity-40"
+                              >
+                                Tambahkan
+                              </button>
+                            </>
+                          )}
                           <button
                             type="button"
-                            disabled={!manualMatchTarget[idx]}
-                            onClick={() => handleAssignUnmatched(idx)}
-                            className="px-2.5 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 disabled:opacity-40"
+                            onClick={() =>
+                              setUnmatchedRows((prev) =>
+                                prev.filter((_, i) => i !== idx)
+                              )
+                            }
+                            className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-100"
                           >
-                            Tambahkan
+                            Abaikan
                           </button>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

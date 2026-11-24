@@ -154,7 +154,8 @@ export function InputSp1ManualModal({
         pressedOutsideRef.current = false;
       }}
       {...({ closedby: submitting ? "none" : "any" } as Record<string, string>)}
-      className="bg-white rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain p-0 border-0 text-left"
+      style={{ colorScheme: "light" }}
+      className="bg-white text-gray-900 rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain p-0 border-0 text-left"
     >
       <div className="sticky top-0 bg-white flex items-center justify-between p-6 pb-4 border-b border-gray-100 rounded-t-2xl z-10">
         <div className="flex items-center gap-3">
