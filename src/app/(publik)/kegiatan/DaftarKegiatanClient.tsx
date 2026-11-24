@@ -92,12 +92,14 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
   return (
     <div className="space-y-8">
       {/* Bar Tab Bergaris Bawah + Pencarian Datar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-4">
-        <div className="flex items-center gap-6 overflow-x-auto">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200">
+        <div className="flex items-center gap-6 flex-wrap" role="tablist" aria-label="Filter status kegiatan">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'aktif'}
             onClick={() => setActiveTab('aktif')}
-            className={`inline-flex items-center gap-2 pb-2 -mb-[17px] border-b-2 text-sm font-bold whitespace-nowrap transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-2 py-3 border-b-2 text-sm font-bold whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'aktif'
                 ? 'border-[#E31837] text-[#E31837]'
                 : 'border-transparent text-gray-500 hover:text-gray-900'
@@ -109,8 +111,10 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'arsip'}
             onClick={() => setActiveTab('arsip')}
-            className={`inline-flex items-center gap-2 pb-2 -mb-[17px] border-b-2 text-sm font-bold whitespace-nowrap transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-2 py-3 border-b-2 text-sm font-bold whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'arsip'
                 ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-500 hover:text-gray-900'
@@ -121,30 +125,32 @@ export default function DaftarKegiatanClient({ initialEvents, initialTab = 'akti
           </button>
         </div>
 
-        <div className="relative w-full md:w-80">
-          <Search
-            size={17}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-            aria-hidden="true"
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari kegiatan atau lokasi..."
-            aria-label="Cari kegiatan atau lokasi"
-            className="w-full min-h-[42px] pl-10 pr-9 py-2 rounded-lg border border-gray-300 focus:border-[#E31837] text-sm outline-none bg-white transition-colors"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              aria-label="Hapus pencarian"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-800 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center"
-            >
-              ✕
-            </button>
-          )}
+        <div className="w-full md:w-80 pb-3">
+          <div className="relative">
+            <Search
+              size={17}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari kegiatan atau lokasi..."
+              aria-label="Cari kegiatan atau lokasi"
+              className="w-full min-h-[42px] pl-10 pr-9 py-2 rounded-lg border border-gray-300 focus:border-[#E31837] text-sm outline-none bg-white transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Hapus pencarian"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-800 bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
