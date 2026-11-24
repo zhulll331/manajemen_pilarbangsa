@@ -190,8 +190,10 @@ BEGIN
   SELECT id INTO v_active_id FROM public.periods WHERE status = 'active' LIMIT 1;
 
   IF v_active_id IS NULL THEN
-    SELECT value INTO v_visi FROM public.website_settings WHERE setting_key = 'visi_misi' LIMIT 1;
-    SELECT value INTO v_struktur FROM public.website_settings WHERE setting_key = 'struktur_pimpinan' LIMIT 1;
+    IF to_regclass('public.website_settings') IS NOT NULL THEN
+      SELECT setting_value INTO v_visi FROM public.website_settings WHERE setting_key = 'visi_misi' LIMIT 1;
+      SELECT setting_value INTO v_struktur FROM public.website_settings WHERE setting_key = 'struktur_pimpinan' LIMIT 1;
+    END IF;
 
     INSERT INTO public.periods (
       code, name, cabinet_name, theme, start_year, end_year,
@@ -215,28 +217,30 @@ BEGIN
   END IF;
 
   FOREACH v_tbl IN ARRAY v_tables LOOP
-    EXECUTE format(
-      'ALTER TABLE public.%I ADD COLUMN IF NOT EXISTS period_id UUID REFERENCES public.periods(id) ON DELETE RESTRICT;',
-      v_tbl
-    );
-    EXECUTE format(
-      'UPDATE public.%I SET period_id = %L WHERE period_id IS NULL;',
-      v_tbl,
-      v_active_id
-    );
-    EXECUTE format(
-      'ALTER TABLE public.%I ALTER COLUMN period_id SET DEFAULT public.fn_get_active_period_id();',
-      v_tbl
-    );
-    EXECUTE format(
-      'ALTER TABLE public.%I ALTER COLUMN period_id SET NOT NULL;',
-      v_tbl
-    );
-    EXECUTE format(
-      'CREATE INDEX IF NOT EXISTS %I ON public.%I(period_id);',
-      'idx_' || v_tbl || '_period_id',
-      v_tbl
-    );
+    IF to_regclass('public.' || v_tbl) IS NOT NULL THEN
+      EXECUTE format(
+        'ALTER TABLE public.%I ADD COLUMN IF NOT EXISTS period_id UUID REFERENCES public.periods(id) ON DELETE RESTRICT;',
+        v_tbl
+      );
+      EXECUTE format(
+        'UPDATE public.%I SET period_id = %L WHERE period_id IS NULL;',
+        v_tbl,
+        v_active_id
+      );
+      EXECUTE format(
+        'ALTER TABLE public.%I ALTER COLUMN period_id SET DEFAULT public.fn_get_active_period_id();',
+        v_tbl
+      );
+      EXECUTE format(
+        'ALTER TABLE public.%I ALTER COLUMN period_id SET NOT NULL;',
+        v_tbl
+      );
+      EXECUTE format(
+        'CREATE INDEX IF NOT EXISTS %I ON public.%I(period_id);',
+        'idx_' || v_tbl || '_period_id',
+        v_tbl
+      );
+    END IF;
   END LOOP;
 END $$;
 
@@ -378,12 +382,14 @@ DECLARE
   ];
 BEGIN
   FOREACH v_tbl IN ARRAY v_tables LOOP
-    EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I;', 'trg_' || v_tbl || '_lock_period', v_tbl);
-    EXECUTE format(
-      'CREATE TRIGGER %I BEFORE INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.fn_block_mutation_on_locked_period();',
-      'trg_' || v_tbl || '_lock_period',
-      v_tbl
-    );
+    IF to_regclass('public.' || v_tbl) IS NOT NULL THEN
+      EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I;', 'trg_' || v_tbl || '_lock_period', v_tbl);
+      EXECUTE format(
+        'CREATE TRIGGER %I BEFORE INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.fn_block_mutation_on_locked_period();',
+        'trg_' || v_tbl || '_lock_period',
+        v_tbl
+      );
+    END IF;
   END LOOP;
 END $$;
 
@@ -405,11 +411,16 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_public_event_resources_lock_period ON public.public_event_resources;
-CREATE TRIGGER trg_public_event_resources_lock_period
-  BEFORE INSERT OR UPDATE OR DELETE ON public.public_event_resources
-  FOR EACH ROW
-  EXECUTE FUNCTION public.fn_block_event_child_on_locked_period();
+DO $$
+BEGIN
+  IF to_regclass('public.public_event_resources') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_public_event_resources_lock_period ON public.public_event_resources;
+    CREATE TRIGGER trg_public_event_resources_lock_period
+      BEFORE INSERT OR UPDATE OR DELETE ON public.public_event_resources
+      FOR EACH ROW
+      EXECUTE FUNCTION public.fn_block_event_child_on_locked_period();
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.fn_block_twibbon_child_on_locked_period()
 RETURNS TRIGGER
@@ -428,17 +439,24 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_twibbon_assets_lock_period ON public.twibbon_assets;
-CREATE TRIGGER trg_twibbon_assets_lock_period
-  BEFORE INSERT OR UPDATE OR DELETE ON public.twibbon_assets
-  FOR EACH ROW
-  EXECUTE FUNCTION public.fn_block_twibbon_child_on_locked_period();
+DO $$
+BEGIN
+  IF to_regclass('public.twibbon_assets') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_twibbon_assets_lock_period ON public.twibbon_assets;
+    CREATE TRIGGER trg_twibbon_assets_lock_period
+      BEFORE INSERT OR UPDATE OR DELETE ON public.twibbon_assets
+      FOR EACH ROW
+      EXECUTE FUNCTION public.fn_block_twibbon_child_on_locked_period();
+  END IF;
 
-DROP TRIGGER IF EXISTS trg_twibbon_revisions_lock_period ON public.twibbon_revisions;
-CREATE TRIGGER trg_twibbon_revisions_lock_period
-  BEFORE INSERT OR UPDATE OR DELETE ON public.twibbon_revisions
-  FOR EACH ROW
-  EXECUTE FUNCTION public.fn_block_twibbon_child_on_locked_period();
+  IF to_regclass('public.twibbon_revisions') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_twibbon_revisions_lock_period ON public.twibbon_revisions;
+    CREATE TRIGGER trg_twibbon_revisions_lock_period
+      BEFORE INSERT OR UPDATE OR DELETE ON public.twibbon_revisions
+      FOR EACH ROW
+      EXECUTE FUNCTION public.fn_block_twibbon_child_on_locked_period();
+  END IF;
+END $$;
 
 -- 10. RPC Atomik Pergantian & Penguncian Periode (Ketua atau Sekretaris)
 CREATE OR REPLACE FUNCTION public.fn_transition_active_period(
@@ -506,8 +524,10 @@ BEGIN
     RAISE EXCEPTION 'Tidak ditemukan periode aktif untuk ditutup.';
   END IF;
 
-  SELECT value INTO v_visi FROM public.website_settings WHERE setting_key = 'visi_misi' LIMIT 1;
-  SELECT value INTO v_struktur FROM public.website_settings WHERE setting_key = 'struktur_pimpinan' LIMIT 1;
+  IF to_regclass('public.website_settings') IS NOT NULL THEN
+    SELECT setting_value INTO v_visi FROM public.website_settings WHERE setting_key = 'visi_misi' LIMIT 1;
+    SELECT setting_value INTO v_struktur FROM public.website_settings WHERE setting_key = 'struktur_pimpinan' LIMIT 1;
+  END IF;
 
   -- Kunci periode lama secara permanen + simpan snapshot visi_misi & struktur
   UPDATE public.periods
@@ -552,27 +572,33 @@ BEGIN
   )
   RETURNING * INTO v_new_period;
 
-  -- Sinkronisasi website_settings untuk struktur pimpinan jika tidak dibawa ke periode baru
-  IF NOT p_carry_over_struktur THEN
-    INSERT INTO public.website_settings (setting_key, value)
-    VALUES ('struktur_pimpinan', '[]'::jsonb)
-    ON CONFLICT (setting_key) DO UPDATE SET value = '[]'::jsonb;
+  -- Sinkronisasi website_settings jika struktur pimpinan tidak dibawa (kosongkan ketuaList secara aman)
+  IF NOT p_carry_over_struktur AND to_regclass('public.website_settings') IS NOT NULL THEN
+    IF v_struktur IS NOT NULL AND jsonb_typeof(v_struktur) = 'object' THEN
+      UPDATE public.website_settings
+      SET
+        setting_value = jsonb_set(v_struktur, '{ketuaList}', '[]'::jsonb, true),
+        updated_at = timezone('utc', now())
+      WHERE setting_key = 'struktur_pimpinan';
+    END IF;
   END IF;
 
   -- Carry-over data pilihan ke periode baru tanpa mengubah data periode lama
-  IF p_carry_over_members THEN
+  IF p_carry_over_members AND to_regclass('public.members') IS NOT NULL THEN
     INSERT INTO public.members (
-      name, nim, division, role, status, status_note, status_updated_at, phone, period_id
+      name, nim, faculty, study_program, generation, phone, division, status, status_note, status_updated_at, period_id
     )
     SELECT
       m.name,
       m.nim,
+      m.faculty,
+      m.study_program,
+      m.generation,
+      m.phone,
       m.division,
-      m.role,
       m.status,
       NULL,
       NULL,
-      m.phone,
       v_new_period.id
     FROM public.members m
     WHERE m.period_id = v_old_period.id
@@ -581,7 +607,7 @@ BEGIN
     GET DIAGNOSTICS v_members_copied = ROW_COUNT;
   END IF;
 
-  IF p_carry_over_hero THEN
+  IF p_carry_over_hero AND to_regclass('public.hero_slides') IS NOT NULL THEN
     INSERT INTO public.hero_slides (
       badge, title, description, image_url,
       cta_primary_label, cta_primary_href,
