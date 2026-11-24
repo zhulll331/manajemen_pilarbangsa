@@ -4,6 +4,8 @@ import {
   createTwibbonErrorResponse,
   requireTwibbonAdmin,
 } from '@/lib/twibbon/server-service';
+import { requireWritablePeriod } from '@/lib/periods/server';
+import { isPeriodLockedError } from '@/lib/periods/utils';
 import {
   DEFAULT_DIKLAT_CAPTION_PERSONAL,
   DEFAULT_DIKLAT_CAPTION_UMUM,
@@ -13,6 +15,12 @@ import { validateAdminCampaignFields } from '@/lib/twibbon/validation';
 export async function POST(request: NextRequest) {
   try {
     const { supabase, user } = await requireTwibbonAdmin();
+    const writablePeriod = await requireWritablePeriod().catch((err) => {
+      if (isPeriodLockedError(err)) {
+        throw new TwibbonHttpError(403, 'FORBIDDEN', err.message);
+      }
+      throw err;
+    });
     const body = await request.json().catch(() => ({}));
 
     const title = String(body.title || '').trim();
@@ -62,6 +70,9 @@ export async function POST(request: NextRequest) {
         edit_version: 1,
         created_by: user.id,
         updated_by: user.id,
+        ...(writablePeriod.schemaReady && writablePeriod.periodId
+          ? { period_id: writablePeriod.periodId }
+          : {}),
       })
       .select('*')
       .single();

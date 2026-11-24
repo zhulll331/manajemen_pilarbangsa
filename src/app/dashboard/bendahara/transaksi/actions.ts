@@ -3,16 +3,19 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { requireAuthUser } from '@/utils/auth-guard'
+import { requireWritablePeriod } from '@/lib/periods/server'
+import { formatPeriodErrorMessage } from '@/lib/periods/utils'
 
 export async function tambahTransaksi(formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   const folder_id = formData.get('folder_id') as string || null;
+  const periodPatch = schemaReady && periodId ? { period_id: periodId } : {};
 
   const amount = Number(formData.get('amount'));
   if (amount <= 0) throw new Error("Nominal transaksi harus lebih dari 0");
 
-  const payloadAll = {
+  const payloadAll: Record<string, unknown> = {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
@@ -21,10 +24,10 @@ export async function tambahTransaksi(formData: FormData) {
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
     folder_id,
-    program_id: formData.get('program_id') || null
+    program_id: formData.get('program_id') || null,
   };
 
-  const payloadFallback = {
+  const payloadFallback: Record<string, unknown> = {
     transaction_date: formData.get('transaction_date'),
     type: formData.get('type'),
     category: formData.get('category'),
@@ -32,8 +35,13 @@ export async function tambahTransaksi(formData: FormData) {
     description: formData.get('description'),
     responsible_person: formData.get('responsible_person'),
     proof_url: formData.get('proof_url'),
-    program_id: formData.get('program_id') || null
+    program_id: formData.get('program_id') || null,
   };
+
+  if (schemaReady && periodId) {
+    payloadAll.period_id = periodId;
+    payloadFallback.period_id = periodId;
+  }
 
   let { data, error } = await supabase.from('finance_transactions').insert(payloadAll).select('id').single()
   if (error && error.message.includes('folder_id')) {
@@ -42,13 +50,14 @@ export async function tambahTransaksi(formData: FormData) {
     data = fallbackData
   }
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
   return { id: data?.id }
 }
 export async function tambahTransaksiMassal(transactionsData: any[]) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
+  const periodPatch = schemaReady && periodId ? { period_id: periodId } : {};
   
   // Format data for insertion
   const payload = transactionsData.map(data => ({
@@ -60,7 +69,8 @@ export async function tambahTransaksiMassal(transactionsData: any[]) {
     responsible_person: data.responsible_person,
     proof_url: data.proof_url,
     folder_id: data.folder_id || null,
-    program_id: data.program_id || null
+    program_id: data.program_id || null,
+    ...periodPatch,
   }));
 
   // Coba insert langsung dengan folder_id.
@@ -77,13 +87,13 @@ export async function tambahTransaksiMassal(transactionsData: any[]) {
     data = fallbackData
   }
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
   return { data }
 }
 
 export async function editTransaksi(id: string, formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   const folder_id = formData.get('folder_id') as string || null;
 
@@ -113,23 +123,29 @@ export async function editTransaksi(id: string, formData: FormData) {
     program_id: formData.get('program_id') || null
   };
 
-  let { error } = await supabase.from('finance_transactions').update(payloadAll).eq('id', id)
+  let q1 = supabase.from('finance_transactions').update(payloadAll).eq('id', id);
+  if (schemaReady && periodId) q1 = q1.eq('period_id', periodId);
+  let { error } = await q1;
   if (error && error.message.includes('folder_id')) {
-    const { error: fallbackError } = await supabase.from('finance_transactions').update(payloadFallback).eq('id', id)
+    let q2 = supabase.from('finance_transactions').update(payloadFallback).eq('id', id);
+    if (schemaReady && periodId) q2 = q2.eq('period_id', periodId);
+    const { error: fallbackError } = await q2;
     error = fallbackError
   }
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusTransaksi(id: string) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
-  const { error } = await supabase.from('finance_transactions').delete().eq('id', id)
+  let query = supabase.from('finance_transactions').delete().eq('id', id);
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 

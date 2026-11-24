@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { requireAuthUser } from '@/utils/auth-guard'
+import { requireWritablePeriod } from '@/lib/periods/server'
+import { formatPeriodErrorMessage } from '@/lib/periods/utils'
 
 export async function tambahNotulensi(formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const { error } = await supabase.from('minutes').insert({
@@ -16,9 +18,10 @@ export async function tambahNotulensi(formData: FormData) {
     decisions: formData.get('decisions') as string,
     follow_up: formData.get('follow_up') as string,
     file_url: formData.get('file_url') as string || null,
+    ...(schemaReady && periodId ? { period_id: periodId } : {}),
   })
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
@@ -27,12 +30,16 @@ export async function tambahNotulensiDanOtomasi(
   agendaData: { title: string, category: string, date: string } | null,
   presensiData: { member_id: string, name: string, status: string }[] | null
 ) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
+  const periodPatch = schemaReady && periodId ? { period_id: periodId } : {};
 
   // 1. Tambah Notulensi
-  const { data: insertedMinute, error: minuteError } = await supabase.from('minutes').insert(notulensiData).select().single();
-  if (minuteError) throw new Error("Gagal menyimpan Notulensi: " + minuteError.message);
+  const { error: minuteError } = await supabase.from('minutes').insert({
+    ...notulensiData,
+    ...periodPatch,
+  }).select().single();
+  if (minuteError) throw new Error("Gagal menyimpan Notulensi: " + formatPeriodErrorMessage(minuteError, minuteError.message));
 
   // 2. Jika ada Agenda, tambahkan Agenda
   let newAgendaId = null;
@@ -41,7 +48,8 @@ export async function tambahNotulensiDanOtomasi(
       title: agendaData.title,
       category: agendaData.category || 'Lainnya',
       date: agendaData.date || null,
-      description: "Dibuat otomatis dari Notulensi: " + notulensiData.title
+      description: "Dibuat otomatis dari Notulensi: " + notulensiData.title,
+      ...periodPatch,
     }).select().single();
 
     if (!agendaError && insertedAgenda) {
@@ -54,7 +62,8 @@ export async function tambahNotulensiDanOtomasi(
     const recordsToInsert = presensiData.map(p => ({
       agenda_id: newAgendaId,
       member_id: p.member_id,
-      status: p.status || 'Hadir'
+      status: p.status || 'Hadir',
+      ...periodPatch,
     }));
 
     await supabase.from('attendance').insert(recordsToInsert);
@@ -64,11 +73,11 @@ export async function tambahNotulensiDanOtomasi(
 }
 
 export async function editNotulensi(formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   const id = formData.get('id') as string
 
-  const { error } = await supabase.from('minutes').update({
+  let query = supabase.from('minutes').update({
     title: formData.get('title') as string,
     meeting_date: formData.get('meeting_date') as string || null,
     participants: formData.get('participants') as string,
@@ -76,17 +85,22 @@ export async function editNotulensi(formData: FormData) {
     decisions: formData.get('decisions') as string,
     follow_up: formData.get('follow_up') as string,
     file_url: formData.get('file_url') as string || null,
-  }).eq('id', id)
+  }).eq('id', id);
 
-  if (error) throw new Error(error.message)
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusNotulensi(id: string) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
-  const { error } = await supabase.from('minutes').delete().eq('id', id)
-  if (error) throw new Error(error.message)
+  let query = supabase.from('minutes').delete().eq('id', id);
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 

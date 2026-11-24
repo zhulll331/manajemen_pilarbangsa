@@ -13,7 +13,15 @@ type NewsLink = {
   created_at: string;
 };
 
-export default function BeritaClient({ initialData }: { initialData: NewsLink[] }) {
+export default function BeritaClient({
+  initialData,
+  periodId = null,
+  isLocked = false,
+}: {
+  initialData: NewsLink[];
+  periodId?: string | null;
+  isLocked?: boolean;
+}) {
   const [data, setData] = useState<NewsLink[]>(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +37,7 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
   const router = useRouter();
 
   const handleOpenModal = (news?: NewsLink) => {
+    if (isLocked) return;
     if (news) {
       setEditingId(news.id);
       setFormData({
@@ -45,6 +54,7 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLocked) return;
     setIsLoading(true);
 
     try {
@@ -56,28 +66,33 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
         
         if (error) throw error;
       } else {
+        const payload = periodId ? { ...formData, period_id: periodId } : formData;
         const { error } = await supabase
           .from("news_links")
-          .insert([formData]);
+          .insert([payload]);
         
         if (error) throw error;
       }
 
       setIsModalOpen(false);
       router.refresh();
-      // Optimistic update
-      const { data: newData } = await supabase.from("news_links").select("*").order('created_at', { ascending: false });
+      let reloadQuery = supabase.from("news_links").select("*").order('created_at', { ascending: false });
+      if (periodId) {
+        reloadQuery = reloadQuery.eq("period_id", periodId);
+      }
+      const { data: newData } = await reloadQuery;
       if (newData) setData(newData);
 
     } catch (error) {
       console.error("Error saving news:", error);
-      alert("Gagal menyimpan berita.");
+      alert("Gagal menyimpan berita. Pastikan periode aktif tidak terkunci.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    if (isLocked) return;
     if (!confirm("Hapus tautan berita ini?")) return;
     
     try {
@@ -94,15 +109,17 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <button
-          onClick={() => handleOpenModal()}
-          className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-[#c1142e] transition-colors shadow-md"
-        >
-          <Plus size={20} />
-          <span>Tambah Berita</span>
-        </button>
-      </div>
+      {!isLocked && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => handleOpenModal()}
+            className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-[#c1142e] transition-colors shadow-md"
+          >
+            <Plus size={20} />
+            <span>Tambah Berita</span>
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {data.map((news) => (
@@ -117,20 +134,22 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
                 <span>{news.url}</span>
               </a>
               
-              <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end gap-2">
-                <button 
-                  onClick={() => handleOpenModal(news)}
-                  className="p-2 text-gray-500 hover:bg-gray-100 hover:text-[var(--color-primary)] rounded-lg transition-colors"
-                >
-                  <Edit2 size={18} />
-                </button>
-                <button 
-                  onClick={() => handleDelete(news.id)}
-                  className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+              {!isLocked && (
+                <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end gap-2">
+                  <button 
+                    onClick={() => handleOpenModal(news)}
+                    className="p-2 text-gray-500 hover:bg-gray-100 hover:text-[var(--color-primary)] rounded-lg transition-colors"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(news.id)}
+                    className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -138,7 +157,7 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
         {data.length === 0 && (
           <div className="col-span-full p-12 text-center bg-gray-50 rounded-2xl border border-gray-200 border-dashed">
             <NewspaperIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Belum ada berita. Klik "Tambah Berita" untuk mulai.</p>
+            <p className="text-gray-500">Belum ada berita. Klik &quot;Tambah Berita&quot; untuk mulai.</p>
           </div>
         )}
       </div>
@@ -191,7 +210,7 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
                   value={formData.image_url}
                   onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                 />
-                <p className="text-xs text-gray-500 mt-1">Masukkan link gambar (bisa didapatkan dengan klik kanan gambar di web sumber, lalu 'Copy Image Address').</p>
+                <p className="text-xs text-gray-500 mt-1">Masukkan link gambar (bisa didapatkan dengan klik kanan gambar di web sumber, lalu &apos;Copy Image Address&apos;).</p>
               </div>
 
               {formData.image_url && (
@@ -225,7 +244,7 @@ export default function BeritaClient({ initialData }: { initialData: NewsLink[] 
   );
 }
 
-function NewspaperIcon(props: any) {
+function NewspaperIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

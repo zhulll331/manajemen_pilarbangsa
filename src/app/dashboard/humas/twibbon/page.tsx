@@ -1,5 +1,7 @@
 import React from 'react';
 import { createClient } from '@/utils/supabase/server';
+import { getSelectedPeriodForDashboard } from '@/lib/periods/server';
+import { isSchemaMissingError } from '@/lib/periods/utils';
 import KelolaTwibbonClient from './KelolaTwibbonClient';
 import type { TwibbonCampaignRow } from '@/types/twibbon';
 import type { PublicEvent } from '@/types/events';
@@ -8,17 +10,30 @@ export const dynamic = 'force-dynamic';
 
 export default async function KelolaTwibbonPage() {
   const supabase = await createClient();
+  const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
 
-  const [campaignsRes, eventsRes] = await Promise.all([
-    supabase
-      .from('twibbon_campaigns')
-      .select('*')
-      .order('updated_at', { ascending: false }),
-    supabase
-      .from('public_events')
-      .select('*')
-      .order('created_at', { ascending: false }),
-  ]);
+  let qCampaigns = supabase
+    .from('twibbon_campaigns')
+    .select('*')
+    .order('updated_at', { ascending: false });
+  let qEvents = supabase
+    .from('public_events')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (schemaReady) {
+    qCampaigns = qCampaigns.eq('period_id', selectedPeriod.id);
+    qEvents = qEvents.eq('period_id', selectedPeriod.id);
+  }
+
+  let [campaignsRes, eventsRes] = await Promise.all([qCampaigns, qEvents]);
+
+  if (schemaReady && isSchemaMissingError(campaignsRes.error)) {
+    [campaignsRes, eventsRes] = await Promise.all([
+      supabase.from('twibbon_campaigns').select('*').order('updated_at', { ascending: false }),
+      supabase.from('public_events').select('*').order('created_at', { ascending: false }),
+    ]);
+  }
 
   const dbSchemaMissing =
     Boolean(campaignsRes.error) &&

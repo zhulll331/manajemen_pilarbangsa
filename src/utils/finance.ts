@@ -21,8 +21,6 @@ export const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * Menghitung tahun mulai dari periode kepengurusan aktif saat ini.
- * Jika bulan berjalan >= Juli, maka periode dimulai tahun ini (misal Juli 2026 -> Periode 2026/2027).
- * Jika bulan berjalan < Juli, maka periode dimulai tahun lalu (misal Maret 2026 -> Periode 2025/2026).
  */
 export function getActivePeriodStartYear(): number {
   const currentMonth = new Date().getMonth() + 1;
@@ -35,7 +33,7 @@ export function getActivePeriodStartYear(): number {
  */
 export function generatePeriodOptions(): number[] {
   const activeStartYear = getActivePeriodStartYear();
-  const endYear = activeStartYear + 1; // +1 tahun ke depan untuk persiapan
+  const endYear = activeStartYear + 1;
   const years: number[] = [];
   for (let y = BASE_START_YEAR; y <= endYear; y++) {
     years.push(y);
@@ -68,83 +66,141 @@ export function getPeriodMonths(startYear: number) {
   return months;
 }
 
+export interface FinanceMemberRow {
+  id: string;
+  name: string;
+  status?: string | null;
+}
+
+export interface FinanceDueRow {
+  member_id?: string | null;
+  month?: number;
+  year?: number;
+  amount?: number | null;
+  status?: string | null;
+  payment_date?: string | null;
+}
+
+export interface FinanceTransactionRow {
+  type?: string | null;
+  amount?: number | null;
+  transaction_date?: string | null;
+}
+
+export interface DuesMatrixCell {
+  status: "Lunas" | "Belum Lunas";
+  amount?: number;
+}
+
+export interface DuesMatrixRow {
+  id: string;
+  member_id: string;
+  member: string;
+  memberStatus: string;
+  transactions: FinanceDueRow[];
+  totalTerkumpul: number;
+  tunggakan: number;
+  cells: Record<string, DuesMatrixCell>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [periodKey: string]: any;
+}
+
 /**
  * Memformat data matriks pembayaran iuran anggota per periode.
+ * Anggota berstatus Diberhentikan/Alumni/Cuti tetap tampil bila punya riwayat bayar,
+ * namun tidak lagi dihitung sebagai penunggak iuran baru.
  */
-export function formatMatrixData(dues: any[] = [], members: any[] = [], startYear: number) {
+export function formatMatrixData(
+  dues: FinanceDueRow[] = [],
+  members: FinanceMemberRow[] = [],
+  startYear: number
+): DuesMatrixRow[] {
   const periodMonths = getPeriodMonths(startYear);
 
   const filteredDues = dues.filter(d => {
     return periodMonths.some(pm => pm.month === d.month && pm.year === d.year);
   });
 
-  return members
-    .map(member => {
-      const memberDues = filteredDues.filter(d => d.member_id === member.id);
+  const rows: DuesMatrixRow[] = [];
 
-      const isActive = member.status === "Aktif" || member.status === "Pengurus Aktif" || !member.status;
-      const hasTransactionsInPeriod = memberDues.length > 0;
+  for (const member of members) {
+    const memberDues = filteredDues.filter(d => d.member_id === member.id);
+    const status = member.status || "Aktif";
+    const isActiveMember = status === "Aktif" || status === "Pengurus Aktif";
+    const hasTransactionsInPeriod = memberDues.length > 0;
 
-      if (!isActive && !hasTransactionsInPeriod) {
-        return null;
-      }
+    if (!isActiveMember && !hasTransactionsInPeriod) {
+      continue;
+    }
 
-      const matrixRow: any = {
-        id: member.id,
-        member_id: member.id,
-        member: member.name,
-        transactions: memberDues,
-        totalTerkumpul: 0,
-        tunggakan: 0,
-      };
+    const matrixRow: DuesMatrixRow = {
+      id: member.id,
+      member_id: member.id,
+      member: member.name,
+      memberStatus: status,
+      transactions: memberDues,
+      totalTerkumpul: 0,
+      tunggakan: 0,
+      cells: {},
+    };
 
-      const currentRealMonth = new Date().getMonth() + 1;
-      const currentRealYear = new Date().getFullYear();
+    const currentRealMonth = new Date().getMonth() + 1;
+    const currentRealYear = new Date().getFullYear();
 
-      for (const pm of periodMonths) {
-        const payment = memberDues.find(
-          d => d.month === pm.month && d.year === pm.year && d.status === "Lunas"
-        );
+    for (const pm of periodMonths) {
+      const payment = memberDues.find(
+        d => d.month === pm.month && d.year === pm.year && d.status === "Lunas"
+      );
 
-        // Tunggakan dihitung jika bulan target berada di masa lalu atau bulan berjalan saat ini
-        const isPastOrCurrent =
-          pm.year < currentRealYear || (pm.year === currentRealYear && pm.month <= currentRealMonth);
+      const isPastOrCurrent =
+        pm.year < currentRealYear || (pm.year === currentRealYear && pm.month <= currentRealMonth);
 
-        if (payment) {
-          matrixRow[pm.key] = { status: "Lunas", amount: payment.amount };
-          matrixRow.totalTerkumpul += payment.amount || 0;
-        } else {
-          matrixRow[pm.key] = { status: "Belum Lunas" };
-          if (isPastOrCurrent) {
-            matrixRow.tunggakan += 1;
-          }
+      if (payment) {
+        const cell: DuesMatrixCell = { status: "Lunas", amount: payment.amount || 0 };
+        matrixRow[pm.key] = cell;
+        matrixRow.cells[pm.key] = cell;
+        matrixRow.totalTerkumpul += Number(payment.amount) || 0;
+      } else {
+        const cell: DuesMatrixCell = { status: "Belum Lunas" };
+        matrixRow[pm.key] = cell;
+        matrixRow.cells[pm.key] = cell;
+        if (isPastOrCurrent && isActiveMember) {
+          matrixRow.tunggakan += 1;
         }
       }
+    }
 
-      return matrixRow;
-    })
-    .filter(Boolean);
+    rows.push(matrixRow);
+  }
+
+  return rows;
 }
 
 /**
  * Menghitung jumlah anggota yang memiliki tunggakan / belum lunas iuran pada periode aktif.
  */
-export function calculateUnpaidMembersCount(members: any[] = [], dues: any[] = [], startYear?: number): number {
+export function calculateUnpaidMembersCount(
+  members: FinanceMemberRow[] = [],
+  dues: FinanceDueRow[] = [],
+  startYear?: number
+): number {
   const activeYear = startYear ?? getActivePeriodStartYear();
   const matrixData = formatMatrixData(dues, members, activeYear);
-  return matrixData.filter((row: any) => row.tunggakan > 0).length;
+  return matrixData.filter(row => row.tunggakan > 0).length;
 }
 
 /**
  * Menghitung total transaksi dan saldo kas.
  */
-export function aggregateFinancialData(transactions: any[] = [], dues: any[] = []) {
+export function aggregateFinancialData(
+  transactions: FinanceTransactionRow[] = [],
+  dues: FinanceDueRow[] = []
+) {
   let totalPemasukan = 0;
   let totalPengeluaran = 0;
 
   const monthlyMap: Record<string, { pemasukan: number; pengeluaran: number; year: number; month: string }> = {};
 
-  // 1. Process Finance Transactions
   transactions.forEach((t) => {
     const amount = Number(t.amount) || 0;
     if (t.type === "Pemasukan") totalPemasukan += amount;
@@ -164,7 +220,6 @@ export function aggregateFinancialData(transactions: any[] = [], dues: any[] = [
     }
   });
 
-  // 2. Process Paid Dues
   dues.forEach((d) => {
     if (d.status === "Lunas" && d.payment_date) {
       const amount = Number(d.amount) || 0;
@@ -186,7 +241,7 @@ export function aggregateFinancialData(transactions: any[] = [], dues: any[] = [
 
   const monthlyData = Object.entries(monthlyMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([_, val]) => val);
+    .map(([, val]) => val);
 
   return { totalPemasukan, totalPengeluaran, saldoKas, monthlyData };
 }

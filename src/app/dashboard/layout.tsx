@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { DashboardLayoutClient } from "@/components/DashboardLayoutClient";
+import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 import "./dashboard.css";
 
 export default async function DashboardLayout({
@@ -16,10 +17,11 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Jalankan verifikasi user dan pengambilan profile secara paralel
-  const [userResult, profileResult] = await Promise.all([
+  // Jalankan verifikasi user, pengambilan profile, dan periode secara paralel
+  const [userResult, profileResult, periodState] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+    getSelectedPeriodForDashboard(),
   ]);
 
   const user = userResult.data.user;
@@ -55,6 +57,11 @@ export default async function DashboardLayout({
     <DashboardLayoutClient 
       role={userRole} 
       name={profile?.full_name || user.email}
+      periods={periodState.periods}
+      selectedPeriod={periodState.selectedPeriod}
+      activePeriod={periodState.activePeriod}
+      isLocked={periodState.isLocked}
+      schemaReady={periodState.schemaReady}
     >
       {children}
     </DashboardLayoutClient>

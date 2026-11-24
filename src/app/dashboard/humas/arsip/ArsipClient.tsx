@@ -20,7 +20,21 @@ type Program = {
   title: string;
 };
 
-export default function ArsipClient({ initialArchives, programs }: { initialArchives: Archive[], programs: Program[] }) {
+export default function ArsipClient({
+  initialArchives,
+  programs,
+  periodId = null,
+  activePeriodCode = "2026/2027",
+  periodOptions,
+  isLocked = false,
+}: {
+  initialArchives: Archive[];
+  programs: Program[];
+  periodId?: string | null;
+  activePeriodCode?: string;
+  periodOptions?: string[];
+  isLocked?: boolean;
+}) {
   const [archives, setArchives] = useState<Archive[]>(initialArchives);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,6 +62,7 @@ export default function ArsipClient({ initialArchives, programs }: { initialArch
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLocked) return;
     setLoading(true);
 
     try {
@@ -75,7 +90,8 @@ export default function ArsipClient({ initialArchives, programs }: { initialArch
         } : a));
       } else {
         // Create — get the inserted row id without join
-        const { data, error } = await supabase.from("archives").insert([payload]).select().single();
+        const insertPayload = periodId ? { ...payload, period_id: periodId } : payload;
+        const { data, error } = await supabase.from("archives").insert([insertPayload]).select().single();
         if (error) throw error;
         if (data) {
           const newArchive: Archive = {
@@ -87,9 +103,9 @@ export default function ArsipClient({ initialArchives, programs }: { initialArch
       }
       
       setIsModalOpen(false);
-      setFormData({ id: "", title: "", period: "2022/2023", category: "Humas & Kerjasama", program_id: "", drive_url: "" });
-    } catch (err: any) {
-      alert("Terjadi kesalahan: " + err.message);
+      setFormData({ id: "", title: "", period: activePeriodCode, category: "Humas & Kerjasama", program_id: "", drive_url: "" });
+    } catch (err: unknown) {
+      alert("Terjadi kesalahan: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
@@ -97,14 +113,15 @@ export default function ArsipClient({ initialArchives, programs }: { initialArch
 
 
   const handleDelete = async (id: string) => {
+    if (isLocked) return;
     if (!confirm("Apakah Anda yakin ingin menghapus arsip ini?")) return;
     
     try {
       const { error } = await supabase.from("archives").delete().eq("id", id);
       if (error) throw error;
       setArchives(archives.filter(a => a.id !== id));
-    } catch (err: any) {
-      alert("Gagal menghapus: " + err.message);
+    } catch (err: unknown) {
+      alert("Gagal menghapus: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -127,31 +144,37 @@ export default function ArsipClient({ initialArchives, programs }: { initialArch
     "Pengabdian & Advokasi"
   ];
 
-  const PERIODS = [
-    "2022/2023",
-    "2023/2024",
-    "2024/2025",
-    "2025/2026",
-    "2026/2027"
-  ];
+  const PERIODS = periodOptions && periodOptions.length > 0
+    ? periodOptions
+    : [
+      "2022/2023",
+      "2023/2024",
+      "2024/2025",
+      "2025/2026",
+      "2026/2027"
+    ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Kelola Arsip Publik</h1>
-          <p className="text-sm text-gray-500">Kelola tautan Google Drive arsip UKM untuk ditampilkan ke publik.</p>
+          <p className="text-sm text-gray-500">
+            Kelola tautan Google Drive arsip UKM untuk ditampilkan ke publik (Periode {activePeriodCode}).
+          </p>
         </div>
-        <button 
-          onClick={() => {
-            setFormData({ id: "", title: "", period: "2022/2023", category: "Humas & Kerjasama", program_id: "", drive_url: "" });
-            setIsModalOpen(true);
-          }}
-          className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
-          Tambah Arsip
-        </button>
+        {!isLocked && (
+          <button 
+            onClick={() => {
+              setFormData({ id: "", title: "", period: activePeriodCode, category: "Humas & Kerjasama", program_id: "", drive_url: "" });
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={20} />
+            Tambah Arsip
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">

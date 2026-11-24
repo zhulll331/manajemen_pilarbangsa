@@ -109,11 +109,30 @@ export async function getDynamicKnowledge(
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        // Cari periode aktif (graceful fallback bila SQL tahap 20 belum dijalankan)
+        const { data: activePeriod, error: periodError } = await supabase
+          .from("periods")
+          .select("id, code")
+          .eq("status", "active")
+          .maybeSingle();
+
+        const activePeriodId =
+          !periodError && activePeriod?.id ? String(activePeriod.id) : null;
+        const periodHeadingSuffix =
+          !periodError && activePeriod?.code ? ` (PERIODE ${activePeriod.code})` : "";
+
         // 1. Data Pengurus Aktif (Format Ringkas & Hemat Token)
-        const { data: members, error: membersError } = await supabase
+        let membersQuery = supabase
           .from("members")
           .select("name, division, status, faculty, study_program")
+          .neq("status", "Diberhentikan")
           .order("created_at", { ascending: true });
+
+        if (activePeriodId) {
+          membersQuery = membersQuery.eq("period_id", activePeriodId);
+        }
+
+        const { data: members, error: membersError } = await membersQuery;
 
         if (!membersError && members && members.length > 0) {
           const activeOfficers = members.filter(
@@ -123,7 +142,7 @@ export async function getDynamicKnowledge(
           );
 
           if (activeOfficers.length > 0) {
-            let structText = `## STRUKTUR DAN DAFTAR PENGURUS AKTIF (SUMBER: SEKRETARIAT):\n`;
+            let structText = `## STRUKTUR DAN DAFTAR PENGURUS AKTIF${periodHeadingSuffix} (SUMBER: SEKRETARIAT):\n`;
             activeOfficers.forEach((m) => {
               const div = m.division?.trim() || "Pengurus";
               const extra = [m.faculty, m.study_program].filter(Boolean).join(" - ");
@@ -133,14 +152,20 @@ export async function getDynamicKnowledge(
           }
         }
 
-        // 2. Data Program Kerja
-        const { data: programs, error: programsError } = await supabase
+        // 2. Data Program Kerja Periode Aktif
+        let programsQuery = supabase
           .from("programs")
           .select("title, description, division, status")
-          .limit(10);
+          .limit(12);
+
+        if (activePeriodId) {
+          programsQuery = programsQuery.eq("period_id", activePeriodId);
+        }
+
+        const { data: programs, error: programsError } = await programsQuery;
 
         if (!programsError && programs && programs.length > 0) {
-          let progText = `## DAFTAR PROGRAM KERJA UTAMA:\n`;
+          let progText = `## DAFTAR PROGRAM KERJA UTAMA${periodHeadingSuffix}:\n`;
           programs.forEach((p) => {
             progText += `- **${p.title}** (${p.division || "-"}, ${p.status || "Aktif"})${
               p.description ? `: ${p.description.slice(0, 100)}` : ""

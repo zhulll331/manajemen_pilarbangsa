@@ -11,6 +11,7 @@ import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 interface RawProgramRow {
   id: string;
+  period_id?: string | null;
   title?: string | null;
   description?: string | null;
   division?: string | null;
@@ -23,6 +24,15 @@ interface RawProgramRow {
   gallery_drive_url?: string | null;
   link_folder_drive?: string | null;
 }
+
+interface PublicPeriodOption {
+  id: string;
+  code: string;
+  name: string;
+  status: string;
+}
+
+type ProgramWorkWithPeriod = ProgramWork & { periodId?: string | null };
 
 const divisions = [
   'Semua Divisi',
@@ -37,8 +47,10 @@ const statuses = ['Semua Status', 'Belum Mulai', 'Sedang Berjalan', 'Selesai'];
 export default function ProgramKerjaPage() {
   const [selectedDivision, setSelectedDivision] = useState('Semua Divisi');
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string>('ALL');
+  const [periodOptions, setPeriodOptions] = useState<PublicPeriodOption[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [programs, setPrograms] = useState<ProgramWork[]>([]);
+  const [programs, setPrograms] = useState<ProgramWorkWithPeriod[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,15 +58,36 @@ export default function ProgramKerjaPage() {
     async function fetchDatabasePrograms() {
       setLoading(true);
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from('programs')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [programsRes, periodsRes] = await Promise.all([
+        supabase
+          .from('programs')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('periods')
+          .select('id, code, name, status, start_year')
+          .order('start_year', { ascending: false }),
+      ]);
 
       if (cancelled) return;
 
+      if (!periodsRes.error && Array.isArray(periodsRes.data) && periodsRes.data.length > 0) {
+        const opts = (periodsRes.data as Array<PublicPeriodOption>).map((p) => ({
+          id: p.id,
+          code: p.code,
+          name: p.name,
+          status: p.status,
+        }));
+        setPeriodOptions(opts);
+        const active = opts.find((p) => p.status === 'active');
+        if (active) {
+          setSelectedPeriodId(active.id);
+        }
+      }
+
+      const { data, error } = programsRes;
       if (!error && Array.isArray(data) && data.length > 0) {
-        const livePrograms: ProgramWork[] = (data as RawProgramRow[]).map((p) => {
+        const livePrograms: ProgramWorkWithPeriod[] = (data as RawProgramRow[]).map((p) => {
           const desc = p.description || '';
           let cover = p.cover_image_url || p.link_foto_utama || '';
           let gallery = p.gallery_drive_url || p.link_folder_drive || '';
@@ -67,6 +100,7 @@ export default function ProgramKerjaPage() {
 
           return {
             id: p.id,
+            periodId: p.period_id ?? null,
             title: p.title || 'Program Kerja',
             division: p.division || p.division_name || 'Humas & Kerjasama',
             status: p.status || 'Belum Mulai',
@@ -90,6 +124,11 @@ export default function ProgramKerjaPage() {
   }, []);
 
   const filteredPrograms = programs.filter((program) => {
+    const matchPeriod =
+      selectedPeriodId === 'ALL' ||
+      !program.periodId ||
+      program.periodId === selectedPeriodId;
+
     const matchDivision =
       selectedDivision === 'Semua Divisi' ||
       (program.division && program.division.toLowerCase().includes(selectedDivision.toLowerCase()));
@@ -110,7 +149,7 @@ export default function ProgramKerjaPage() {
     const matchSearch =
       (program.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (program.division || '').toLowerCase().includes(searchQuery.toLowerCase());
-    return matchDivision && matchStatus && matchSearch;
+    return matchPeriod && matchDivision && matchStatus && matchSearch;
   });
 
   return (
@@ -146,6 +185,21 @@ export default function ProgramKerjaPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {periodOptions.length > 0 && (
+                  <select
+                    value={selectedPeriodId}
+                    onChange={(e) => setSelectedPeriodId(e.target.value)}
+                    aria-label="Filter periode kepengurusan"
+                    className="min-h-[38px] px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm font-semibold text-gray-800 outline-none focus:border-gray-900"
+                  >
+                    <option value="ALL">Semua Periode</option>
+                    {periodOptions.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        Periode {p.code} {p.status === 'active' ? '(Aktif)' : '(Arsip)'}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 {statuses.map((status) => (
                   <button
                     key={status}

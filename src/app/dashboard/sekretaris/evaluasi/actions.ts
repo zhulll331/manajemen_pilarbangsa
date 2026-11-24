@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { requireAuthUser } from '@/utils/auth-guard'
+import { requireWritablePeriod } from '@/lib/periods/server'
+import { formatPeriodErrorMessage } from '@/lib/periods/utils'
 
 export async function tambahEvaluasi(formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const programId = formData.get('program_id');
@@ -15,20 +17,21 @@ export async function tambahEvaluasi(formData: FormData) {
     title: formData.get('title'),
     strengths: formData.get('strengths'),
     weaknesses: formData.get('weaknesses'),
-    recommendations: formData.get('recommendations')
+    recommendations: formData.get('recommendations'),
+    ...(schemaReady && periodId ? { period_id: periodId } : {}),
   })
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function editEvaluasi(id: string, formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const programId = formData.get('program_id');
 
-  const { error } = await supabase.from('evaluations')
+  let query = supabase.from('evaluations')
     .update({
       program_id: programId === "" ? null : programId,
       title: formData.get('title'),
@@ -36,19 +39,24 @@ export async function editEvaluasi(id: string, formData: FormData) {
       weaknesses: formData.get('weaknesses'),
       recommendations: formData.get('recommendations')
     })
-    .eq('id', id)
+    .eq('id', id);
 
-  if (error) throw new Error(error.message)
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusEvaluasi(id: string) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
-  const { error } = await supabase.from('evaluations').delete().eq('id', id)
+  let query = supabase.from('evaluations').delete().eq('id', id);
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 

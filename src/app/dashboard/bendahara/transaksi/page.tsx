@@ -1,27 +1,40 @@
+import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 import { createClient } from "@/utils/supabase/server";
 import TransaksiClient from "./TransaksiClient";
 
 export default async function TransaksiPage() {
   const supabase = await createClient();
+  const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
+  const pid = schemaReady ? selectedPeriod.id : null;
 
-  const { data: transactions } = await supabase
+  let qTx = supabase
     .from("finance_transactions")
     .select("*, programs(title)")
     .order("transaction_date", { ascending: false })
     .order("created_at", { ascending: false });
 
-  const { data: programs } = await supabase
+  let qPrograms = supabase
     .from("programs")
     .select("id, title")
     .order("created_at", { ascending: false });
 
-  // Ambil iuran yang sudah lunas beserta nama anggota untuk ditampilkan sebagai baris virtual
-  // di tabel transaksi — agar tidak terjadi double-counting dengan finance_transactions
-  const { data: paidDues } = await supabase
+  let qDues = supabase
     .from("dues")
     .select("id, amount, payment_date, month, year, members(name)")
     .eq("status", "Lunas")
     .not("payment_date", "is", null);
+
+  if (pid) {
+    qTx = qTx.eq("period_id", pid);
+    qPrograms = qPrograms.eq("period_id", pid);
+    qDues = qDues.eq("period_id", pid);
+  }
+
+  const [{ data: transactions }, { data: programs }, { data: paidDues }] = await Promise.all([
+    qTx,
+    qPrograms,
+    qDues,
+  ]);
 
   const totalIuranDiterima = (paidDues || []).reduce(
     (sum, d) => sum + (Number(d.amount) || 0),

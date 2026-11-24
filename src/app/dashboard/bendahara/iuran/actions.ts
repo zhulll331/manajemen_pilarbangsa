@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { requireAuthUser } from '@/utils/auth-guard'
+import { requireWritablePeriod } from '@/lib/periods/server'
+import { formatPeriodErrorMessage } from '@/lib/periods/utils'
 
 export async function tambahIuran(formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const memberId = formData.get('member_id');
@@ -22,15 +24,16 @@ export async function tambahIuran(formData: FormData) {
     amount,
     status: formData.get('status'),
     payment_date: paymentDate ? paymentDate : null,
-    proof_url: formData.get('proof_url')
+    proof_url: formData.get('proof_url'),
+    ...(schemaReady && periodId ? { period_id: periodId } : {}),
   })
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function editIuran(id: string, formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const memberId = formData.get('member_id');
@@ -40,7 +43,7 @@ export async function editIuran(id: string, formData: FormData) {
   
   if (month < 1 || month > 12) throw new Error("Bulan tidak valid");
 
-  const { error } = await supabase.from('dues')
+  let query = supabase.from('dues')
     .update({
       member_id: memberId === "" ? null : memberId,
       month,
@@ -50,29 +53,38 @@ export async function editIuran(id: string, formData: FormData) {
       payment_date: paymentDate ? paymentDate : null,
       proof_url: formData.get('proof_url')
     })
-    .eq('id', id)
+    .eq('id', id);
 
-  if (error) throw new Error(error.message)
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function hapusIuran(id: string) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
-  const { error } = await supabase.from('dues').delete().eq('id', id)
+  let query = supabase.from('dues').delete().eq('id', id);
+  if (schemaReady && periodId) query = query.eq('period_id', periodId);
+  const { error } = await query;
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
 export async function tambahIuranMassal(data: any[]) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
-  const { error } = await supabase.from('dues').insert(data)
+  const payload = schemaReady && periodId
+    ? data.map(row => ({ ...row, period_id: periodId }))
+    : data;
 
-  if (error) throw new Error(error.message)
+  const { error } = await supabase.from('dues').insert(payload)
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
   revalidatePath('/dashboard', 'layout')
 }
 
@@ -170,14 +182,17 @@ Instruksi:
 }
 
 export async function tambahIuranMassalAI(duesData: any[], totalAmount: number, description: string) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient();
   
   // Insert ke tabel dues saja — tabel dues adalah source of truth untuk iuran.
   // Halaman Transaksi akan menampilkan dues sebagai baris virtual agar tidak terjadi double-counting.
   if (duesData.length > 0) {
-    const { error: duesError } = await supabase.from('dues').insert(duesData);
-    if (duesError) throw new Error("Gagal menyimpan iuran: " + duesError.message);
+    const payload = schemaReady && periodId
+      ? duesData.map(row => ({ ...row, period_id: periodId }))
+      : duesData;
+    const { error: duesError } = await supabase.from('dues').insert(payload);
+    if (duesError) throw new Error("Gagal menyimpan iuran: " + formatPeriodErrorMessage(duesError, duesError.message));
   }
 
   revalidatePath('/dashboard', 'layout');

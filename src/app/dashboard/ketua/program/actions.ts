@@ -3,36 +3,46 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { requireAuthUser } from '@/utils/auth-guard'
+import { requireWritablePeriod } from '@/lib/periods/server'
+import { formatPeriodErrorMessage } from '@/lib/periods/utils'
+import { invalidateKnowledgeCache } from '@/lib/ai/knowledge'
 
 export async function tambahProgram(formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const startDate = formData.get('start_date');
   const endDate = formData.get('end_date');
 
-  const { error } = await supabase.from('programs').insert({
+  const payload: Record<string, unknown> = {
     title: formData.get('title'),
     description: formData.get('description'),
     division: formData.get('division'),
     person_in_charge: formData.get('person_in_charge'),
     status: formData.get('status'),
     start_date: startDate ? startDate : null,
-    end_date: endDate ? endDate : null
-  })
+    end_date: endDate ? endDate : null,
+  };
+  if (schemaReady && periodId) {
+    payload.period_id = periodId;
+  }
 
-  if (error) throw new Error(error.message)
+  const { error } = await supabase.from('programs').insert(payload)
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
+  invalidateKnowledgeCache()
   revalidatePath('/dashboard', 'layout')
+  revalidatePath('/program-kerja')
 }
 
 export async function editProgram(id: string, formData: FormData) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const startDate = formData.get('start_date');
   const endDate = formData.get('end_date');
 
-  const { error } = await supabase.from('programs')
+  let query = supabase.from('programs')
     .update({
       title: formData.get('title'),
       description: formData.get('description'),
@@ -42,20 +52,35 @@ export async function editProgram(id: string, formData: FormData) {
       start_date: startDate ? startDate : null,
       end_date: endDate ? endDate : null
     })
-    .eq('id', id)
+    .eq('id', id);
 
-  if (error) throw new Error(error.message)
+  if (schemaReady && periodId) {
+    query = query.eq('period_id', periodId);
+  }
+
+  const { error } = await query;
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
+  invalidateKnowledgeCache()
   revalidatePath('/dashboard', 'layout')
+  revalidatePath('/program-kerja')
 }
 
 export async function hapusProgram(id: string) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
-  const { error } = await supabase.from('programs').delete().eq('id', id)
+  let query = supabase.from('programs').delete().eq('id', id);
+  if (schemaReady && periodId) {
+    query = query.eq('period_id', periodId);
+  }
 
-  if (error) throw new Error(error.message)
+  const { error } = await query;
+
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
+  invalidateKnowledgeCache()
   revalidatePath('/dashboard', 'layout')
+  revalidatePath('/program-kerja')
 }
 
 function parseExcelDate(dateValue: any): string | null {
@@ -72,7 +97,7 @@ function parseExcelDate(dateValue: any): string | null {
 }
 
 export async function importProgramBatch(data: any[]) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   const supabase = await createClient()
   
   const formattedData = data.map(item => ({
@@ -82,7 +107,8 @@ export async function importProgramBatch(data: any[]) {
     person_in_charge: item.PenanggungJawab || item.PIC || item.person_in_charge || null,
     status: item.Status || item.status || 'Berjalan',
     start_date: parseExcelDate(item.TanggalMulai || item.start_date),
-    end_date: parseExcelDate(item.TanggalSelesai || item.end_date)
+    end_date: parseExcelDate(item.TanggalSelesai || item.end_date),
+    ...(schemaReady && periodId ? { period_id: periodId } : {}),
   })).filter(item => item.title);
 
   if (formattedData.length === 0) {
@@ -91,8 +117,10 @@ export async function importProgramBatch(data: any[]) {
 
   const { error } = await supabase.from('programs').insert(formattedData)
   
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(formatPeriodErrorMessage(error, error.message))
+  invalidateKnowledgeCache()
   revalidatePath('/dashboard', 'layout')
+  revalidatePath('/program-kerja')
 }
 
 export async function parseProgramKerja(ideText: string) {

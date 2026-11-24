@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { HeroSlider } from '@/components/HeroSlider';
 import { HeroSliderSkeleton } from '@/components/hero/HeroSliderSkeleton';
 import { getHeroSlides } from '@/lib/heroSlides';
+import { getMomentPhotos } from '@/lib/momentPhotos';
 import { PilarPhotoMarquee } from '@/components/PilarPhotoMarquee';
 import { TimelineRoadmap } from '@/components/TimelineRoadmap';
 import { GeminiPromptBoxWrapper } from '@/components/GeminiPromptBoxWrapper';
@@ -48,12 +49,23 @@ async function getFeaturedEvent(): Promise<PublicEvent | null> {
     if (!supabaseUrl || !supabaseKey) return null;
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data, error } = await supabase
+    const { data: activePeriod } = await supabase
+      .from('periods')
+      .select('id')
+      .eq('status', 'active')
+      .maybeSingle();
+
+    let query = supabase
       .from('public_events')
       .select('*')
       .eq('is_featured', true)
-      .eq('publish_status', 'published')
-      .maybeSingle();
+      .eq('publish_status', 'published');
+
+    if (activePeriod?.id) {
+      query = query.eq('period_id', activePeriod.id);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) return null;
     return normalizeEventTimestamps(data as PublicEvent);
@@ -92,11 +104,23 @@ async function getNews(): Promise<NewsItem[]> {
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        const { data, error } = await supabase
+        const { data: activePeriod } = await supabase
+          .from('periods')
+          .select('id')
+          .eq('status', 'active')
+          .maybeSingle();
+
+        let query = supabase
           .from('news_links')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(6);
+
+        if (activePeriod?.id) {
+          query = query.eq('period_id', activePeriod.id);
+        }
+
+        const { data, error } = await query;
         if (!error && Array.isArray(data)) {
           return data.map((raw) => {
             const item = raw as NewsItem;
@@ -212,7 +236,10 @@ async function BeritaGrid() {
 }
 
 export default async function BerandaPage() {
-  const featuredEvent = await getFeaturedEvent();
+  const [featuredEvent, momentResult] = await Promise.all([
+    getFeaturedEvent(),
+    getMomentPhotos(),
+  ]);
 
   return (
     <div className="w-full">
@@ -297,7 +324,7 @@ export default async function BerandaPage() {
       )}
 
       {/* 3. Marquee Dokumentasi Foto */}
-      <PilarPhotoMarquee />
+      <PilarPhotoMarquee photos={momentResult.photos} />
 
       {/* 4. Timeline Roadmap Program Kerja */}
       <Section tone="white" ariaLabel="Timeline roadmap program kerja">

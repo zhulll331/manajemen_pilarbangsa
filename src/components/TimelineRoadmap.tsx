@@ -1,13 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, CalendarPlus, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Calendar, CalendarPlus, AlertCircle, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { PilarLoader } from '@/components/PilarLoader';
 import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
 import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
 
 const PERIOD_START_MONTH: number = 7; // 7 = Juli
+const INITIAL_VISIBLE_COUNT = 5;
+
+function getStatusPriority(status: string): number {
+  const s = (status || '').toLowerCase();
+  if (s.includes('jalan')) return 0; // Prioritas 1: Sedang berjalan
+  if (s.includes('selesai')) return 2; // Prioritas 3: Sudah selesai
+  return 1; // Prioritas 2: Direncanakan / Belum dimulai
+}
 
 interface RoadmapEventItem {
   id: string;
@@ -162,30 +171,64 @@ function getStatusMeta(status: string): {
 export function TimelineRoadmap() {
   const [divisionFilter, setDivisionFilter] = useState('Semua');
   const [monthFilter, setMonthFilter] = useState('Satu Periode Penuh');
+  const [showAll, setShowAll] = useState(false);
   const [events, setEvents] = useState<RoadmapEventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const fallbackPeriod = getActivePeriod();
+  const [periodMeta, setPeriodMeta] = useState(fallbackPeriod);
 
-  const { startYear, endYear, label: periodLabel } = getActivePeriod();
+  const { label: periodLabel } = periodMeta;
 
   useEffect(() => {
     let cancelled = false;
     async function fetchLivePrograms() {
       setLoading(true);
       const supabase = createClient();
-      const periodStart = `${startYear}-${String(PERIOD_START_MONTH).padStart(2, '0')}-01`;
+
+      const { data: activePeriod, error: periodErr } = await supabase
+        .from('periods')
+        .select('id, code, start_year, end_year')
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      const hasDbPeriod = !periodErr && Boolean(activePeriod?.id);
+      if (hasDbPeriod && activePeriod) {
+        setPeriodMeta({
+          startYear: Number(activePeriod.start_year) || fallbackPeriod.startYear,
+          endYear: Number(activePeriod.end_year) || fallbackPeriod.endYear,
+          label: String(activePeriod.code || fallbackPeriod.label).replace('/', '-'),
+        });
+      }
+
+      const effStartYear = hasDbPeriod && activePeriod
+        ? Number(activePeriod.start_year) || fallbackPeriod.startYear
+        : fallbackPeriod.startYear;
+      const effEndYear = hasDbPeriod && activePeriod
+        ? Number(activePeriod.end_year) || fallbackPeriod.endYear
+        : fallbackPeriod.endYear;
+
+      const periodStart = `${effStartYear}-${String(PERIOD_START_MONTH).padStart(2, '0')}-01`;
       const endMonth = PERIOD_START_MONTH === 1 ? 12 : PERIOD_START_MONTH - 1;
-      const periodEnd = `${endYear}-${String(endMonth).padStart(2, '0')}-${new Date(
-        endYear,
+      const periodEnd = `${effEndYear}-${String(endMonth).padStart(2, '0')}-${new Date(
+        effEndYear,
         endMonth,
         0
       ).getDate()}`;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('programs')
         .select('*')
-        .gte('start_date', periodStart)
-        .lte('start_date', periodEnd)
         .order('start_date', { ascending: true });
+
+      if (hasDbPeriod && activePeriod) {
+        query = query.eq('period_id', activePeriod.id);
+      } else {
+        query = query.gte('start_date', periodStart).lte('start_date', periodEnd);
+      }
+
+      const { data, error } = await query;
 
       if (cancelled) return;
 
@@ -218,21 +261,34 @@ export function TimelineRoadmap() {
     return () => {
       cancelled = true;
     };
-  }, [startYear, endYear]);
+  }, [fallbackPeriod.endYear, fallbackPeriod.label, fallbackPeriod.startYear]);
 
-  const filteredEvents = events.filter((event) => {
-    if (divisionFilter !== 'Semua' && event.division !== divisionFilter) {
-      return false;
-    }
-    if (monthFilter !== 'Satu Periode Penuh') {
-      const parts = (event.date || '').split('-');
-      const monthNumber = parts[1];
-      if (monthNumber !== monthMap[monthFilter]) {
+  const filteredEvents = events
+    .filter((event) => {
+      if (divisionFilter !== 'Semua' && event.division !== divisionFilter) {
         return false;
       }
-    }
-    return true;
-  });
+      if (monthFilter !== 'Satu Periode Penuh') {
+        const parts = (event.date || '').split('-');
+        const monthNumber = parts[1];
+        if (monthNumber !== monthMap[monthFilter]) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const priorityA = getStatusPriority(a.status);
+      const priorityB = getStatusPriority(b.status);
+      if (priorityA !== priorityB) return priorityA - priorityB;
+      const dateA = new Date(a.date || 0).getTime();
+      const dateB = new Date(b.date || 0).getTime();
+      return priorityA === 2 ? dateB - dateA : dateA - dateB;
+    });
+
+  const hasOverflow = filteredEvents.length > INITIAL_VISIBLE_COUNT;
+  const visibleEvents =
+    showAll || !hasOverflow ? filteredEvents : filteredEvents.slice(0, INITIAL_VISIBLE_COUNT);
 
   return (
     <div className="space-y-8">
@@ -260,7 +316,10 @@ export function TimelineRoadmap() {
               <button
                 key={div}
                 type="button"
-                onClick={() => setDivisionFilter(div)}
+                onClick={() => {
+                  setDivisionFilter(div);
+                  setShowAll(false);
+                }}
                 className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${isSelected
                     ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -279,7 +338,10 @@ export function TimelineRoadmap() {
           <select
             id="roadmap-month-filter"
             value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
+            onChange={(e) => {
+              setMonthFilter(e.target.value);
+              setShowAll(false);
+            }}
             className="w-full min-h-[44px] px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 focus:border-gray-900 focus:outline-none"
           >
             {monthsList.map((m) => (
@@ -308,67 +370,115 @@ export function TimelineRoadmap() {
           </div>
         </div>
       ) : (
-        <GsapCardGroup
-          as="ol"
-          triggerKey={`${divisionFilter}-${monthFilter}-${filteredEvents.length}`}
-          yOffset={18}
-          stagger={0.055}
-          className="relative border-l-2 border-gray-200 ml-2.5 space-y-8 pt-1"
-        >
-          {filteredEvents.map((event) => {
-            const calUrl = generateGoogleCalendarUrl(event);
-            const meta = getStatusMeta(event.status);
+        <div className="space-y-6">
+          <div className="relative">
+            <GsapCardGroup
+              as="ol"
+              triggerKey={`${divisionFilter}-${monthFilter}-${showAll ? 'all' : 'compact'}-${visibleEvents.length}`}
+              yOffset={18}
+              stagger={0.055}
+              className="relative border-l-2 border-gray-200 ml-2.5 space-y-8 pt-1"
+            >
+              {visibleEvents.map((event) => {
+                const calUrl = generateGoogleCalendarUrl(event);
+                const meta = getStatusMeta(event.status);
 
-            return (
-              <li key={event.id} className="pl-6 sm:pl-8 relative">
-                <span
-                  aria-hidden="true"
-                  className={`absolute -left-[7px] top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${meta.dotClass}`}
-                />
+                return (
+                  <li key={event.id} className="pl-6 sm:pl-8 relative">
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -left-[7px] top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${meta.dotClass}`}
+                    />
 
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-8 border-b border-gray-100">
-                  <div className="space-y-2 max-w-2xl">
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className="inline-flex items-center gap-1.5 text-gray-700">
-                        <Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
-                        <span>{formatDateIndo(event.date)}</span>
-                      </span>
-                      <span className="text-gray-300" aria-hidden="true">
-                        •
-                      </span>
-                      <span className="text-gray-600">{event.division}</span>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold border ${meta.badgeClass}`}
-                      >
-                        {meta.label}
-                      </span>
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-8 border-b border-gray-100">
+                      <div className="space-y-2 max-w-2xl">
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                          <span className="inline-flex items-center gap-1.5 text-gray-700">
+                            <Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
+                            <span>{formatDateIndo(event.date)}</span>
+                          </span>
+                          <span className="text-gray-300" aria-hidden="true">
+                            •
+                          </span>
+                          <span className="text-gray-600">{event.division}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[11px] font-bold border ${meta.badgeClass}`}
+                          >
+                            {meta.label}
+                          </span>
+                        </div>
+
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-snug">
+                          {event.title}
+                        </h3>
+
+                        <p className="text-sm sm:text-base text-gray-600 leading-relaxed line-clamp-2">
+                          {event.description}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 sm:pt-1">
+                        <a
+                          href={calUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[40px] px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-semibold transition-colors"
+                        >
+                          <CalendarPlus className="w-4 h-4 text-gray-500" aria-hidden="true" />
+                          <span>Simpan ke Kalender</span>
+                        </a>
+                      </div>
                     </div>
+                  </li>
+                );
+              })}
+            </GsapCardGroup>
 
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-snug">
-                      {event.title}
-                    </h3>
+            {hasOverflow && !showAll && (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none h-10 -mt-10 bg-gradient-to-t from-white to-transparent relative z-10"
+              />
+            )}
+          </div>
 
-                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed line-clamp-2">
-                      {event.description}
-                    </p>
-                  </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+            <p className="text-xs sm:text-sm text-gray-500">
+              Menampilkan <strong className="text-gray-900">{visibleEvents.length}</strong> dari{' '}
+              <strong className="text-gray-900">{filteredEvents.length}</strong> program kerja
+            </p>
 
-                  <div className="shrink-0 sm:pt-1">
-                    <a
-                      href={calUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[40px] px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-semibold transition-colors"
-                    >
-                      <CalendarPlus className="w-4 h-4 text-gray-500" aria-hidden="true" />
-                      <span>Simpan ke Kalender</span>
-                    </a>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </GsapCardGroup>
+            <div className="flex flex-wrap items-center gap-3">
+              {hasOverflow && (
+                <button
+                  type="button"
+                  onClick={() => setShowAll((prev) => !prev)}
+                  className="inline-flex items-center justify-center gap-2 min-h-[42px] px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                >
+                  {showAll ? (
+                    <>
+                      <span>Tampilkan Lebih Ringkas</span>
+                      <ChevronUp className="w-4 h-4 text-gray-500" aria-hidden="true" />
+                    </>
+                  ) : (
+                    <>
+                      <span>Tampilkan Semua ({filteredEvents.length} Program)</span>
+                      <ChevronDown className="w-4 h-4 text-gray-500" aria-hidden="true" />
+                    </>
+                  )}
+                </button>
+              )}
+
+              <Link
+                href="/program-kerja"
+                className="inline-flex items-center gap-1.5 min-h-[42px] px-2 py-2 text-xs sm:text-sm font-bold text-[#E31837] hover:underline underline-offset-4"
+              >
+                <span>Lihat Katalog Lengkap</span>
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

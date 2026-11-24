@@ -1,8 +1,8 @@
 import React from 'react';
-import Image from 'next/image';
 import { CheckCircle2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { StrukturPimpinan } from '@/components/StrukturPimpinan';
+import { FilosofiLogoAnimated } from '@/components/FilosofiLogoAnimated';
 import { PageHeader, Section, SectionHeading } from '@/components/ui/PublicPrimitives';
 import { SplitWordsHeading } from '@/components/motion/SplitWordsHeading';
 import { GsapCardGroup } from '@/components/motion/GsapCardGroup';
@@ -103,14 +103,7 @@ export default async function TentangPage() {
       <Section tone="white" ariaLabel="Filosofi logo UKM Pilar Bangsa">
         <div className="space-y-12">
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
-            <Image
-              src="/logo_pilar.svg"
-              alt="Logo UKM Pilar Bangsa"
-              width={96}
-              height={96}
-              loading="eager"
-              className="w-20 h-20 sm:w-24 sm:h-24 object-contain shrink-0"
-            />
+            <FilosofiLogoAnimated />
             <div className="space-y-2 max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#E31837]">
                 Filosofi Logo

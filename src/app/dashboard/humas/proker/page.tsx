@@ -132,6 +132,11 @@ export default function KelolaProkerPage() {
   const [selectedLaporanFile, setSelectedLaporanFile] = useState<File | null>(null)
 
   const [uploadingFile, setUploadingFile] = useState(false)
+  const [periodCtx, setPeriodCtx] = useState<{
+    selectedPeriodId: string | null
+    isLocked: boolean
+    schemaReady: boolean
+  }>({ selectedPeriodId: null, isLocked: false, schemaReady: false })
 
   const { enqueueUpload, getJobByRecordId } = useUploadQueue()
   const supabase = createClient()
@@ -154,14 +159,28 @@ export default function KelolaProkerPage() {
   async function fetchData() {
     setLoading(true)
     setErrorMessage('')
+    const ctxRes = await fetch('/api/admin/period-context').then(r => (r.ok ? r.json() : null)).catch(() => null)
+    const activeCtx = ctxRes
+      ? {
+          selectedPeriodId: (ctxRes.selectedPeriodId as string) || null,
+          isLocked: Boolean(ctxRes.isLocked),
+          schemaReady: Boolean(ctxRes.schemaReady),
+        }
+      : { selectedPeriodId: null, isLocked: false, schemaReady: false }
+    setPeriodCtx(activeCtx)
+
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      // Karena Humas mengelola SEMUA proker, tidak perlu lagi membatasi tampilan (filter)
-      // berdasarkan profil. Ambil semua proker dari tabel.
-      const { data: prokerData, error } = await supabase
+      let query = supabase
         .from('programs')
         .select('*')
         .order('created_at', { ascending: false })
+
+      if (activeCtx.schemaReady && activeCtx.selectedPeriodId) {
+        query = query.eq('period_id', activeCtx.selectedPeriodId)
+      }
+
+      const { data: prokerData, error } = await query
 
       if (error) {
         setErrorMessage('Gagal mengambil data dari tabel programs: ' + error.message)
@@ -269,6 +288,10 @@ export default function KelolaProkerPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (periodCtx.isLocked) {
+      setErrorMessage('Periode ini sudah dikunci permanen dan tidak dapat diubah.')
+      return
+    }
     setErrorMessage('')
     setSuccessMessage('')
 
@@ -354,9 +377,12 @@ export default function KelolaProkerPage() {
 
         if (error) throw new Error('Gagal memperbarui program kerja: ' + error.message)
       } else {
+        const insertPayload = periodCtx.schemaReady && periodCtx.selectedPeriodId
+          ? { ...payloadStrict, period_id: periodCtx.selectedPeriodId }
+          : payloadStrict
         const { data, error } = await supabase
           .from('programs')
-          .insert([payloadStrict])
+          .insert([insertPayload])
           .select('id')
           .single()
 
@@ -423,6 +449,10 @@ export default function KelolaProkerPage() {
   }
 
   async function handleQuickStatus(id: string, newStatus: string) {
+    if (periodCtx.isLocked) {
+      setErrorMessage('Periode ini sudah dikunci permanen dan tidak dapat diubah.')
+      return
+    }
     setErrorMessage('')
     setSuccessMessage('')
     const { error } = await supabase
@@ -439,6 +469,10 @@ export default function KelolaProkerPage() {
   }
 
   async function handleDelete(id: string) {
+    if (periodCtx.isLocked) {
+      setErrorMessage('Periode ini sudah dikunci permanen dan tidak dapat dihapus.')
+      return
+    }
     if (!confirm('Apakah Anda yakin ingin menghapus program kerja ini beserta seluruh filenya di Google Drive?')) return
     setErrorMessage('')
     setSuccessMessage('')

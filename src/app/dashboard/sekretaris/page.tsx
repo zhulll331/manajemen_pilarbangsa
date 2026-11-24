@@ -3,29 +3,52 @@ import DashboardSekretarisClient from "./DashboardSekretarisClient";
 import { Suspense } from "react";
 import { AttendanceOverview } from "@/components/AttendanceOverview";
 import { AttendanceCardsSkeleton } from "@/components/AttendanceCards";
+import { getSelectedPeriodForDashboard } from "@/lib/periods/server";
 
 export default async function DashboardSekretaris() {
   const supabase = await createClient();
+  const { selectedPeriod, schemaReady } = await getSelectedPeriodForDashboard();
+  const pid = schemaReady ? selectedPeriod.id : null;
 
-  // Counts
-  const { count: totalAnggota } = await supabase.from("members").select("*", { count: "exact", head: true });
-  const { count: suratMasuk } = await supabase.from("letters").select("*", { count: "exact", head: true }).in("letter_type", ["Surat Masuk", "Masuk"]);
-  const { count: suratKeluar } = await supabase.from("letters").select("*", { count: "exact", head: true }).in("letter_type", ["Surat Keluar", "Keluar"]);
-  const { count: totalNotulensi } = await supabase.from("minutes").select("*", { count: "exact", head: true });
+  let qAnggota = supabase.from("members").select("*", { count: "exact", head: true }).neq("status", "Diberhentikan");
+  let qMasuk = supabase.from("letters").select("*", { count: "exact", head: true }).in("letter_type", ["Surat Masuk", "Masuk"]);
+  let qKeluar = supabase.from("letters").select("*", { count: "exact", head: true }).in("letter_type", ["Surat Keluar", "Keluar"]);
+  let qNotulensi = supabase.from("minutes").select("*", { count: "exact", head: true });
+  let qMembers = supabase.from("members").select("name, division, status, created_at").order("created_at", { ascending: false }).limit(5);
+  let qLetters = supabase.from("letters").select("letter_number, letter_type, date, subject, status").order("date", { ascending: false }).limit(20);
+  let qMinutes = supabase.from("minutes").select("title, meeting_date, participants").order("meeting_date", { ascending: false }).limit(4);
+  let qArchives = supabase.from("letters").select("subject, letter_type, sender, date").not("letter_type", "in", '("Masuk", "Keluar", "Surat Masuk", "Surat Keluar")').order("date", { ascending: false }).limit(4);
 
-  // Recent members
-  const { data: recentMembers } = await supabase
-    .from("members")
-    .select("name, division, status, created_at")
-    .order("created_at", { ascending: false })
-    .limit(5);
+  if (pid) {
+    qAnggota = qAnggota.eq("period_id", pid);
+    qMasuk = qMasuk.eq("period_id", pid);
+    qKeluar = qKeluar.eq("period_id", pid);
+    qNotulensi = qNotulensi.eq("period_id", pid);
+    qMembers = qMembers.eq("period_id", pid);
+    qLetters = qLetters.eq("period_id", pid);
+    qMinutes = qMinutes.eq("period_id", pid);
+    qArchives = qArchives.eq("period_id", pid);
+  }
 
-  // Recent letters
-  const { data: rawRecentLetters } = await supabase
-    .from("letters")
-    .select("letter_number, letter_type, date, subject, status")
-    .order("date", { ascending: false })
-    .limit(20);
+  const [
+    { count: totalAnggota },
+    { count: suratMasuk },
+    { count: suratKeluar },
+    { count: totalNotulensi },
+    { data: recentMembers },
+    { data: rawRecentLetters },
+    { data: recentMinutes },
+    { data: recentArchives },
+  ] = await Promise.all([
+    qAnggota,
+    qMasuk,
+    qKeluar,
+    qNotulensi,
+    qMembers,
+    qLetters,
+    qMinutes,
+    qArchives,
+  ]);
 
   const getInitialNum = (numStr?: string | null) => {
     if (!numStr) return null;
@@ -59,24 +82,9 @@ export default async function DashboardSekretaris() {
     return timeB - timeA;
   }).slice(0, 5);
 
-  // Recent minutes
-  const { data: recentMinutes } = await supabase
-    .from("minutes")
-    .select("title, meeting_date, participants")
-    .order("meeting_date", { ascending: false })
-    .limit(4);
-
-  // Recent archives (letters excluding standard mail)
-  const { data: recentArchives } = await supabase
-    .from("letters")
-    .select("subject, letter_type, sender, date")
-    .not("letter_type", "in", '("Masuk", "Keluar", "Surat Masuk", "Surat Keluar")')
-    .order("date", { ascending: false })
-    .limit(4);
-
   return (
     <DashboardSekretarisClient
-      attendanceOverview={<Suspense fallback={<AttendanceCardsSkeleton />}><AttendanceOverview canManage /></Suspense>}
+      attendanceOverview={<Suspense fallback={<AttendanceCardsSkeleton />}><AttendanceOverview canManage periodId={pid} /></Suspense>}
       totalAnggota={totalAnggota || 0}
       suratMasuk={suratMasuk || 0}
       suratKeluar={suratKeluar || 0}

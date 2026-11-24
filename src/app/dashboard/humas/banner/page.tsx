@@ -70,18 +70,44 @@ export default function BannerManagementPage() {
     });
   };
 
+  const [periodCtx, setPeriodCtx] = useState<{
+    selectedPeriodId: string | null;
+    isLocked: boolean;
+    schemaReady: boolean;
+  }>({ selectedPeriodId: null, isLocked: false, schemaReady: false });
+
   useEffect(() => {
     let cancelled = false;
     async function loadBanners() {
       const supabase = createClient();
+      const ctxRes = await fetch('/api/admin/period-context')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+      const activeCtx = ctxRes
+        ? {
+            selectedPeriodId: (ctxRes.selectedPeriodId as string) || null,
+            isLocked: Boolean(ctxRes.isLocked),
+            schemaReady: Boolean(ctxRes.schemaReady),
+          }
+        : { selectedPeriodId: null, isLocked: false, schemaReady: false };
 
-      const { data: heroData, error: heroError } = await supabase
+      if (!cancelled) {
+        setPeriodCtx(activeCtx);
+      }
+
+      let heroQuery = supabase
         .from('hero_slides')
         .select(
           'id, image_url, badge, title, description, cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href, sort_order, is_active, created_at'
         )
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
+
+      if (activeCtx.schemaReady && activeCtx.selectedPeriodId) {
+        heroQuery = heroQuery.eq('period_id', activeCtx.selectedPeriodId);
+      }
+
+      const { data: heroData, error: heroError } = await heroQuery;
 
       if (cancelled) return;
 
@@ -170,6 +196,10 @@ export default function BannerManagementPage() {
   };
 
   const handleSave = async (id: string) => {
+    if (periodCtx.isLocked) {
+      notify('error', 'Periode ini sudah dikunci permanen dan tidak dapat diubah.');
+      return;
+    }
     setSavingId(id);
     setNotification(null);
     const currentSlide = slides.find((s) => s.id === id);
@@ -250,6 +280,10 @@ export default function BannerManagementPage() {
   };
 
   const handleAddBanner = async () => {
+    if (periodCtx.isLocked) {
+      notify('error', 'Periode ini sudah dikunci permanen dan tidak dapat menambah slide.');
+      return;
+    }
     try {
       const supabase = createClient();
 
@@ -272,6 +306,9 @@ export default function BannerManagementPage() {
               cta_secondary_href: '/tentang-kami',
               sort_order: nextOrder,
               is_active: true,
+              ...(periodCtx.schemaReady && periodCtx.selectedPeriodId
+                ? { period_id: periodCtx.selectedPeriodId }
+                : {}),
             },
           ])
           .select();
@@ -346,6 +383,10 @@ export default function BannerManagementPage() {
   };
 
   const handleDeleteBanner = async (id: string) => {
+    if (periodCtx.isLocked) {
+      notify('error', 'Periode ini sudah dikunci permanen dan tidak dapat menghapus slide.');
+      return;
+    }
     if (!confirm('Apakah Anda yakin ingin menghapus slide banner ini?')) return;
     try {
       const supabase = createClient();

@@ -1,4 +1,4 @@
-import { Archive, Brain, Calendar, CalendarCheck, ClipboardList, FileText, FolderOpen, Image, LayoutDashboard, QrCode, Users, Wallet } from "lucide-react";
+import { Archive, Brain, Calendar, CalendarCheck, Camera, ClipboardList, FileText, FolderOpen, History, Image, LayoutDashboard, QrCode, Users, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface DashboardMenuItem { href: string; label: string; icon: LucideIcon }
@@ -13,6 +13,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
     { href: "/dashboard/sekretaris/presensi-pengurus", label: "Presensi Pengurus", icon: CalendarCheck },
     { href: "/dashboard/sekretaris/arsip-lama", label: "Arsip Lama", icon: Archive },
     { href: "/dashboard/sekretaris/evaluasi", label: "Evaluasi", icon: FileText },
+    { href: "/dashboard/periode", label: "Periode Kepengurusan", icon: History },
   ],
   bendahara: [
     { href: "/dashboard/bendahara", label: "Ringkasan", icon: LayoutDashboard },
@@ -28,6 +29,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
     { href: "/dashboard/humas/berita", label: "Kelola Berita", icon: FileText },
     { href: "/dashboard/humas/knowledge", label: "Basis Pengetahuan AI", icon: Brain },
     { href: "/dashboard/humas/banner", label: "Pengaturan Banner", icon: FolderOpen },
+    { href: "/dashboard/humas/momen", label: "Momen Pilar Bangsa", icon: Camera },
     { href: "/dashboard/humas/pengaturan", label: "Tokoh & Pemimpin", icon: Users },
     { href: "/dashboard/humas/arsip", label: "Arsip Publik", icon: Archive },
   ],
@@ -37,6 +39,7 @@ const menus: Record<string, DashboardMenuItem[]> = {
     { href: "/dashboard/ketua/evaluasi", label: "Evaluasi", icon: FileText },
     { href: "/dashboard/humas/twibbon", label: "Kelola Twibbon", icon: Image },
     { href: "/qr", label: "QR Code Generator", icon: QrCode },
+    { href: "/dashboard/periode", label: "Periode Kepengurusan", icon: History },
   ],
 };
 // Preserve existing role destinations. Authorization remains on the server.

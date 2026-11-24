@@ -14,7 +14,7 @@ type Archive = {
   programs?: { title: string } | null;
 };
 
-const PERIODS = ['Semua', '2022/2023', '2023/2024', '2024/2025', '2025/2026', '2026/2027'];
+const DEFAULT_PERIODS = ['2022/2023', '2023/2024', '2024/2025', '2025/2026', '2026/2027'];
 const CATEGORIES = [
   'Semua',
   'Humas & Kerjasama',
@@ -23,7 +23,22 @@ const CATEGORIES = [
   'Pengabdian & Advokasi',
 ];
 
-export function ArsipPublikClient({ archives }: { archives: Archive[] }) {
+export function ArsipPublikClient({
+  archives,
+  availablePeriods,
+}: {
+  archives: Archive[];
+  availablePeriods?: string[];
+}) {
+  const periodOptions = useMemo(() => {
+    const merged = new Set<string>(
+      availablePeriods && availablePeriods.length > 0 ? availablePeriods : DEFAULT_PERIODS
+    );
+    for (const a of archives) {
+      if (a.period) merged.add(a.period);
+    }
+    return ['Semua', ...Array.from(merged).sort((a, b) => b.localeCompare(a))];
+  }, [archives, availablePeriods]);
   const [selectedPeriod, setSelectedPeriod] = useState('Semua');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
 
@@ -64,7 +79,7 @@ export function ArsipPublikClient({ archives }: { archives: Archive[] }) {
                 onChange={(e) => setSelectedPeriod(e.target.value)}
                 className="w-full min-h-[44px] px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-gray-900 outline-none"
               >
-                {PERIODS.map((p) => (
+                {periodOptions.map((p) => (
                   <option key={p} value={p}>
                     {p}
                   </option>

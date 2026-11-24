@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { requireAuthUser } from '@/utils/auth-guard'
+import { requireWritablePeriod } from '@/lib/periods/server'
+import { formatPeriodErrorMessage } from '@/lib/periods/utils'
 
 // Helper: tunggu beberapa milidetik
 function sleep(ms: number) {
@@ -11,7 +13,7 @@ function sleep(ms: number) {
 
 // Keep old actions if needed, or remove them. We'll replace with simpanPresensiMassal.
 export async function simpanPresensiMassal(agenda_id: string, presensiData: { member_id: string, status: string }[]) {
-  await requireAuthUser();
+  const { periodId, schemaReady } = await requireWritablePeriod();
   if (!agenda_id) throw new Error("Agenda belum dipilih")
 
   const MAX_RETRIES = 3;
@@ -21,27 +23,32 @@ export async function simpanPresensiMassal(agenda_id: string, presensiData: { me
     try {
       const supabase = await createClient()
 
-      // Delete all existing attendance for this agenda first
-      const { error: deleteError } = await supabase
+      let deleteQuery = supabase
         .from('attendance')
         .delete()
-        .eq('agenda_id', agenda_id)
+        .eq('agenda_id', agenda_id);
+      if (schemaReady && periodId) {
+        deleteQuery = deleteQuery.eq('period_id', periodId);
+      }
 
-      if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + deleteError.message)
+      const { error: deleteError } = await deleteQuery;
+
+      if (deleteError) throw new Error("Gagal menghapus data presensi lama: " + formatPeriodErrorMessage(deleteError, deleteError.message))
 
       // Insert the new ones
       if (presensiData.length > 0) {
         const recordsToInsert = presensiData.map(p => ({
           agenda_id: agenda_id,
           member_id: p.member_id,
-          status: p.status
+          status: p.status,
+          ...(schemaReady && periodId ? { period_id: periodId } : {}),
         }))
 
         const { error: insertError } = await supabase
           .from('attendance')
           .insert(recordsToInsert)
 
-        if (insertError) throw new Error("Gagal menyimpan presensi baru: " + insertError.message)
+        if (insertError) throw new Error("Gagal menyimpan presensi baru: " + formatPeriodErrorMessage(insertError, insertError.message))
       }
 
       revalidatePath('/dashboard', 'layout')

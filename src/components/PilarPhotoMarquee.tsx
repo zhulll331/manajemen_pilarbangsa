@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react'
-import Image from 'next/image'
+import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { pilarPhotos, type PilarPhoto } from '@/data/pilarPhotos'
+import type { MomentPhotoItem } from '@/lib/momentPhotos'
 import styles from './PilarPhotoMarquee.module.css'
 
 const motionQuery = '(prefers-reduced-motion: reduce)'
@@ -17,8 +18,31 @@ const getMotion = () => window.matchMedia(motionQuery).matches
 const getServerMotion = () => false
 
 interface PilarPhotoMarqueeProps {
-  photos?: readonly PilarPhoto[]
+  photos?: readonly (PilarPhoto | MomentPhotoItem)[]
   speed?: number // Pixels per second; independent of the number of photos.
+}
+
+function getPhotoSizes(src: string | StaticImageData): string {
+  if (typeof src === 'string') {
+    return '(max-width: 639px) 227px, 307px'
+  }
+  const ratio = Math.max(1, src.width / src.height)
+  return `(max-width: 639px) ${Math.ceil(170 * ratio)}px, ${Math.ceil(230 * ratio)}px`
+}
+
+function shouldUnoptimizeMomentImage(src: string | StaticImageData): boolean {
+  if (typeof src !== 'string') return false
+  const trimmed = src.trim()
+  if (trimmed.startsWith('/')) return false
+  try {
+    const { hostname } = new URL(trimmed)
+    if (hostname.endsWith('.supabase.co') || hostname === 'images.unsplash.com') {
+      return false
+    }
+    return true
+  } catch {
+    return true
+  }
 }
 
 export function PilarPhotoMarquee({ photos = pilarPhotos, speed = 28 }: PilarPhotoMarqueeProps) {
@@ -115,9 +139,8 @@ export function PilarPhotoMarquee({ photos = pilarPhotos, speed = 28 }: PilarPho
                         alt={copy === 0 ? photo.alt : ''}
                         fill
                         loading="eager"
-                        // Cover crops a landscape image horizontally: request enough
-                        // pixels for its square crop, rather than only its CSS width.
-                        sizes={`(max-width: 639px) ${Math.ceil(170 * Math.max(1, photo.src.width / photo.src.height))}px, ${Math.ceil(230 * Math.max(1, photo.src.width / photo.src.height))}px`}
+                        unoptimized={shouldUnoptimizeMomentImage(photo.src)}
+                        sizes={getPhotoSizes(photo.src)}
                         style={{ objectFit: 'cover', objectPosition: photo.objectPosition }}
                       />
                     </div>

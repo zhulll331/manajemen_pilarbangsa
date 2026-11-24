@@ -14,13 +14,38 @@ export default async function ArsipPublikPage() {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Ambil semua arsip, di-cache secara ISR (instant navigation)
-  const { data } = await supabase
-    .from("archives")
-    .select("id, title, period, category, drive_url, programs(title)")
-    .order("created_at", { ascending: false });
+  // Ambil semua arsip + daftar periode dinamis dari DB (cache ISR)
+  const [{ data }, { data: periodRows }] = await Promise.all([
+    supabase
+      .from("archives")
+      .select("id, title, period, category, drive_url, programs(title)")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("periods")
+      .select("code, status, start_year")
+      .order("start_year", { ascending: false }),
+  ]);
 
-  const archives = (data as any[]) || [];
+  const archives = ((data as Array<{
+    id: string;
+    title: string;
+    period: string;
+    category: string;
+    drive_url: string;
+    programs?: { title: string }[] | { title: string } | null;
+  }>) || []).map((row) => ({
+    ...row,
+    programs: Array.isArray(row.programs) ? row.programs[0] ?? null : row.programs ?? null,
+  }));
 
-  return <ArsipPublikClient archives={archives} />;
+  const periodSet = new Set<string>();
+  for (const p of (periodRows as Array<{ code?: string }> | null) || []) {
+    if (p?.code) periodSet.add(p.code);
+  }
+  for (const a of archives) {
+    if (a.period) periodSet.add(a.period);
+  }
+  const availablePeriods = Array.from(periodSet).sort((a, b) => b.localeCompare(a));
+
+  return <ArsipPublikClient archives={archives} availablePeriods={availablePeriods} />;
 }

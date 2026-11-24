@@ -201,7 +201,13 @@ export async function getHeroSlides(): Promise<HeroSlideItem[]> {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data, error } = await supabase
+    const { data: activePeriod } = await supabase
+      .from('periods')
+      .select('id')
+      .eq('status', 'active')
+      .maybeSingle();
+
+    let heroQuery = supabase
       .from('hero_slides')
       .select(
         'id, image_url, badge, title, description, cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href, sort_order, is_active, created_at'
@@ -209,6 +215,12 @@ export async function getHeroSlides(): Promise<HeroSlideItem[]> {
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true });
+
+    if (activePeriod?.id) {
+      heroQuery = heroQuery.eq('period_id', activePeriod.id);
+    }
+
+    const { data, error } = await heroQuery;
 
     if (!error && Array.isArray(data) && data.length > 0) {
       return data.map((row, index) => mapHeroSlideRow(row as Record<string, unknown>, index));

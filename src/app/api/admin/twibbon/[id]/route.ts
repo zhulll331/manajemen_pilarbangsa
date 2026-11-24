@@ -4,6 +4,8 @@ import {
   createTwibbonErrorResponse,
   requireTwibbonAdmin,
 } from '@/lib/twibbon/server-service';
+import { requireWritablePeriod } from '@/lib/periods/server';
+import { isPeriodLockedError } from '@/lib/periods/utils';
 import { validateAdminCampaignFields } from '@/lib/twibbon/validation';
 
 export async function PATCH(
@@ -13,6 +15,12 @@ export async function PATCH(
   try {
     const { id } = await context.params;
     const { supabase, user } = await requireTwibbonAdmin();
+    await requireWritablePeriod().catch((err) => {
+      if (isPeriodLockedError(err)) {
+        throw new TwibbonHttpError(403, 'FORBIDDEN', err.message);
+      }
+      throw err;
+    });
     const body = await request.json().catch(() => ({}));
 
     const expectedVersion = Number(body.expected_version);
@@ -180,6 +188,12 @@ export async function DELETE(
   try {
     const { id } = await context.params;
     const { supabase } = await requireTwibbonAdmin();
+    await requireWritablePeriod().catch((err) => {
+      if (isPeriodLockedError(err)) {
+        throw new TwibbonHttpError(403, 'FORBIDDEN', err.message);
+      }
+      throw err;
+    });
 
     const { data: campaign, error: fetchError } = await supabase
       .from('twibbon_campaigns')

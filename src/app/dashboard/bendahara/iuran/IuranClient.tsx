@@ -18,8 +18,21 @@ import {
 
 const DYNAMIC_YEARS = generatePeriodOptions();
 
-export default function IuranClient({ dues, members }: { dues: any[], members: any[] }) {
-  const [filterYear, setFilterYear] = useState<number>(getActivePeriodStartYear());
+export default function IuranClient({
+  dues,
+  members,
+  defaultStartYear,
+}: {
+  dues: any[];
+  members: any[];
+  defaultStartYear?: number;
+}) {
+  const initialYear = defaultStartYear ?? getActivePeriodStartYear();
+  const yearOptions = useMemo(() => {
+    const merged = new Set([...DYNAMIC_YEARS, initialYear]);
+    return Array.from(merged).sort((a, b) => a - b);
+  }, [initialYear]);
+  const [filterYear, setFilterYear] = useState<number>(initialYear);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMassalModalOpen, setIsMassalModalOpen] = useState(false);
@@ -379,7 +392,7 @@ export default function IuranClient({ dues, members }: { dues: any[], members: a
             onChange={(e) => setFilterYear(Number(e.target.value))}
             className="p-2 border rounded-lg outline-none bg-white min-w-[120px]"
           >
-            {DYNAMIC_YEARS.map(y => <option key={y} value={y}>Periode {y}/{y+1}</option>)}
+            {yearOptions.map(y => <option key={y} value={y}>Periode {y}/{y+1}</option>)}
           </select>
         </div>
 
