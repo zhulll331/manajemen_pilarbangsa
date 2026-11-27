@@ -19,6 +19,11 @@ import { DataTable, type Column } from "@/components/DataTable";
 import { ImportCSVModal } from "@/components/ImportCSVModal";
 import type { BulkDismissItem } from "@/lib/members/dismissal";
 import { normalizeWarningLevel } from "@/lib/members/discipline";
+import {
+  MEMBER_DIVISION_FILTERS,
+  MEMBER_DIVISION_SUGGESTIONS,
+  matchesDivisionFilter,
+} from "@/lib/members/divisions";
 import { AiDismissMembersModal } from "./AiDismissMembersModal";
 import {
   BulkDismissMembersModal,
@@ -52,7 +57,6 @@ interface Member {
   sp2_note?: string | null;
 }
 
-const divisions = ["Pendidikan", "Sosial", "Kewirausahaan", "Seni Budaya"];
 const statuses = ["Aktif", "Pengurus Aktif", "Cuti", "Alumni", "Diberhentikan"];
 
 export default function AnggotaClient({
@@ -94,8 +98,7 @@ export default function AnggotaClient({
         m.name.toLowerCase().includes(q) ||
         (m.nim && m.nim.toLowerCase().includes(q));
       const matchesStatus = statusFilter === "Semua" || m.status === statusFilter;
-      const matchesDivision =
-        divisionFilter === "Semua" || m.division === divisionFilter;
+      const matchesDivision = matchesDivisionFilter(m.division, divisionFilter);
       const level = normalizeWarningLevel(m.warning_level);
       const matchesWarning = warningFilter === "Semua" || level === warningFilter;
       return matchesQuery && matchesStatus && matchesDivision && matchesWarning;
@@ -401,7 +404,7 @@ export default function AnggotaClient({
             className="px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white text-gray-700 outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           >
             <option value="Semua">Semua Divisi</option>
-            {divisions.map((d) => (
+            {MEMBER_DIVISION_FILTERS.map((d) => (
               <option key={d} value={d}>
                 {d}
               </option>
@@ -552,7 +555,7 @@ export default function AnggotaClient({
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition bg-white"
               />
               <datalist id="divisions">
-                {divisions.map((d) => (
+                {MEMBER_DIVISION_SUGGESTIONS.map((d) => (
                   <option key={d} value={d} />
                 ))}
               </datalist>

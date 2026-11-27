@@ -31,6 +31,10 @@ import {
   type MemberDisciplineEvaluation,
   type PeriodQuarter,
 } from "@/lib/members/discipline";
+import {
+  MEMBER_DIVISION_FILTERS,
+  matchesDivisionFilter,
+} from "@/lib/members/divisions";
 import { InputSp1ManualModal } from "./InputSp1ManualModal";
 import { AiSp1ImportModal } from "./AiSp1ImportModal";
 import {
@@ -144,15 +148,7 @@ export default function KedisiplinanClient({
     [members, agendas, attendance, effectiveRangeStart, effectiveRangeEnd]
   );
 
-  const divisions = useMemo(
-    () => [
-      "Semua",
-      ...Array.from(
-        new Set(members.map((m) => m.division).filter(Boolean) as string[])
-      ).sort((a, b) => a.localeCompare(b, "id")),
-    ],
-    [members]
-  );
+  const divisions = ["Semua", ...MEMBER_DIVISION_FILTERS];
 
   const filteredRows = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -160,7 +156,7 @@ export default function KedisiplinanClient({
       if (categoryFilter !== "Semua" && row.status !== categoryFilter) {
         return false;
       }
-      if (divisionFilter !== "Semua" && row.division !== divisionFilter) {
+      if (!matchesDivisionFilter(row.division, divisionFilter)) {
         return false;
       }
       if (evalFilter !== "Semua" && row.evalStatus !== evalFilter) {
@@ -186,7 +182,7 @@ export default function KedisiplinanClient({
       if (categoryFilter !== "Semua" && row.status !== categoryFilter) {
         return false;
       }
-      if (divisionFilter !== "Semua" && row.division !== divisionFilter) {
+      if (!matchesDivisionFilter(row.division, divisionFilter)) {
         return false;
       }
       if (q) {

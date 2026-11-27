@@ -6,6 +6,7 @@ import { Save, CalendarCheck, Download, Sparkles, Loader2, Bot, AlertTriangle } 
 import * as XLSX from "xlsx";
 import { AttendanceSelectionSummary } from "@/components/AttendanceSelectionSummary";
 import { detectSp2AlertsForAgenda, normalizeWarningLevel } from "@/lib/members/discipline";
+import { MEMBER_DIVISION_FILTERS, matchesDivisionFilter } from "@/lib/members/divisions";
 import { simpanPresensiMassal, parsePresensiAI, isGeminiConfigured } from "./actions";
 
 interface Member {
@@ -62,7 +63,7 @@ export default function PresensiPengurusClient({
   }, []);
 
   // Extract unique filter options
-  const divisions = ["Semua", ...Array.from(new Set(members.map(m => m.division).filter(Boolean)))];
+  const divisions = ["Semua", ...MEMBER_DIVISION_FILTERS];
   const faculties = ["Semua", ...Array.from(new Set(members.map(m => m.faculty).filter(Boolean)))];
   const generations = ["Semua", ...Array.from(new Set(members.map(m => m.generation).filter(Boolean)))];
 
@@ -110,7 +111,7 @@ export default function PresensiPengurusClient({
   // Filter members
   const filteredMembers = useMemo(() => {
     return members.filter(m => {
-      if (filterDivisi !== "Semua" && m.division !== filterDivisi) return false;
+      if (!matchesDivisionFilter(m.division, filterDivisi)) return false;
       if (filterFakultas !== "Semua" && m.faculty !== filterFakultas) return false;
       if (filterAngkatan !== "Semua" && m.generation !== filterAngkatan) return false;
       return true;
